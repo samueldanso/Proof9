@@ -1,0 +1,46 @@
+{
+    "name": "my-story-protocol-example-beta",
+    "version": "1.0.0",
+    "description": "",
+    "main": "src/server.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "bun run --watch src/server.ts",
+        "start": "bun run src/server.ts",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "register": "bun run ./scripts/registration/register.ts",
+        "register-custom": "bun run ./scripts/registration/registerCustom.ts",
+        "derivative-commercial": "bun run ./scripts/derivative/registerDerivativeCommercial.ts",
+        "derivative-non-commercial": "bun run ./scripts/derivative/registerDerivativeNonCommercial.ts",
+        "derivative-commercial-custom": "bun run ./scripts/derivative/registerDerivativeCommercialCustom.ts",
+        "dispute": "bun run ./scripts/dispute/disputeIp.ts",
+        "mint-license": "bun run ./scripts/licenses/mintLicense.ts",
+        "license-limit": "bun run ./scripts/licenses/oneTimeUseLicense.ts",
+        "pay-revenue": "bun run ./scripts/royalty/payRevenue.ts",
+        "license-revenue": "bun run ./scripts/royalty/licenseRevenue.ts",
+        "transfer-royalty-tokens": "bun run ./scripts/royalty/transferRoyaltyTokens.ts",
+        "claim-revenue": "bun run ./scripts/royalty/claimRevenue.ts",
+        "create-spg-collection": "bun run ./utils/functions/createSpgNftCollection.ts",
+        "send-raw-transaction": "bun run ./scripts/misc/sendRawTransaction.ts",
+        "verify-and-register": "bun run ./scripts/verification/verifyAndRegister.ts",
+        "test-yakoa": "bun run ./scripts/verification/testYakoa.ts"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@hono/zod-validator": "^0.6.0",
+        "@story-protocol/core-sdk": "1.3.1",
+        "dotenv": "^16.4.7",
+        "hono": "^4.7.10",
+        "multiformats": "^9.9.0",
+        "pinata-web3": "^0.5.4",
+        "viem": "^2.8.12",
+        "zod": "^3.25.30"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.17",
+        "bun-types": "latest",
+        "prettier": "3.2.5",
+        "typescript": "^5.8.3"
+    }
+}
