@@ -8,7 +8,7 @@ import IconChat from "@/components/icons/bubble.svg";
 import IconChatFill from "@/components/icons/bubble.svg";
 import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -51,9 +51,7 @@ export function Sidebar() {
               <span className="flex items-center justify-center text-[22px]">
                 {IconComponent && <IconComponent />}
               </span>
-              <span className="font-medium text-xs leading-tight">
-                {link.label}
-              </span>
+              <span className="font-medium text-xs leading-tight">{link.label}</span>
             </Link>
           );
         })}

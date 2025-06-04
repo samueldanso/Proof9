@@ -20,9 +20,7 @@ function PlaceholderFeed() {
   );
 }
 
-function TrendingContent() {
-  return <TrendingSkeleton />;
-}
+function TrendingContent() {}
 
 export default function FeedPage() {
   const searchParams = useSearchParams();
@@ -77,9 +75,7 @@ export default function FeedPage() {
         </div>
 
         {/* Trending section - desktop only */}
-        <div className="hidden w-full md:block md:w-80">
-          <TrendingContent />
-        </div>
+        <div className="hidden w-full md:block md:w-80"></div>
       </div>
     </div>
   );

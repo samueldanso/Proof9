@@ -2,7 +2,7 @@
 
 import { env } from "@/env";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { getDefaultConfig, TomoEVMKitProvider } from "@tomo-inc/tomo-evm-kit";
+import { TomoEVMKitProvider, darkTheme, getDefaultConfig } from "@tomo-inc/tomo-evm-kit";
 import "@tomo-inc/tomo-evm-kit/styles.css";
 import { metaMaskWallet, rainbowWallet, walletConnectWallet } from "@tomo-inc/tomo-evm-kit/wallets";
 import { WagmiProvider } from "wagmi";
@@ -14,7 +14,6 @@ const config = getDefaultConfig({
   appDescription:
     "A sound rights platform where creators protect, verify, license, and monetize their sound IP",
   projectId: env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-  // Using Story Protocol Aeneid testnet as recommended by Tomo team for the hackathon
   chains: [storyAeneid],
   ssr: true,
   wallets: [
@@ -31,7 +30,14 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <TomoEVMKitProvider>{children}</TomoEVMKitProvider>
+        <TomoEVMKitProvider
+          theme={darkTheme({
+            accentColor: "#ced925",
+            accentColorForeground: "#000000",
+          })}
+        >
+          {children}
+        </TomoEVMKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

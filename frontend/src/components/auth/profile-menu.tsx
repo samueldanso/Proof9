@@ -20,8 +20,8 @@ import {
 } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-import { useAccount } from "wagmi";
 import { toast } from "sonner";
+import { useAccount } from "wagmi";
 
 interface ProfileMenuProps {
   className?: string;

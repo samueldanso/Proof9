@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/components/layout/header";
+import { Header } from "@/components/layout/app-header";
 import { MobileNavigation } from "@/components/layout/mobile";
 import { Loader } from "@/components/ui/loader";
 import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";

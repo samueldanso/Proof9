@@ -10,7 +10,10 @@ interface LoginProps {
   label?: string;
 }
 
-export function Login({ variant = "default", label = "Get Started" }: LoginProps) {
+export function Login({
+  variant = "default",
+  label = "Get Started",
+}: LoginProps) {
   const { user, isConnected, isLoading, connect, disconnect } = useTomoAuth();
   const { address, connector } = useAccount();
 
@@ -34,7 +37,14 @@ export function Login({ variant = "default", label = "Get Started" }: LoginProps
   return (
     <div className={containerClasses}>
       {!isConnected ? (
-        <Button onClick={connect} className={buttonClasses} disabled={isLoading}>
+        <Button
+          onClick={connect}
+          className={
+            buttonClasses +
+            " bg-[#ced925] text-black text-base font-semibold hover:bg-[#e6f57a] border-none"
+          }
+          disabled={isLoading}
+        >
           {isLoading ? (
             <>
               <CircleNotch className="mr-2 size-4 animate-spin" weight="bold" />
@@ -46,15 +56,27 @@ export function Login({ variant = "default", label = "Get Started" }: LoginProps
         </Button>
       ) : (
         <div className="flex flex-col gap-2">
-          <div className={`flex items-center justify-between gap-2 text-sm ${buttonClasses}`}>
+          <div
+            className={`flex items-center justify-between gap-2 text-sm ${buttonClasses}`}
+          >
             <span className="truncate text-muted-foreground" title={address}>
-              Signed in as: <span className="font-semibold text-primary">{displayAddress}</span>
+              Signed in as:{" "}
+              <span className="font-semibold text-primary">
+                {displayAddress}
+              </span>
               {connector?.name && (
-                <span className="ml-1 text-muted-foreground text-xs">via {connector.name}</span>
+                <span className="ml-1 text-muted-foreground text-xs">
+                  via {connector.name}
+                </span>
               )}
             </span>
           </div>
-          <Button onClick={handleDisconnect} variant="outline" size="sm" className={buttonClasses}>
+          <Button
+            onClick={handleDisconnect}
+            variant="outline"
+            size="sm"
+            className={buttonClasses}
+          >
             Disconnect
           </Button>
         </div>

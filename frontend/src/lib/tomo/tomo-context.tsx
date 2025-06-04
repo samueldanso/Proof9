@@ -1,7 +1,7 @@
 "use client";
 
-import { useTomoAuth, AuthUser } from "./use-tomo-auth";
-import { createContext, useContext, ReactNode } from "react";
+import { ReactNode, createContext, useContext } from "react";
+import { AuthUser, useTomoAuth } from "./use-tomo-auth";
 
 interface TomoContextType {
   user: AuthUser | undefined;

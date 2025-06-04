@@ -26,9 +26,7 @@ export function ThemeToggle() {
       <span className="flex items-center justify-center text-[22px]">
         {isDark ? <Sun /> : <Moon />}
       </span>
-      <span className="font-medium text-xs leading-tight">
-        {isDark ? "Light" : "Dark"}
-      </span>
+      <span className="font-medium text-xs leading-tight">{isDark ? "Light" : "Dark"}</span>
     </button>
   );
 }
