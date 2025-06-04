@@ -5,41 +5,22 @@ import { ProfileMenu } from "@/components/auth/profile-menu";
 import { Logo } from "@/components/layout/logo";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Button } from "@/components/ui/button";
+import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { cn } from "@/lib/utils";
-import { useAuthenticatedUser } from "@lens-protocol/react";
-import {
-  Bell,
-  ChartLineUp,
-  House,
-  Sparkle,
-  Users as UsersIcon,
-} from "@phosphor-icons/react";
+import { Bell, ChartLineUp, House, Sparkle, Users as UsersIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
 
 export function Header() {
   const pathname = usePathname();
-  const { data: user } = useAuthenticatedUser();
-
-  // Handle cross-tab authentication changes
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key?.includes("lens.auth")) {
-        window.location.reload();
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  const { user, isConnected } = useTomoAuth();
 
   // Simple conditional rendering based on auth state
-  return user ? (
+  return isConnected && user ? (
     <header
       className={cn(
         "fixed top-0 left-0 z-10 w-full bg-background/95 py-3 backdrop-blur-sm",
-        pathname !== "/" && "border-border/40 border-b"
+        pathname !== "/" && "border-border/40 border-b",
       )}
     >
       <div className="container mx-auto flex max-w-6xl items-center px-4 md:px-6">
@@ -52,7 +33,7 @@ export function Header() {
               href="/feed"
               className={cn(
                 "flex flex-col items-center justify-center px-3 text-primary/80 transition-colors hover:text-[#00A8FF]",
-                pathname.startsWith("/feed") && "text-[#00A8FF]"
+                pathname.startsWith("/feed") && "text-[#00A8FF]",
               )}
             >
               <House className="mb-0.5 size-6" weight="bold" />
@@ -63,7 +44,7 @@ export function Header() {
               href="/groups"
               className={cn(
                 "flex flex-col items-center justify-center px-3 text-primary/80 transition-colors hover:text-[#00A8FF]",
-                pathname.startsWith("/groups") && "text-[#00A8FF]"
+                pathname.startsWith("/groups") && "text-[#00A8FF]",
               )}
             >
               <UsersIcon className="mb-0.5 size-6" weight="bold" />
@@ -74,7 +55,7 @@ export function Header() {
               href="/notifications"
               className={cn(
                 "flex flex-col items-center justify-center px-3 text-primary/80 transition-colors hover:text-[#00A8FF]",
-                pathname.startsWith("/notifications") && "text-[#00A8FF]"
+                pathname.startsWith("/notifications") && "text-[#00A8FF]",
               )}
             >
               <Bell className="mb-0.5 size-6" weight="bold" />
@@ -85,7 +66,7 @@ export function Header() {
               href="/dashboard"
               className={cn(
                 "flex flex-col items-center justify-center px-3 text-primary/80 transition-colors hover:text-[#00A8FF]",
-                pathname.startsWith("/dashboard") && "text-[#00A8FF]"
+                pathname.startsWith("/dashboard") && "text-[#00A8FF]",
               )}
             >
               <ChartLineUp className="mb-0.5 size-6" weight="bold" />
@@ -127,7 +108,7 @@ export function Header() {
     <header
       className={cn(
         "fixed top-0 left-0 z-10 w-full bg-background/95 py-3 backdrop-blur-sm",
-        pathname !== "/" && "border-border/40 border-b"
+        pathname !== "/" && "border-border/40 border-b",
       )}
     >
       <div className="container mx-auto flex max-w-6xl items-center justify-between px-4 md:px-6">

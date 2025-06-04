@@ -5,13 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLensClient } from "@/lib/lens/client";
-import {
-  Account,
-  AccountStats,
-  PageSize,
-  Post,
-  evmAddress,
-} from "@lens-protocol/client";
+import { Account, AccountStats, PageSize, Post, evmAddress } from "@lens-protocol/client";
 import { fetchAccountStats } from "@lens-protocol/client/actions";
 import { fetchAccount } from "@lens-protocol/client/actions";
 import { useAccount, usePosts } from "@lens-protocol/react";
@@ -20,11 +14,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PostCard } from "../../discover/_components/feed-card";
-import {
-  type Campaign,
-  type Creator,
-  Trending,
-} from "../../discover/_components/trending-banner";
+import { type Campaign, type Creator, Trending } from "../../discover/_components/trending-banner";
 import { TrendingSkeleton } from "../../discover/_components/trending-skeleton";
 import { ProfileHeader } from "./_components/profile-header";
 import { ProfileSkeleton } from "./_components/profile-skeleton";
@@ -56,20 +46,11 @@ function TrendingContent() {
         title = post.metadata.title || "Untitled Post";
       } else if (post.metadata.__typename === "TextOnlyMetadata") {
         title = post.metadata.content || "Untitled Post";
-      } else if (
-        post.metadata.__typename === "ImageMetadata" &&
-        post.metadata.content
-      ) {
+      } else if (post.metadata.__typename === "ImageMetadata" && post.metadata.content) {
         title = post.metadata.content.slice(0, 50) + "..." || "Untitled Post";
-      } else if (
-        post.metadata.__typename === "VideoMetadata" &&
-        post.metadata.content
-      ) {
+      } else if (post.metadata.__typename === "VideoMetadata" && post.metadata.content) {
         title = post.metadata.content.slice(0, 50) + "..." || "Untitled Post";
-      } else if (
-        post.metadata.__typename === "AudioMetadata" &&
-        post.metadata.content
-      ) {
+      } else if (post.metadata.__typename === "AudioMetadata" && post.metadata.content) {
         title = post.metadata.content.slice(0, 50) + "..." || "Untitled Post";
       } else {
         title = "Untitled Post";
@@ -77,8 +58,7 @@ function TrendingContent() {
 
       // Extract username from profile
       const username =
-        post.author.username?.value?.split("/").pop() ||
-        post.author.address.substring(0, 8);
+        post.author.username?.value?.split("/").pop() || post.author.address.substring(0, 8);
 
       // Extract profile picture
       let picture = "";
@@ -112,9 +92,7 @@ function TrendingContent() {
     .slice(0, 3)
     .map((post) => {
       const author = post.author;
-      const username =
-        author.username?.value?.split("/").pop() ||
-        author.address.substring(0, 8);
+      const username = author.username?.value?.split("/").pop() || author.address.substring(0, 8);
 
       // Extract profile picture
       let picture = "";
@@ -203,9 +181,7 @@ function ProfileContent({ username }: { username: string }) {
           setStatsError(result.error);
         }
       } catch (error) {
-        setStatsError(
-          error instanceof Error ? error : new Error(String(error))
-        );
+        setStatsError(error instanceof Error ? error : new Error(String(error)));
       } finally {
         setStatsLoading(false);
       }
@@ -219,10 +195,7 @@ function ProfileContent({ username }: { username: string }) {
   // Show error toast if there was a problem fetching the profile
   useEffect(() => {
     if (accountError || statsError || postsError) {
-      console.error(
-        "Error loading profile data:",
-        accountError || statsError || postsError
-      );
+      console.error("Error loading profile data:", accountError || statsError || postsError);
       toast.error("Failed to load profile data");
     }
   }, [accountError, statsError, postsError]);
@@ -251,9 +224,7 @@ function ProfileContent({ username }: { username: string }) {
         });
 
         if (alternativeResult.isErr()) {
-          throw new Error(
-            `Could not find account: ${accountResult.error.message}`
-          );
+          throw new Error(`Could not find account: ${accountResult.error.message}`);
         }
 
         // Use the alternate lookup result
@@ -265,9 +236,7 @@ function ProfileContent({ username }: { username: string }) {
 
         // Get account stats
         const statsResult = await fetchAccountStats(client, {
-          ...(alternativeResult.value.address
-            ? { account: alternativeResult.value.address }
-            : {}),
+          ...(alternativeResult.value.address ? { account: alternativeResult.value.address } : {}),
         });
 
         if (statsResult.isErr()) {
@@ -285,9 +254,7 @@ function ProfileContent({ username }: { username: string }) {
 
         // Get account stats
         const statsResult = await fetchAccountStats(client, {
-          ...(accountResult.value.address
-            ? { account: accountResult.value.address }
-            : {}),
+          ...(accountResult.value.address ? { account: accountResult.value.address } : {}),
         });
 
         if (statsResult.isErr()) {
@@ -302,16 +269,8 @@ function ProfileContent({ username }: { username: string }) {
       setPosts([]);
     } catch (err) {
       console.error("Error loading user data:", err);
-      setError(
-        `Failed to load user profile. ${
-          err instanceof Error ? err.message : ""
-        }`
-      );
-      toast.error(
-        `Failed to load user profile. ${
-          err instanceof Error ? err.message : ""
-        }`
-      );
+      setError(`Failed to load user profile. ${err instanceof Error ? err.message : ""}`);
+      toast.error(`Failed to load user profile. ${err instanceof Error ? err.message : ""}`);
     } finally {
       setIsLoading(false);
     }
@@ -324,10 +283,7 @@ function ProfileContent({ username }: { username: string }) {
   }, [username]);
 
   // Handle follow state changes
-  const handleFollowChange = (
-    isFollowing: boolean,
-    newFollowerCount: number
-  ) => {
+  const handleFollowChange = (isFollowing: boolean, newFollowerCount: number) => {
     if (accountStats) {
       setAccountStats({
         ...accountStats,
@@ -399,9 +355,7 @@ function ProfileContent({ username }: { username: string }) {
                 {postsData && postsData.items.length > 0 ? (
                   <div className="space-y-6">
                     {postsData.items
-                      .filter(
-                        (post): post is Post => post.__typename === "Post"
-                      )
+                      .filter((post): post is Post => post.__typename === "Post")
                       .map((post) => (
                         <PostCard key={post.id} post={post} />
                       ))}
@@ -429,9 +383,7 @@ function ProfileContent({ username }: { username: string }) {
                   <Separator />
 
                   <div>
-                    <h3 className="mb-4 font-semibold text-lg">
-                      On-chain Info
-                    </h3>
+                    <h3 className="mb-4 font-semibold text-lg">On-chain Info</h3>
                     <div className="rounded-lg bg-muted p-4">
                       <p className="break-all font-mono text-muted-foreground text-xs">
                         {account.address}

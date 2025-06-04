@@ -1,15 +1,15 @@
 "use client";
 
+import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { cn } from "@/lib/utils";
-import { useAuthenticatedUser } from "@lens-protocol/react";
 import { Bell, BookmarkSimple, House, Sparkle, Users } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function MobileNavigation() {
   const pathname = usePathname();
-  const { data: user } = useAuthenticatedUser();
-  const isAuthenticated = !!user;
+  const { user, isConnected } = useTomoAuth();
+  const isAuthenticated = isConnected && !!user;
 
   // Don't show navigation on landing page
   if (pathname === "/") {

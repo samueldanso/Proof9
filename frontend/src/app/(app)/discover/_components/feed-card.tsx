@@ -7,22 +7,12 @@ import { ImageModal } from "@/components/shared/image-modal";
 import { ReactionButton } from "@/components/shared/reaction-button";
 import { RepostQuoteButton } from "@/components/shared/repost-quote-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useLensPostUtils } from "@/hooks/use-lens-post-utils";
 import { FormatPostContent } from "@/lib/format-content";
 import { cn } from "@/lib/utils";
 import { AnyPost, Post } from "@lens-protocol/client";
-import {
-  CurrencyDollar,
-  Image as ImageIcon,
-  MusicNote,
-  Video,
-} from "@phosphor-icons/react";
+import { CurrencyDollar, Image as ImageIcon, MusicNote, Video } from "@phosphor-icons/react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -56,10 +46,7 @@ export function FeedCard({ post }: FeedCardProps) {
   let mediaElement = null;
 
   // Handle Image metadata
-  if (
-    typedPost.metadata.__typename === "ImageMetadata" &&
-    typedPost.metadata.image
-  ) {
+  if (typedPost.metadata.__typename === "ImageMetadata" && typedPost.metadata.image) {
     const imageUrl = postUtils.getImageUrl(typedPost);
 
     if (imageUrl) {
@@ -76,10 +63,7 @@ export function FeedCard({ post }: FeedCardProps) {
   }
 
   // Handle Video metadata
-  else if (
-    typedPost.metadata.__typename === "VideoMetadata" &&
-    typedPost.metadata.video
-  ) {
+  else if (typedPost.metadata.__typename === "VideoMetadata" && typedPost.metadata.video) {
     const videoUrl = postUtils.getVideoUrl(typedPost);
     const posterUrl = postUtils.getVideoPosterUrl(typedPost);
 
@@ -111,10 +95,7 @@ export function FeedCard({ post }: FeedCardProps) {
   }
 
   // Handle Audio metadata
-  else if (
-    typedPost.metadata.__typename === "AudioMetadata" &&
-    typedPost.metadata.audio
-  ) {
+  else if (typedPost.metadata.__typename === "AudioMetadata" && typedPost.metadata.audio) {
     const audioUrl = postUtils.getAudioUrl(typedPost);
 
     if (audioUrl) {
@@ -124,11 +105,7 @@ export function FeedCard({ post }: FeedCardProps) {
             <MusicNote className="size-6 text-primary" weight="bold" />
             <span className="font-medium">{postUtils.getTitle(typedPost)}</span>
           </div>
-          <audio
-            controls
-            className="w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <audio controls className="w-full" onClick={(e) => e.stopPropagation()}>
             <source src={audioUrl} />
             <track kind="captions" label="English" srcLang="en" default />
             Your browser does not support the audio element.
@@ -147,21 +124,13 @@ export function FeedCard({ post }: FeedCardProps) {
   };
 
   return (
-    <Card
-      className="cursor-pointer overflow-hidden"
-      onClick={navigateToPostDetail}
-    >
+    <Card className="cursor-pointer overflow-hidden" onClick={navigateToPostDetail}>
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
           <Avatar className="size-10">
-            <AvatarImage
-              src={profilePicture}
-              alt={typedPost.author.metadata?.name || username}
-            />
+            <AvatarImage src={profilePicture} alt={typedPost.author.metadata?.name || username} />
             <AvatarFallback>
-              {(
-                typedPost.author.metadata?.name?.[0] || username[0]
-              )?.toUpperCase()}
+              {(typedPost.author.metadata?.name?.[0] || username[0])?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
@@ -206,9 +175,7 @@ export function FeedCard({ post }: FeedCardProps) {
             />
             <RepostQuoteButton
               postId={typedPost.id}
-              count={
-                (typedPost.stats?.reposts || 0) + (typedPost.stats?.quotes || 0)
-              }
+              count={(typedPost.stats?.reposts || 0) + (typedPost.stats?.quotes || 0)}
             />
             <ReactionButton
               postId={typedPost.id}
@@ -222,9 +189,7 @@ export function FeedCard({ post }: FeedCardProps) {
               postId={typedPost.id}
               isBookmarked={typedPost.operations?.hasBookmarked}
             />
-            {isCollectible && (
-              <BelieveButton postId={typedPost.id} username={username} />
-            )}
+            {isCollectible && <BelieveButton postId={typedPost.id} username={username} />}
           </div>
         </div>
       </CardFooter>

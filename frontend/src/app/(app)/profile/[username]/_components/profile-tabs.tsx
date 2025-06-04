@@ -24,9 +24,7 @@ export function ProfileTabs({
   // Filter for posts with SimpleCollectAction
   const collectiblePosts = posts.filter((post) => {
     if (post.__typename !== "Post") return false;
-    return post.actions?.some(
-      (action) => action.__typename === "SimpleCollectAction"
-    );
+    return post.actions?.some((action) => action.__typename === "SimpleCollectAction");
   });
 
   const handleTabChange = (value: string) => {

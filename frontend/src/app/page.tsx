@@ -4,6 +4,7 @@ import { Login } from "@/components/auth/login";
 import { Footer } from "@/components/layout/footer";
 import { HomeHeader } from "@/components/layout/home-header";
 import { Loader } from "@/components/ui/loader";
+import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { redirect } from "next/navigation";
@@ -13,45 +14,39 @@ import { useEffect, useState } from "react";
 const creators = [
   {
     id: 1,
-    image:
-      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=800&auto=format",
+    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=800&auto=format",
     alt: "Professional male creator",
   },
   {
     id: 2,
-    image:
-      "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format",
+    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format",
     alt: "Creative female artist",
   },
   {
     id: 3,
-    image:
-      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=800&auto=format",
+    image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=800&auto=format",
     alt: "Young male creator",
   },
   {
     id: 4,
-    image:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format",
     alt: "Fashion model creator",
   },
   {
     id: 5,
-    image:
-      "https://images.unsplash.com/photo-1522556189639-b150ed9c4330?q=80&w=800&auto=format",
+    image: "https://images.unsplash.com/photo-1522556189639-b150ed9c4330?q=80&w=800&auto=format",
     alt: "Business professional",
   },
   {
     id: 6,
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format",
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format",
     alt: "Portrait photographer",
   },
 ];
 
 export default function Home() {
   const [isClient, setIsClient] = useState(false);
-  const { data: user, loading: userLoading } = useAuthenticatedUser();
+  const { user, isConnected, isLoading } = useTomoAuth();
 
   useEffect(() => {
     setIsClient(true);
@@ -59,13 +54,13 @@ export default function Home() {
 
   // Once client-side rendering is available, check if the user is authenticated
   useEffect(() => {
-    if (isClient && !userLoading && user) {
+    if (isClient && !isLoading && isConnected && user) {
       redirect("/feed");
     }
-  }, [isClient, user, userLoading]);
+  }, [isClient, user, isConnected, isLoading]);
 
   // Show loading state while checking authentication
-  if (userLoading || !isClient) {
+  if (isLoading || !isClient) {
     return <Loader />;
   }
 
@@ -84,8 +79,8 @@ export default function Home() {
 
             {/* Subheadline - smaller with reduced margin */}
             <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-              Proof9 is a sound rights platform where creators protect their IP,
-              license it for use, monetize their work, and connect with fans —
+              Proof9 is a sound rights platform where creators protect their IP, license it for use,
+              monetize their work, and connect with fans —
               <span className="font-bold">built on Story Protocol.</span>
             </p>
 
@@ -102,10 +97,7 @@ export default function Home() {
               <div className="relative h-[90px] w-full overflow-hidden">
                 <div className="absolute top-0 left-0 z-10 h-full w-16 bg-gradient-to-r from-background to-transparent" />
                 <div className="absolute top-0 right-0 z-10 h-full w-16 bg-gradient-to-l from-background to-transparent" />
-                <div
-                  className="absolute top-0 left-0 w-full"
-                  style={{ display: "flex" }}
-                >
+                <div className="absolute top-0 left-0 w-full" style={{ display: "flex" }}>
                   <motion.div
                     className="flex w-full gap-5"
                     animate={{ x: [0, "-50%"] }}
@@ -155,10 +147,7 @@ export default function Home() {
               <div className="relative h-[70px] w-full overflow-hidden">
                 <div className="absolute top-0 left-0 z-10 h-full w-16 bg-gradient-to-r from-background to-transparent" />
                 <div className="absolute top-0 right-0 z-10 h-full w-16 bg-gradient-to-l from-background to-transparent" />
-                <div
-                  className="absolute top-0 left-0 w-full"
-                  style={{ display: "flex" }}
-                >
+                <div className="absolute top-0 left-0 w-full" style={{ display: "flex" }}>
                   <motion.div
                     className="flex w-full gap-3"
                     animate={{ x: ["-50%", "0%"] }}
