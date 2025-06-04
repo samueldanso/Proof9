@@ -1,11 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useFollow } from "@/hooks/use-follow";
+import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { cn } from "@/lib/utils";
-import { useAuthenticatedUser } from "@lens-protocol/react";
 import { Check, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export interface FollowButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -59,20 +58,8 @@ export function FollowButton({
   ...props
 }: FollowButtonProps) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
-  const { data: user } = useAuthenticatedUser();
-  const { follow, unfollow, checkFollowStatus, isLoading } = useFollow();
-
-  // Load initial follow status when component mounts or user changes
-  useEffect(() => {
-    const loadFollowStatus = async () => {
-      if (user?.address) {
-        const status = await checkFollowStatus(userId);
-        setIsFollowing(status);
-      }
-    };
-
-    loadFollowStatus();
-  }, [userId, user, checkFollowStatus]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user, isConnected } = useTomoAuth();
 
   // Determine button variant based on follow state
   const variant = isFollowing ? "outline" : initialVariant;
@@ -81,30 +68,24 @@ export function FollowButton({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!user?.address) {
+    if (!isConnected || !user) {
       toast.error("Please sign in to follow users");
       return;
     }
 
+    setIsLoading(true);
+
     try {
+      // In a real implementation, you would call your API to follow/unfollow
+      // For now, we'll just simulate the API call with a timeout
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       if (isFollowing) {
-        // Unfollow
-        const result = await unfollow(userId);
-
-        if (result.isErr()) {
-          throw new Error("Failed to unfollow");
-        }
-
+        // Simulate unfollow
         setIsFollowing(false);
         toast.success(`Unfollowed @${username}`);
       } else {
-        // Follow
-        const result = await follow(userId);
-
-        if (result.isErr()) {
-          throw new Error("Failed to follow");
-        }
-
+        // Simulate follow
         setIsFollowing(true);
         toast.success(`Followed @${username}`);
       }
@@ -115,6 +96,8 @@ export function FollowButton({
     } catch (error) {
       console.error("Error following/unfollowing:", error);
       toast.error("Failed to update follow status. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

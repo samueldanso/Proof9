@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import { Web3Provider } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
+import { TomoProvider } from "@/lib/tomo/tomo-context";
 
 const interVariable = localFont({
   src: "../../public/assets/fonts/InterVariable.woff2",
@@ -57,7 +58,9 @@ export default async function RootLayout({
     >
       <body className="min-h-screen bg-background antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <Web3Provider>{children}</Web3Provider>
+          <Web3Provider>
+            <TomoProvider>{children}</TomoProvider>
+          </Web3Provider>
           <Toaster />
         </ThemeProvider>
       </body>

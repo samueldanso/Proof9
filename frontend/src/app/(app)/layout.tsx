@@ -3,25 +3,25 @@
 import { Header } from "@/components/layout/header";
 import { MobileNavigation } from "@/components/layout/mobile";
 import { Loader } from "@/components/ui/loader";
-import { useAuthenticatedUser } from "@lens-protocol/react";
+import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { data: user, loading } = useAuthenticatedUser();
+  const { user, isConnected, isLoading } = useTomoAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !isConnected) {
       router.push("/");
     }
-  }, [loading, user, router]);
+  }, [isLoading, isConnected, router]);
 
-  if (loading) {
+  if (isLoading) {
     return <Loader />;
   }
 
-  if (!user) {
+  if (!isConnected || !user) {
     return null;
   }
 

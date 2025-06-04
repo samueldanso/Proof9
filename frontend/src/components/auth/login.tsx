@@ -1,12 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { DialogTrigger } from "@/components/ui/dialog";
-import { useAuthenticatedUser } from "@lens-protocol/react";
+import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { CircleNotch } from "@phosphor-icons/react";
-import { ConnectKitButton } from "connectkit";
-import { useState } from "react";
-import { AccountSelector } from "./account-selector";
+import { useAccount } from "wagmi";
 
 interface LoginProps {
   variant?: "default" | "header";
@@ -14,87 +11,54 @@ interface LoginProps {
 }
 
 export function Login({ variant = "default", label = "Get Started" }: LoginProps) {
-  const [showAccountSelector, setShowAccountSelector] = useState(false);
-  const { data: authenticatedUser, loading: authUserLoading } = useAuthenticatedUser();
+  const { user, isConnected, isLoading, connect, disconnect } = useTomoAuth();
+  const { address, connector } = useAccount();
 
   // Apply different styles based on variant
   const containerClasses = variant === "header" ? "" : "mb-2 space-y-2 p-2";
-
   const buttonClasses = variant === "header" ? "" : "w-full";
+
+  // Format address for display
+  const formatAddress = (address: string) => {
+    if (!address) return "...";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  const displayAddress = address ? formatAddress(address) : "";
+
+  // Handling disconnect to avoid type error
+  const handleDisconnect = () => {
+    disconnect();
+  };
 
   return (
     <div className={containerClasses}>
-      <ConnectKitButton.Custom>
-        {({
-          isConnected: isWalletConnected,
-          show,
-          truncatedAddress,
-          ensName,
-          chain,
-          isConnecting,
-        }) => {
-          const connectKitDisplayName = ensName ?? truncatedAddress;
-
-          if (!isWalletConnected) {
-            return (
-              <>
-                <Button onClick={show} className={buttonClasses} disabled={isConnecting}>
-                  {isConnecting ? (
-                    <>
-                      <CircleNotch className="mr-2 size-4 animate-spin" weight="bold" />
-                      Connecting...
-                    </>
-                  ) : (
-                    label
-                  )}
-                </Button>
-              </>
-            );
-          }
-
-          if (isWalletConnected && !authenticatedUser) {
-            return (
-              <AccountSelector
-                open={showAccountSelector}
-                onOpenChange={setShowAccountSelector}
-                trigger={
-                  <DialogTrigger asChild>
-                    <Button className={buttonClasses} disabled={authUserLoading}>
-                      {authUserLoading ? (
-                        <>
-                          <CircleNotch className="mr-2 size-4 animate-spin" weight="bold" />
-                          Connecting...
-                        </>
-                      ) : (
-                        "Sign in with Lens"
-                      )}
-                    </Button>
-                  </DialogTrigger>
-                }
-              />
-            );
-          }
-
-          if (isWalletConnected && authenticatedUser) {
-            const displayIdentity = connectKitDisplayName ?? "...";
-            return (
-              <div className={`flex items-center justify-between gap-2 text-sm ${buttonClasses}`}>
-                <span className="truncate text-muted-foreground" title={authenticatedUser.address}>
-                  Signed in as:{" "}
-                  <span className="font-semibold text-primary">{displayIdentity}</span>
-                </span>
-              </div>
-            );
-          }
-
-          return (
-            <p className="flex items-center text-muted-foreground text-xs">
-              <CircleNotch className="mr-2 size-3 animate-spin" weight="bold" />
-              Checking status...
-            </p>
-          );
-        }}
-      </ConnectKitButton.Custom>
+      {!isConnected ? (
+        <Button onClick={connect} className={buttonClasses} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <CircleNotch className="mr-2 size-4 animate-spin" weight="bold" />
+              Connecting...
+            </>
+          ) : (
+            label
+          )}
+        </Button>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <div className={`flex items-center justify-between gap-2 text-sm ${buttonClasses}`}>
+            <span className="truncate text-muted-foreground" title={address}>
+              Signed in as: <span className="font-semibold text-primary">{displayAddress}</span>
+              {connector?.name && (
+                <span className="ml-1 text-muted-foreground text-xs">via {connector.name}</span>
+              )}
+            </span>
+          </div>
+          <Button onClick={handleDisconnect} variant="outline" size="sm" className={buttonClasses}>
+            Disconnect
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

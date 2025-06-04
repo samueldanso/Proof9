@@ -35,6 +35,11 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["images.unsplash.com"],
   },
+  transpilePackages: [
+    "@tomo-inc/tomo-evm-kit",
+    "@tomo-wallet/uikit-lite",
+    "@tomo-inc/shared-type",
+  ],
 };
 
 export default nextConfig;

@@ -65,13 +65,8 @@ export function TrendingBanner({ creators, campaigns }: TrendingBannerProps) {
                 >
                   <div className="flex items-center gap-2 pb-1">
                     <Avatar className="size-6 border">
-                      <AvatarImage
-                        src={campaign.creator.picture}
-                        alt={campaign.creator.name}
-                      />
-                      <AvatarFallback>
-                        {campaign.creator.name[0]}
-                      </AvatarFallback>
+                      <AvatarImage src={campaign.creator.picture} alt={campaign.creator.name} />
+                      <AvatarFallback>{campaign.creator.name[0]}</AvatarFallback>
                     </Avatar>
                     <span className="font-semibold text-[14px] text-muted-foreground">
                       @{campaign.creator.username}
@@ -81,10 +76,7 @@ export function TrendingBanner({ creators, campaigns }: TrendingBannerProps) {
                     <h3 className="truncate font-medium text-sm group-hover:text-primary">
                       {campaign.title}
                     </h3>
-                    <ArrowUpRight
-                      className="ml-2 hidden size-3 group-hover:inline"
-                      weight="bold"
-                    />
+                    <ArrowUpRight className="ml-2 hidden size-3 group-hover:inline" weight="bold" />
                   </div>
                   <div className="mt-1 flex items-center justify-between">
                     <div className="text-muted-foreground text-xs">
@@ -95,10 +87,9 @@ export function TrendingBanner({ creators, campaigns }: TrendingBannerProps) {
                       <span
                         className={cn(
                           "font-medium",
-                          campaign.collectible.collected >=
-                            campaign.collectible.total
+                          campaign.collectible.collected >= campaign.collectible.total
                             ? "text-green-500 dark:text-green-400"
-                            : "text-foreground"
+                            : "text-foreground",
                         )}
                       >
                         {campaign.collectible.total}
@@ -106,25 +97,21 @@ export function TrendingBanner({ creators, campaigns }: TrendingBannerProps) {
                       collected
                     </div>
                     <div className="font-medium text-xs">
-                      {campaign.collectible.price}{" "}
-                      {campaign.collectible.currency}
+                      {campaign.collectible.price} {campaign.collectible.currency}
                     </div>
                   </div>
                   <div className="mt-2 h-1.5 w-full rounded-full bg-muted">
                     <div
                       className={cn(
                         "h-1.5 rounded-full",
-                        campaign.collectible.collected >=
-                          campaign.collectible.total
+                        campaign.collectible.collected >= campaign.collectible.total
                           ? "bg-green-500"
-                          : "bg-primary"
+                          : "bg-primary",
                       )}
                       style={{
                         width: `${Math.min(
                           100,
-                          (campaign.collectible.collected /
-                            campaign.collectible.total) *
-                            100
+                          (campaign.collectible.collected / campaign.collectible.total) * 100,
                         )}%`,
                       }}
                     />
@@ -152,24 +139,17 @@ export function TrendingBanner({ creators, campaigns }: TrendingBannerProps) {
             ) : (
               creators.map((creator) => (
                 <div key={creator.id} className="flex items-center gap-3">
-                  <Link
-                    href={`/u/${creator.username}`}
-                    className="flex flex-1 items-center gap-3"
-                  >
+                  <Link href={`/u/${creator.username}`} className="flex flex-1 items-center gap-3">
                     <Avatar className="size-9 border">
                       <AvatarImage src={creator.picture} alt={creator.name} />
                       <AvatarFallback>{creator.name[0]}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 truncate">
                       <div className="flex items-center gap-1 truncate">
-                        <span className="truncate font-medium">
-                          {creator.name}
-                        </span>
+                        <span className="truncate font-medium">{creator.name}</span>
                       </div>
                       <div className="flex text-muted-foreground">
-                        <span className="font-semibold text-[14px]">
-                          @{creator.username}
-                        </span>
+                        <span className="font-semibold text-[14px]">@{creator.username}</span>
                       </div>
                     </div>
                   </Link>

@@ -33,10 +33,7 @@ interface CollectedPostsProps {
   isOwnProfile?: boolean;
 }
 
-export function CollectedPosts({
-  username,
-  isOwnProfile = false,
-}: CollectedPostsProps) {
+export function CollectedPosts({ username, isOwnProfile = false }: CollectedPostsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState<MockPost[]>([]);
   const [hasError, setHasError] = useState(false);
@@ -55,8 +52,7 @@ export function CollectedPosts({
           setPosts([
             {
               id: "post-1",
-              content:
-                "New SaaS Productivity Tool - early believers get lifetime access!",
+              content: "New SaaS Productivity Tool - early believers get lifetime access!",
               createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
               collectible: {
                 price: "5",
@@ -121,10 +117,7 @@ export function CollectedPosts({
             : "Check back later to see what they've collected"}
         </p>
         {isOwnProfile && (
-          <Button
-            className="bg-[#00A8FF] text-white hover:bg-[#00A8FF]/90"
-            asChild
-          >
+          <Button className="bg-[#00A8FF] text-white hover:bg-[#00A8FF]/90" asChild>
             <a href="/feed">Explore Feed</a>
           </Button>
         )}
