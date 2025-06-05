@@ -1,45 +1,18 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "@/styles/globals.css";
 import { Web3Provider } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "next-themes";
 import { TomoProvider } from "@/lib/tomo/tomo-context";
+import { ThemeProvider } from "next-themes";
 
-const interVariable = localFont({
-  src: "../../public/assets/fonts/InterVariable.woff2",
-  display: "swap",
-  variable: "--font-inter",
-});
-
-const openRunde = localFont({
-  src: [
-    {
-      path: "../../public/assets/fonts/openrunde/Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../../public/assets/fonts/openrunde/Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../public/assets/fonts/openrunde/Semibold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../../public/assets/fonts/openrunde/Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-  ],
-  variable: "--font-openrunde",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
 });
 
 export const metadata: Metadata = {
-  title: "Proof9 — Protect, license, and monetize your sound, on Story",
+  title: " Proof9 | Protect, License & Monetize Your Sound",
   description:
     "Proof9 is a sound rights platform where creators protect their IP, license it for use, monetize their work, and connect with fans.",
   icons: [{ rel: "icon", url: "/favicon.svg" }],
@@ -51,13 +24,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${interVariable.variable} ${openRunde.variable} font-sans`}
-    >
+    <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} font-sans`}>
       <body className="min-h-screen bg-background antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <Web3Provider>
             <TomoProvider>{children}</TomoProvider>
           </Web3Provider>

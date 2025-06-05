@@ -6,7 +6,7 @@ import { CircleNotch } from "@phosphor-icons/react";
 import { useAccount } from "wagmi";
 
 interface LoginProps {
-  variant?: "default" | "header";
+  variant?: "default" | "header" | "sidebar";
   label?: string;
 }
 
@@ -34,7 +34,14 @@ export function Login({ variant = "default", label = "Get Started" }: LoginProps
   return (
     <div className={containerClasses}>
       {!isConnected ? (
-        <Button onClick={connect} className={buttonClasses} disabled={isLoading}>
+        <Button
+          onClick={connect}
+          className={
+            buttonClasses +
+            " border-none bg-[#ced925] font-semibold text-base text-black hover:bg-[#e6f57a]"
+          }
+          disabled={isLoading}
+        >
           {isLoading ? (
             <>
               <CircleNotch className="mr-2 size-4 animate-spin" weight="bold" />

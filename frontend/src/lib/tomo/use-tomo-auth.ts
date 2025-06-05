@@ -1,8 +1,8 @@
 "use client";
 
-import { useAccount, useDisconnect, useSignMessage } from "wagmi";
-import { useMemo, useState } from "react";
 import { useConnectModal } from "@tomo-inc/tomo-evm-kit";
+import { useMemo, useState } from "react";
+import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 
 export interface AuthUser {
   address: string;

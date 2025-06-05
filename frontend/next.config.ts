@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,
-      include: /src\/assets\/icons\/.*\.svg$/,
+      include: /src\/components\/icons\/.*\.svg$/,
       use: [
         {
           loader: "@svgr/webpack",
@@ -33,7 +33,14 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    domains: ["images.unsplash.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
   transpilePackages: [
     "@tomo-inc/tomo-evm-kit",

@@ -29,7 +29,7 @@ export function Logo({ className = "", variant = "full" }: LogoProps) {
         width={variant === "icon" ? 32 : 114}
         height={variant === "icon" ? 32 : 25.1}
         priority
-        className={variant === "icon" ? "h-9 w-9" : "h-7 w-auto"}
+        className={variant === "icon" ? "h-9 w-9" : `${className} h-7 w-auto`}
       />
     </Link>
   );
