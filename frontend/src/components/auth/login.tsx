@@ -6,14 +6,11 @@ import { CircleNotch } from "@phosphor-icons/react";
 import { useAccount } from "wagmi";
 
 interface LoginProps {
-  variant?: "default" | "header";
+  variant?: "default" | "header" | "sidebar";
   label?: string;
 }
 
-export function Login({
-  variant = "default",
-  label = "Get Started",
-}: LoginProps) {
+export function Login({ variant = "default", label = "Get Started" }: LoginProps) {
   const { user, isConnected, isLoading, connect, disconnect } = useTomoAuth();
   const { address, connector } = useAccount();
 
@@ -41,7 +38,7 @@ export function Login({
           onClick={connect}
           className={
             buttonClasses +
-            " bg-[#ced925] text-black text-base font-semibold hover:bg-[#e6f57a] border-none"
+            " border-none bg-[#ced925] font-semibold text-base text-black hover:bg-[#e6f57a]"
           }
           disabled={isLoading}
         >
@@ -56,27 +53,15 @@ export function Login({
         </Button>
       ) : (
         <div className="flex flex-col gap-2">
-          <div
-            className={`flex items-center justify-between gap-2 text-sm ${buttonClasses}`}
-          >
+          <div className={`flex items-center justify-between gap-2 text-sm ${buttonClasses}`}>
             <span className="truncate text-muted-foreground" title={address}>
-              Signed in as:{" "}
-              <span className="font-semibold text-primary">
-                {displayAddress}
-              </span>
+              Signed in as: <span className="font-semibold text-primary">{displayAddress}</span>
               {connector?.name && (
-                <span className="ml-1 text-muted-foreground text-xs">
-                  via {connector.name}
-                </span>
+                <span className="ml-1 text-muted-foreground text-xs">via {connector.name}</span>
               )}
             </span>
           </div>
-          <Button
-            onClick={handleDisconnect}
-            variant="outline"
-            size="sm"
-            className={buttonClasses}
-          >
+          <Button onClick={handleDisconnect} variant="outline" size="sm" className={buttonClasses}>
             Disconnect
           </Button>
         </div>

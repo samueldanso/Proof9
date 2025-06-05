@@ -1,64 +1,137 @@
 "use client";
 
-import Image from "next/image";
+import React from "react";
+import { Login } from "@/components/auth/login";
+import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import IconChat from "@/components/icons/bubble.svg";
-import IconChatFill from "@/components/icons/bubble.svg";
+import IconHome from "@/components/icons/home.svg";
+import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { Plus, Bookmark, LogOut } from "lucide-react";
+import { Logo } from "./logo";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, isConnected, disconnect, isLoading } = useTomoAuth();
+  const { address } = useAccount();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    if (!user || isLoading) return;
+
+    try {
+      disconnect();
+      toast.success("Successfully logged out");
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to logout:", error);
+      toast.error("Failed to log out");
+    }
+  };
+
+  const handleProfileClick = () => {
+    if (address) {
+      // Use short address for profile URL
+      const shortAddress = address.substring(0, 8);
+      router.push(`/u/${shortAddress}`);
+    }
+  };
+
+  // Get the first few characters of the address for display
+  const displayAddress = address ? address.substring(0, 2).toUpperCase() : "";
 
   const navLinks = [
     {
-      href: "/chat",
-      label: "Chat",
-      icon: IconChat,
-      iconFill: IconChatFill,
+      href: "/discover",
+      label: "Discover",
+      icon: IconHome,
+      iconFill: IconHomeFill,
     },
     {
-      href: "/profile",
-      label: "Profile",
-      icon: IconProfile,
-      iconFill: IconProfileFill,
+      href: "/upload",
+      label: "Upload",
+      icon: Plus,
+      iconFill: Plus,
+    },
+    {
+      href: "/bookmarks",
+      label: "Saved",
+      icon: Bookmark,
+      iconFill: Bookmark,
     },
   ];
 
-  return (
-    <div className="fixed top-0 left-0 z-30 hidden h-screen w-22 flex-none flex-col items-center bg-background py-4 shadow-[inset_-1px_0px_0px_0px_var(--border)] md:flex dark:bg-gray-900">
-      <div className="mb-6 flex flex-col items-center">
-        <Image src="/logo.svg" height={40} width={40} alt="logo" />
+  return isConnected && user ? (
+    <div className="flex h-full w-full flex-col gap-0.5">
+      <Logo className="h-10 w-10" />
+
+      {/* User Profile Section */}
+      <div className="mb-4 rounded-[12px] bg-muted/50 p-3">
+        <div className="mb-3 flex items-center gap-3">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>{displayAddress}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium text-sm" title={address}>
+              {address?.slice(0, 6)}...{address?.slice(-4)}
+            </p>
+          </div>
+        </div>
+        <Button
+          onClick={handleProfileClick}
+          variant="ghost"
+          size="sm"
+          className="h-8 w-full justify-start gap-2 px-2"
+        >
+          <IconProfile className="h-4 w-4" />
+          <span className="text-sm">View Profile</span>
+        </Button>
       </div>
-      <div className="flex w-full flex-1 flex-col items-center gap-2">
-        {navLinks.map((link) => {
-          const isActive = pathname === link.href;
-          const IconComponent = isActive ? link.iconFill : link.icon;
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`flex w-16 flex-col items-center gap-1 rounded-xl px-0 py-3 transition-colors ${
-                isActive
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-                  : "text-muted-foreground hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-300"
-              }`}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <span className="flex items-center justify-center text-[22px]">
-                {IconComponent && <IconComponent />}
-              </span>
-              <span className="font-medium text-xs leading-tight">{link.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-      <div className="mt-auto mb-2">
+
+      {/* Navigation Links */}
+      {navLinks.map((link) => {
+        const IconComponent = pathname === link.href ? link.iconFill : link.icon;
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`flex items-center gap-3 rounded-[12px] px-3 py-3 font-medium leading-[24px] ${
+              pathname === link.href ? "bg-neutral-200! text-neutral-800" : "text-neutral-600"
+            }`}
+          >
+            <span className={"p-0.5 text-[20px]"}>
+              <IconComponent />
+            </span>
+            <p>{link.label}</p>
+          </Link>
+        );
+      })}
+
+      {/* Bottom Actions */}
+      <div className="mt-auto mb-2 space-y-2">
         <ThemeToggle />
+        <Button
+          onClick={handleLogout}
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
+          disabled={isLoading}
+        >
+          <LogOut className="h-4 w-4" />
+          <span className="text-sm">{isLoading ? "Logging out..." : "Logout"}</span>
+        </Button>
       </div>
     </div>
+  ) : (
+    <Login variant="sidebar" label="Sign in" />
   );
 }

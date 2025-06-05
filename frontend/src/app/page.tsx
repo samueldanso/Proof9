@@ -22,7 +22,7 @@ export default function Home() {
   // Once client-side rendering is available, check if the user is authenticated
   useEffect(() => {
     if (isClient && !isLoading && isConnected && user) {
-      redirect("/feed");
+      redirect("/discover");
     }
   }, [isClient, user, isConnected, isLoading]);
 

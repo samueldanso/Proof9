@@ -1,7 +1,8 @@
 "use client";
 
-import { Header } from "@/components/layout/app-header";
-import { MobileNavigation } from "@/components/layout/mobile";
+import { AppHeader } from "@/components/layout/app-header";
+import { MobileNav } from "@/components/layout/mobile-nav";
+import { Sidebar } from "@/components/layout/sidebar";
 import { Loader } from "@/components/ui/loader";
 import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { useRouter } from "next/navigation";
@@ -26,10 +27,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F8F9] dark:bg-background">
-      <Header />
-      <main className="mx-auto mt-16 w-full max-w-6xl flex-1 md:mt-20">{children}</main>
-      <MobileNavigation />
+    <div className="flex h-screen min-h-[800px] w-full items-start">
+      <Sidebar />
+      <div className="flex h-full w-full flex-col items-center">
+        <AppHeader />
+        <div className="hide-scrollbar w-full overflow-x-hidden overflow-y-scroll pb-32">
+          <div className=" relative mx-auto flex w-full max-w-[472px] flex-col items-center gap-3">
+            {children}
+          </div>
+        </div>
+      </div>
+      <MobileNav />
     </div>
   );
 }

@@ -20,14 +20,11 @@ function PlaceholderFeed() {
   );
 }
 
-function TrendingContent() {}
-
-export default function FeedPage() {
+export default function DiscoverPage() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const { user, isConnected } = useTomoAuth();
   const [activeTab, setActiveTab] = useState<string>(
-    tabParam === "following" || tabParam === "for-you" ? tabParam : "following",
+    tabParam === "verified" || tabParam === "trending" ? tabParam : "following",
   );
 
   return (
@@ -55,27 +52,24 @@ export default function FeedPage() {
                     Following
                   </TabsTrigger>
                   <TabsTrigger
-                    value="for-you"
+                    value="verified"
                     className="h-12 flex-1 rounded-none border-transparent border-b-2 bg-transparent px-6 data-[state=active]:border-[#00A8FF] data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                   >
-                    For You
+                    Verified
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <TabsContent value="following" className="mt-4">
+              <TabsContent value="trending" className="mt-4">
                 <PlaceholderFeed />
               </TabsContent>
 
-              <TabsContent value="for-you" className="mt-4">
+              <TabsContent value="trending" className="mt-4">
                 <PlaceholderFeed />
               </TabsContent>
             </Tabs>
           </div>
         </div>
-
-        {/* Trending section - desktop only */}
-        <div className="hidden w-full md:block md:w-80"></div>
       </div>
     </div>
   );

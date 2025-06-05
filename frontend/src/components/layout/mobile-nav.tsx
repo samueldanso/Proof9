@@ -6,7 +6,7 @@ import { Bell, BookmarkSimple, House, Sparkle, Users } from "@phosphor-icons/rea
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function MobileNavigation() {
+export function MobileNav() {
   const pathname = usePathname();
   const { user, isConnected } = useTomoAuth();
   const isAuthenticated = isConnected && !!user;
