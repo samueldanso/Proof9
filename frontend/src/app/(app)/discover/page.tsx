@@ -30,7 +30,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="w-full">
-      <div className="border-b">
+      <div className="mb-6">
         <Tabs
           value={activeTab}
           onValueChange={(value) => {
@@ -41,36 +41,36 @@ export default function DiscoverPage() {
           }}
           className="w-full"
         >
-          <TabsList className="mb-0 h-12 w-full rounded-none border-b-0 bg-transparent p-0">
+          <TabsList className="mb-0 h-10 w-full rounded-full bg-muted p-1">
             <TabsTrigger
               value="following"
-              className="h-12 flex-1 rounded-none border-transparent border-b-2 bg-transparent px-6 font-medium data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+              className="flex-1 rounded-full px-4 py-1.5 font-medium text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
               Following
             </TabsTrigger>
             <TabsTrigger
               value="verified"
-              className="h-12 flex-1 rounded-none border-transparent border-b-2 bg-transparent px-6 font-medium data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+              className="flex-1 rounded-full px-4 py-1.5 font-medium text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
               Verified
             </TabsTrigger>
             <TabsTrigger
               value="trending"
-              className="h-12 flex-1 rounded-none border-transparent border-b-2 bg-transparent px-6 font-medium data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+              className="flex-1 rounded-full px-4 py-1.5 font-medium text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
               Trending
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="following" className="mt-6 px-4">
+          <TabsContent value="following" className="mt-6">
             <PlaceholderFeed />
           </TabsContent>
 
-          <TabsContent value="verified" className="mt-6 px-4">
+          <TabsContent value="verified" className="mt-6">
             <PlaceholderFeed />
           </TabsContent>
 
-          <TabsContent value="trending" className="mt-6 px-4">
+          <TabsContent value="trending" className="mt-6">
             <PlaceholderFeed />
           </TabsContent>
         </Tabs>

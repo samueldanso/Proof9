@@ -42,22 +42,22 @@ export function Sidebar() {
   ];
 
   return isConnected && user ? (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col py-6">
       {/* Logo at top */}
-      <div className="mb-8 p-4">
+      <div className="mb-8 px-6">
         <Logo className="h-8 w-8" />
       </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 px-4">
-        <div className="space-y-1">
+        <div className="space-y-2">
           {navLinks.map((link) => {
             const IconComponent = pathname === link.href ? link.iconFill : link.icon;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium transition-colors ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-3 font-medium transition-colors ${
                   pathname === link.href
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
@@ -72,7 +72,7 @@ export function Sidebar() {
       </nav>
 
       {/* Theme toggle at bottom */}
-      <div className="p-4">
+      <div className="px-4">
         <ThemeToggle />
       </div>
     </div>

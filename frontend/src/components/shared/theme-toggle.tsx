@@ -18,15 +18,13 @@ export function ThemeToggle() {
 
   return (
     <button
-      className={`flex w-16 flex-col items-center gap-1 rounded-xl px-0 py-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground`}
+      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
       aria-label="Toggle theme"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       type="button"
     >
-      <span className="flex items-center justify-center text-[22px]">
-        {isDark ? <Sun /> : <Moon />}
-      </span>
-      <span className="font-medium text-xs leading-tight">{isDark ? "Light" : "Dark"}</span>
+      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      <span>{isDark ? "Light" : "Dark"}</span>
     </button>
   );
 }

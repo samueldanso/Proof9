@@ -27,14 +27,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen min-h-[800px] w-full items-start">
+    <div className="flex h-screen w-full overflow-hidden">
       <aside className="w-60 flex-shrink-0 border-r bg-background">
         <Sidebar />
       </aside>
-      <div className="flex h-full flex-1 flex-col">
+      <div className="flex h-full flex-1 flex-col overflow-hidden">
         <AppHeader />
-        <main className="hide-scrollbar flex-1 overflow-x-hidden overflow-y-scroll">
-          <div className="mx-auto w-full max-w-2xl px-4">{children}</div>
+        <main className="hide-scrollbar flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-2xl px-6 pt-6">{children}</div>
         </main>
       </div>
       <MobileNav />
