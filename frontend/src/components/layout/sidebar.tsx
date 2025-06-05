@@ -10,7 +10,7 @@ import IconHome from "@/components/icons/home.svg";
 import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Bookmark, LogOut, Plus } from "lucide-react";

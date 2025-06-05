@@ -2,13 +2,7 @@
 
 import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { cn } from "@/lib/utils";
-import {
-  Bell,
-  BookmarkSimple,
-  House,
-  Sparkle,
-  Users,
-} from "@phosphor-icons/react";
+import { Bell, BookmarkSimple, House, Sparkle, Users } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -33,9 +27,7 @@ export function MobileNav() {
           href="/feed"
           className={cn(
             "flex flex-col items-center justify-center text-center transition-colors",
-            pathname.startsWith("/discover")
-              ? "text-[#00A8FF]"
-              : "text-muted-foreground"
+            pathname.startsWith("/discover") ? "text-[#00A8FF]" : "text-muted-foreground",
           )}
         >
           <House className="mb-0.5 size-6" weight="bold" />
@@ -46,9 +38,7 @@ export function MobileNav() {
           href="/groups"
           className={cn(
             "flex flex-col items-center justify-center text-center transition-colors",
-            pathname.startsWith("/groups")
-              ? "text-[#00A8FF]"
-              : "text-muted-foreground"
+            pathname.startsWith("/groups") ? "text-[#00A8FF]" : "text-muted-foreground",
           )}
         >
           <Users className="mb-0.5 size-6" weight="bold" />
@@ -69,9 +59,7 @@ export function MobileNav() {
           href="/notifications"
           className={cn(
             "flex flex-col items-center justify-center text-center transition-colors",
-            pathname.startsWith("/notifications")
-              ? "text-[#00A8FF]"
-              : "text-muted-foreground"
+            pathname.startsWith("/notifications") ? "text-[#00A8FF]" : "text-muted-foreground",
           )}
         >
           <Bell className="mb-0.5 size-6" weight="bold" />
@@ -82,9 +70,7 @@ export function MobileNav() {
           href="/bookmarks"
           className={cn(
             "flex flex-col items-center justify-center text-center transition-colors",
-            pathname.startsWith("/bookmarks")
-              ? "text-[#00A8FF]"
-              : "text-muted-foreground"
+            pathname.startsWith("/bookmarks") ? "text-[#00A8FF]" : "text-muted-foreground",
           )}
         >
           <BookmarkSimple className="mb-0.5 size-6" weight="bold" />
