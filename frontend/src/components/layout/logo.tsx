@@ -1,7 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
-import Image from "next/image";
 import Link from "next/link";
 
 interface LogoProps {
@@ -10,27 +8,22 @@ interface LogoProps {
 }
 
 export function Logo({ className = "", variant = "full" }: LogoProps) {
-  const { resolvedTheme } = useTheme();
-
-  const getLogoSrc = () => {
-    if (variant === "icon") {
-      return "/icon.svg";
-    }
-    return resolvedTheme === "dark" ? "/logo-dark.svg" : "/logo-light.svg";
-  };
-
-  const logoSrc = getLogoSrc();
+  if (variant === "icon") {
+    return (
+      <Link href="/" className={`${className} flex items-center`}>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ced925]">
+          <span className="font-bold text-black text-sm">P9</span>
+        </div>
+      </Link>
+    );
+  }
 
   return (
-    <Link href="/" className={className}>
-      <Image
-        src={logoSrc}
-        alt="Believr Logo"
-        width={variant === "icon" ? 32 : 114}
-        height={variant === "icon" ? 32 : 25.1}
-        priority
-        className={variant === "icon" ? "h-9 w-9" : `${className} h-7 w-auto`}
-      />
+    <Link href="/" className={`${className} flex items-center gap-3`}>
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ced925]">
+        <span className="font-bold text-black text-sm">P9</span>
+      </div>
+      <span className="font-bold text-white text-xl">Proof9</span>
     </Link>
   );
 }

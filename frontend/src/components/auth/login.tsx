@@ -15,8 +15,8 @@ export function Login({ variant = "default", label = "Get Started" }: LoginProps
   const { address, connector } = useAccount();
 
   // Apply different styles based on variant
-  const containerClasses = variant === "header" ? "" : "mb-2 space-y-2 p-2";
-  const buttonClasses = variant === "header" ? "" : "w-full";
+  const containerClasses = variant === "header" ? "" : "mb-4 space-y-4 p-2";
+  const buttonClasses = variant === "header" ? "" : "w-[250px] h-[44px]";
 
   // Format address for display
   const formatAddress = (address: string) => {
@@ -38,7 +38,7 @@ export function Login({ variant = "default", label = "Get Started" }: LoginProps
           onClick={connect}
           className={
             buttonClasses +
-            " border-none bg-[#ced925] font-semibold text-base text-black hover:bg-[#e6f57a]"
+            " border-none bg-[#ced925] font-semiboldbold text-base text-black hover:bg-[#e6f57a]"
           }
           disabled={isLoading}
         >
@@ -54,14 +54,39 @@ export function Login({ variant = "default", label = "Get Started" }: LoginProps
       ) : (
         <div className="flex flex-col gap-2">
           <div className={`flex items-center justify-between gap-2 text-sm ${buttonClasses}`}>
-            <span className="truncate text-muted-foreground" title={address}>
-              Signed in as: <span className="font-semibold text-primary">{displayAddress}</span>
+            <span
+              className={`truncate ${
+                variant === "header" ? "text-white" : "text-muted-foreground"
+              }`}
+              title={address}
+            >
+              Signed in as:{" "}
+              <span
+                className={`font-semibold ${variant === "header" ? "text-white" : "text-primary"}`}
+              >
+                {displayAddress}
+              </span>
               {connector?.name && (
-                <span className="ml-1 text-muted-foreground text-xs">via {connector.name}</span>
+                <span
+                  className={`ml-1 text-xs ${
+                    variant === "header" ? "text-neutral-400" : "text-muted-foreground"
+                  }`}
+                >
+                  via {connector.name}
+                </span>
               )}
             </span>
           </div>
-          <Button onClick={handleDisconnect} variant="outline" size="sm" className={buttonClasses}>
+          <Button
+            onClick={handleDisconnect}
+            variant="outline"
+            size="sm"
+            className={`${buttonClasses} ${
+              variant === "header"
+                ? "border-neutral-600 bg-transparent text-white hover:bg-neutral-800"
+                : ""
+            }`}
+          >
             Disconnect
           </Button>
         </div>

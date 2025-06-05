@@ -45,7 +45,7 @@ export function Sidebar() {
     <div className="flex h-full w-full flex-col py-6">
       {/* Logo at top */}
       <div className="mb-8 px-6">
-        <Logo className="h-4 w-4" />
+        <Logo variant="icon" />
       </div>
 
       {/* Navigation Links */}
