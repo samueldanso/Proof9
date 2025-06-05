@@ -1,8 +1,9 @@
 "use client";
 
+import React from "react";
+
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
