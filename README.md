@@ -81,7 +81,7 @@ Proof9 is a sound rights platform that gives creators the tools to protect their
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/samueldanso/believr.git
+    git clone https://github.com/samueldanso/Proof9.git
     cd Proof9
     ```
 
