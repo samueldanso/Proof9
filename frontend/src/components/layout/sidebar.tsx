@@ -1,23 +1,23 @@
 "use client";
 
-import React from "react";
 import { Login } from "@/components/auth/login";
 import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import React from "react";
 
 import IconHome from "@/components/icons/home.svg";
 import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { Plus, Bookmark, LogOut } from "lucide-react";
-import { Logo } from "./logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useAccount } from "wagmi";
+import { Bookmark, LogOut, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useAccount } from "wagmi";
+import { Logo } from "./logo";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -105,7 +105,9 @@ export function Sidebar() {
             key={link.href}
             href={link.href}
             className={`flex items-center gap-3 rounded-[12px] px-3 py-3 font-medium leading-[24px] ${
-              pathname === link.href ? "bg-neutral-200! text-neutral-800" : "text-neutral-600"
+              pathname === link.href
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <span className={"p-0.5 text-[20px]"}>
