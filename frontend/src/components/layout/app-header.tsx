@@ -1,14 +1,13 @@
 "use client";
 
 import { SearchBar } from "@/components/shared/search-bar";
-import { MobileNav } from "./mobile-nav";
 
 export function AppHeader() {
   return (
-    <header className="relative flex h-[56px] w-full flex-none items-center justify-center">
-      <span className="absolute left-4 flex items-center">
+    <header className="flex h-16 w-full items-center justify-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="w-full max-w-2xl px-4">
         <SearchBar />
-      </span>
+      </div>
     </header>
   );
 }
