@@ -1,7 +1,6 @@
 "use client";
 
 import { AppHeader } from "@/components/layout/app-header";
-import { MobileNav } from "@/components/layout/mobile-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Loader } from "@/components/ui/loader";
 import { useIsMobile } from "@/hooks/use-mobile";
