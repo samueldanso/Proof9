@@ -1,6 +1,6 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 import { TrackList } from "./track-list";
 
 interface ProfileTabsProps {
@@ -8,35 +8,37 @@ interface ProfileTabsProps {
 }
 
 export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
+  const [activeTab, setActiveTab] = useState<"tracks" | "likes">(defaultTab);
+
   return (
-    <div className="w-full">
-      <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="mb-6 h-12 w-full max-w-md rounded-full bg-muted p-1">
-          <TabsTrigger
-            value="tracks"
-            className="flex-1 rounded-full px-6 py-2 font-medium text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-          >
-            Tracks
-          </TabsTrigger>
-          <TabsTrigger
-            value="likes"
-            className="flex-1 rounded-full px-6 py-2 font-medium text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-          >
-            Likes
-          </TabsTrigger>
-        </TabsList>
+    <div className="mt-3 flex w-full flex-col gap-3">
+      {/* Tab Headers - Simple text buttons like Lora */}
+      <div className="flex items-center gap-5 font-medium text-muted-foreground">
+        <button
+          type="button"
+          className={`cursor-pointer ${activeTab === "tracks" ? "text-foreground" : ""}`}
+          onClick={() => setActiveTab("tracks")}
+        >
+          Tracks
+        </button>
+        <button
+          type="button"
+          className={`cursor-pointer ${activeTab === "likes" ? "text-foreground" : ""}`}
+          onClick={() => setActiveTab("likes")}
+        >
+          Likes
+        </button>
+      </div>
 
-        <TabsContent value="tracks" className="mt-6">
-          <TrackList />
-        </TabsContent>
-
-        <TabsContent value="likes" className="mt-6">
-          <div className="flex flex-col items-center justify-center p-6 text-center">
-            <h3 className="mb-3 font-bold text-xl">No liked tracks yet</h3>
-            <p className="text-muted-foreground">Tracks you like will appear here</p>
-          </div>
-        </TabsContent>
-      </Tabs>
+      {/* Tab Content */}
+      {activeTab === "tracks" ? (
+        <TrackList />
+      ) : (
+        <div className="flex flex-col items-center justify-center p-6 text-center">
+          <h3 className="mb-3 font-bold text-xl">No liked tracks yet</h3>
+          <p className="text-muted-foreground">Tracks you like will appear here</p>
+        </div>
+      )}
     </div>
   );
 }

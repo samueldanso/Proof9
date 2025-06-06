@@ -21,63 +21,87 @@ export function ProfileHeader({
   const profileAddress = params.address as string;
 
   // Check if this is the current user's profile
-  const isOwnProfile = connectedAddress?.toLowerCase() === profileAddress?.toLowerCase();
+  const isOwnProfile =
+    connectedAddress?.toLowerCase() === profileAddress?.toLowerCase();
 
   // Create display name from address
   const displayName = profileAddress
-    ? `${profileAddress.substring(0, 6)}...${profileAddress.substring(profileAddress.length - 4)}`
+    ? `${profileAddress.substring(0, 6)}...${profileAddress.substring(
+        profileAddress.length - 4
+      )}`
     : "Unknown";
 
+  const renderActionButtons = () => {
+    if (isOwnProfile) {
+      return (
+        <>
+          <Button variant="outline" className="flex-1">
+            Edit Profile
+          </Button>
+          <Button variant="outline" className="flex-1">
+            Settings
+          </Button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Button variant="outline" className="flex-1">
+          Follow
+        </Button>
+        <Button variant="default" className="flex-1">
+          Support
+        </Button>
+      </>
+    );
+  };
+
   return (
-    <div className="w-full">
-      {/* Banner */}
-      <div className="relative h-48 w-full bg-gradient-to-r from-neutral-800 via-neutral-700 to-neutral-800">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+    <div className="mt-8 flex w-full flex-col items-center justify-center gap-6 pb-8">
+      {/* Profile Avatar - Centered */}
+      <Avatar className="h-28 w-28">
+        <AvatarImage src="" alt={displayName} />
+        <AvatarFallback className="bg-primary font-bold text-2xl text-primary-foreground">
+          {profileAddress?.substring(2, 4).toUpperCase() || "??"}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Profile Info - Centered */}
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h1 className="font-semibold text-[28px] leading-[32px]">
+          {displayName}
+        </h1>
+        <p className="font-medium text-[18px] text-muted-foreground leading-[24px]">
+          {profileAddress}
+        </p>
       </div>
 
-      {/* Profile Content */}
-      <div className="relative px-6 pb-6">
-        {/* Profile Avatar - Positioned to overlap banner */}
-        <div className="-mt-16 mb-4 flex items-end justify-between">
-          <Avatar className="h-32 w-32 border-4 border-background">
-            <AvatarImage src="" alt={displayName} />
-            <AvatarFallback className="bg-primary font-bold text-2xl text-primary-foreground">
-              {profileAddress?.substring(2, 4).toUpperCase() || "??"}
-            </AvatarFallback>
-          </Avatar>
+      {/* Stats - Centered with separator */}
+      <div className="flex items-center gap-2 font-medium text-muted-foreground">
+        <span>
+          <span className="font-semibold text-foreground">
+            {followingCount}{" "}
+          </span>
+          Following
+        </span>
+        <p className="font-semibold text-muted-foreground/40">·</p>
+        <span>
+          <span className="font-semibold text-foreground">
+            {followersCount}{" "}
+          </span>
+          Followers
+        </span>
+        <p className="font-semibold text-muted-foreground/40">·</p>
+        <span>
+          <span className="font-semibold text-foreground">{trackCount} </span>
+          Tracks
+        </span>
+      </div>
 
-          {/* Edit Profile Button (only for own profile) */}
-          {isOwnProfile && (
-            <Button variant="outline" className="mb-2">
-              Edit Profile
-            </Button>
-          )}
-        </div>
-
-        {/* Profile Info */}
-        <div className="space-y-4">
-          {/* Name */}
-          <div>
-            <h1 className="font-bold text-2xl">{displayName}</h1>
-            <p className="font-mono text-muted-foreground text-sm">{profileAddress}</p>
-          </div>
-
-          {/* Stats */}
-          <div className="flex gap-6">
-            <div className="text-center">
-              <div className="font-bold text-lg">{trackCount}</div>
-              <div className="text-muted-foreground text-sm">Tracks</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-lg">{followingCount}</div>
-              <div className="text-muted-foreground text-sm">Following</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-lg">{followersCount}</div>
-              <div className="text-muted-foreground text-sm">Followers</div>
-            </div>
-          </div>
-        </div>
+      {/* Action Buttons - Full width */}
+      <div className="flex w-full items-center gap-2">
+        {renderActionButtons()}
       </div>
     </div>
   );

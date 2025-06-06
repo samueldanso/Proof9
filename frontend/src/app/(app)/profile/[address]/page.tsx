@@ -22,9 +22,7 @@ export default function ProfilePage() {
         />
 
         {/* Profile Tabs */}
-        <div className="px-6">
-          <ProfileTabs />
-        </div>
+        <ProfileTabs />
       </div>
     </div>
   );
