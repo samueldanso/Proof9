@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { cors } from 'hono/cors'
-import dotenv from 'dotenv'
+import { env } from './config/env'
 
 // Import routes
 import registrationRoutes from './routes/registration'
@@ -13,8 +13,10 @@ import royaltyRoutes from './routes/royalty'
 import miscRoutes from './routes/misc'
 import verificationRoutes from './routes/verification'
 
-// Load environment variables
-dotenv.config()
+// Import new frontend routes
+import tracksRoutes from './routes/tracks'
+import usersRoutes from './routes/users'
+import uploadRoutes from './routes/upload'
 
 // Create Hono app
 const app = new Hono()
@@ -31,7 +33,7 @@ app.onError((err, c) => {
         {
             success: false,
             error: err.message,
-            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+            stack: env.NODE_ENV === 'development' ? err.stack : undefined,
         },
         500
     )
@@ -46,28 +48,40 @@ app.route('/api/royalty', royaltyRoutes)
 app.route('/api/misc', miscRoutes)
 app.route('/api/verification', verificationRoutes)
 
+// New frontend-focused routes
+app.route('/api/tracks', tracksRoutes)
+app.route('/api/users', usersRoutes)
+app.route('/api/upload', uploadRoutes)
+
 // Default route
 app.get('/', (c) => {
     return c.json({
-        message: 'Story Protocol API Server',
+        message: 'Proof9 API Server',
         version: '1.0.0',
-        endpoints: [
-            '/api/registration',
-            '/api/derivative',
-            '/api/dispute',
-            '/api/licenses',
-            '/api/royalty',
-            '/api/misc',
-            '/api/verification',
-        ],
+        description: 'Story Protocol + Frontend Integration API',
+        environment: env.NODE_ENV,
+        network: env.STORY_NETWORK,
+        endpoints: {
+            story_protocol: [
+                '/api/registration',
+                '/api/derivative',
+                '/api/dispute',
+                '/api/licenses',
+                '/api/royalty',
+                '/api/misc',
+                '/api/verification',
+            ],
+            frontend: ['/api/tracks', '/api/users', '/api/upload'],
+        },
     })
 })
 
 // Start server
-const port = parseInt(process.env.PORT || '3000')
-console.log(`Server running on port ${port}`)
+console.log(`🎵 Proof9 API Server running on port ${env.PORT}`)
+console.log(`📡 Environment: ${env.NODE_ENV}`)
+console.log(`🔗 Network: ${env.STORY_NETWORK}`)
 
 export default {
-    port,
+    port: env.PORT,
     fetch: app.fetch,
 }

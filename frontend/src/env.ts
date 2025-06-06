@@ -5,12 +5,15 @@ export const env = createEnv({
   server: {},
   client: {
     NEXT_PUBLIC_APP_URL: z.string().min(1),
+    NEXT_PUBLIC_API_URL: z.string().url(),
     NEXT_PUBLIC_TOMO_CLIENT_ID: z.string().min(1),
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string().min(1),
   },
   runtimeEnv: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_TOMO_CLIENT_ID: process.env.NEXT_PUBLIC_TOMO_CLIENT_ID,
-    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:
+      process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
   },
 });
