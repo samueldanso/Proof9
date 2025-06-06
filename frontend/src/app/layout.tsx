@@ -3,7 +3,6 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "@/styles/globals.css";
 import { Web3Provider } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
-import { TomoProvider } from "@/lib/tomo/tomo-context";
 import { ThemeProvider } from "next-themes";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -27,9 +26,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} font-sans`}>
       <body className="min-h-screen bg-background antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <Web3Provider>
-            <TomoProvider>{children}</TomoProvider>
-          </Web3Provider>
+          <Web3Provider>{children}</Web3Provider>
           <Toaster />
         </ThemeProvider>
       </body>
