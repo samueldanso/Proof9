@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useConnectModal, useAccountModal } from "@tomo-inc/tomo-evm-kit";
+import { useAccountModal, useConnectModal } from "@tomo-inc/tomo-evm-kit";
 import { useAccount } from "wagmi";
 
 interface ConnectButtonProps {
@@ -19,21 +19,20 @@ export function ConnectButton({
   const { openAccountModal } = useAccountModal();
   const { address, isConnected } = useAccount();
 
-  // For connected users - show account modal (official Tomo pattern)
+  // For connected users - show account modal
   if (isConnected && address) {
     const displayAddress = `${address.substring(0, 6)}...${address.substring(
       address.length - 4
     )}`;
 
     if (variant === "sidebar") {
-      // Minimalistic sidebar styling - clean display without button appearance
       return (
         <div
           onClick={openAccountModal}
-          className={`w-full rounded-lg border border-border/30 bg-transparent hover:border-border/60 text-foreground cursor-pointer transition-colors px-3 py-2 ${className}`}
+          className={`w-full cursor-pointer rounded-lg border border-border/30 bg-transparent px-3 py-2 text-foreground transition-colors hover:border-border/60 ${className}`}
         >
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 bg-green-500 rounded-full" />
+            <div className="h-2 w-2 rounded-full bg-green-500" />
             <span className="font-medium text-sm">{displayAddress}</span>
           </div>
         </div>
@@ -44,7 +43,7 @@ export function ConnectButton({
     return (
       <Button
         onClick={openAccountModal}
-        className={`bg-[#ced925] text-black hover:bg-[#b8c220] ${className}`}
+        className={`bg-[#ced925] font-semibold text-base text-black hover:bg-[#b8c220] ${className}`}
         variant="default"
       >
         {displayAddress}
@@ -52,13 +51,13 @@ export function ConnectButton({
     );
   }
 
-  // For disconnected users - show connect modal (official Tomo pattern)
+  // For disconnected users - show connect modal
   if (variant === "sidebar") {
-    // Sidebar styling - match navigation links
+    // Sidebar styling
     return (
       <Button
         onClick={openConnectModal}
-        className={`w-full rounded-lg border border-border bg-background hover:bg-accent/50 text-foreground ${className}`}
+        className={`w-full rounded-lg border border-border bg-background text-foreground hover:bg-accent/50 ${className}`}
         variant="outline"
       >
         {label}

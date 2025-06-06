@@ -20,7 +20,7 @@ export const CREATOR_IMAGES = [
   {
     id: 4,
     image:
-      "https://images.unsplash.com/photo-1494790108755-2616c613d9c?auto=format&fit=facearea&w=800&h=800&facepad=2",
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=facearea&w=800&h=800&facepad=2",
     alt: "Female vocalist with confident expression",
   },
   {

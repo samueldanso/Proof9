@@ -2,17 +2,9 @@
 
 import { env } from "@/env";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  TomoEVMKitProvider,
-  darkTheme,
-  getDefaultConfig,
-} from "@tomo-inc/tomo-evm-kit";
+import { TomoEVMKitProvider, darkTheme, getDefaultConfig } from "@tomo-inc/tomo-evm-kit";
 import "@tomo-inc/tomo-evm-kit/styles.css";
-import {
-  metaMaskWallet,
-  rainbowWallet,
-  walletConnectWallet,
-} from "@tomo-inc/tomo-evm-kit/wallets";
+import { metaMaskWallet, rainbowWallet, walletConnectWallet } from "@tomo-inc/tomo-evm-kit/wallets";
 import { WagmiProvider } from "wagmi";
 import { storyAeneid } from "wagmi/chains";
 

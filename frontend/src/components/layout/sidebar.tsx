@@ -1,11 +1,11 @@
 "use client";
 
 import { ConnectButton } from "@/components/auth/connect";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 import IconHome from "@/components/icons/home.svg";
 import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -50,8 +50,7 @@ export function Sidebar() {
         {isConnected && address ? (
           <div className="space-y-2">
             {navLinks.map((link) => {
-              const IconComponent =
-                pathname === link.href ? link.iconFill : link.icon;
+              const IconComponent = pathname === link.href ? link.iconFill : link.icon;
               return (
                 <Link
                   key={link.href}
@@ -70,9 +69,7 @@ export function Sidebar() {
           </div>
         ) : (
           <div className="flex h-full items-center justify-center text-center">
-            <p className="text-muted-foreground text-sm">
-              Connect your wallet to access features
-            </p>
+            <p className="text-muted-foreground text-sm">Connect your wallet to access features</p>
           </div>
         )}
       </nav>

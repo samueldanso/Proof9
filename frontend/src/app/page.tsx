@@ -69,7 +69,10 @@ export default function Home() {
 
               {/* CTA Button */}
               <div className="mt-10 w-full max-w-xs">
-                <ConnectButton label="Get Started" />
+                <ConnectButton
+                  className="w-[250px] h-[50px] rounded-full"
+                  label="Get Started"
+                />
               </div>
             </div>
 
