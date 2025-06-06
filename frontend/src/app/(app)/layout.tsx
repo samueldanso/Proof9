@@ -43,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex h-full flex-1 flex-col overflow-hidden">
         <AppHeader />
         <main className="hide-scrollbar flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-2xl px-6 pt-6">{children}</div>
+          <div className="mx-auto w-full max-w-6xl px-6 pt-6">{children}</div>
         </main>
       </div>
     </div>

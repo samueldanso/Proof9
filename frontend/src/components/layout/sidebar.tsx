@@ -31,7 +31,7 @@ export function Sidebar() {
       iconFill: Plus,
     },
     {
-      href: `/u/${address?.substring(0, 8)}`,
+      href: `/profile/${address}`,
       label: "Profile",
       icon: IconProfile,
       iconFill: IconProfileFill,
