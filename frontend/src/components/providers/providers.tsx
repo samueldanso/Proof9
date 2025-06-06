@@ -40,7 +40,7 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
       <QueryClientProvider client={queryClient}>
         <TomoEVMKitProvider
           theme={darkTheme({
-            accentColor: "#ced925",
+            // accentColor: "#ced925",
           })}
         >
           {children}
