@@ -26,18 +26,17 @@ export function ConnectButton({
     )}`;
 
     if (variant === "sidebar") {
-      // Sidebar styling - match navigation links
+      // Minimalistic sidebar styling - clean display without button appearance
       return (
-        <Button
+        <div
           onClick={openAccountModal}
-          className={`w-full rounded-lg border border-border bg-background hover:bg-accent/50 text-foreground justify-start ${className}`}
-          variant="outline"
+          className={`w-full rounded-lg border border-border/30 bg-transparent hover:border-border/60 text-foreground cursor-pointer transition-colors px-3 py-2 ${className}`}
         >
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 bg-green-500 rounded-full" />
-            <span className="font-medium">{displayAddress}</span>
+            <span className="font-medium text-sm">{displayAddress}</span>
           </div>
-        </Button>
+        </div>
       );
     }
 
