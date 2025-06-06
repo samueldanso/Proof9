@@ -58,21 +58,14 @@ export default function Home() {
 
               {/* Subheadline */}
               <p className="mt-10 max-w-2xl text-lg text-muted-foreground">
-                Proof9 is a sound rights platform where music creators protect
-                their IP, license it for use, monetize their work, and connect
-                with fans —
-                <span className="font-bold text-foreground">
-                  {" "}
-                  built on Story Protocol.
-                </span>
+                Proof9 is a sound rights platform where music creators protect their IP, license it
+                for use, monetize their work, and connect with fans —
+                <span className="font-bold text-foreground"> built on Story Protocol.</span>
               </p>
 
               {/* CTA Button */}
               <div className="mt-10 w-full max-w-xs">
-                <ConnectButton
-                  className="w-[250px] h-[50px] rounded-full"
-                  label="Get Started"
-                />
+                <ConnectButton className="h-[50px] w-[250px] rounded-full" label="Get Started" />
               </div>
             </div>
 
@@ -82,10 +75,7 @@ export default function Home() {
                 <div className="relative h-[180px] w-full overflow-hidden">
                   <div className="absolute top-0 left-0 z-10 h-full w-32 bg-gradient-to-r from-transparent via-background/20 to-transparent" />
                   <div className="absolute top-0 right-0 z-10 h-full w-32 bg-gradient-to-l from-transparent via-background/20 to-transparent" />
-                  <div
-                    className="absolute top-0 left-0 w-full"
-                    style={{ display: "flex" }}
-                  >
+                  <div className="absolute top-0 left-0 w-full" style={{ display: "flex" }}>
                     <motion.div
                       className="flex w-full gap-4"
                       animate={{ x: ["-50%", "0%"] }}
