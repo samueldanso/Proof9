@@ -51,15 +51,19 @@ export default function Home() {
             {/* Hero section */}
             <div className="flex flex-col items-center text-center">
               {/* Headline */}
-              <h1 className="max-w-4xl pt-20 font-bold text-4xl text-foreground tracking-tight md:text-5xl lg:text-6xl">
+              <h1 className="max-w-4xl font-bold text-4xl tracking-tight text-foreground md:text-5xl lg:text-6xl pt-20">
                 Protect, license, and monetize your sound — all in one place
               </h1>
 
               {/* Subheadline */}
               <p className="mt-10 max-w-2xl text-lg text-muted-foreground">
-                Proof9 is a sound rights platform where music creators protect their IP, license it
-                for use, monetize their work, and connect with fans —
-                <span className="font-bold text-foreground"> built on Story Protocol.</span>
+                Proof9 is a sound rights platform where music creators protect
+                their IP, license it for use, monetize their work, and connect
+                with fans —
+                <span className="font-bold text-foreground">
+                  {" "}
+                  built on Story Protocol.
+                </span>
               </p>
 
               {/* CTA Button */}
@@ -74,7 +78,10 @@ export default function Home() {
                 <div className="relative h-[180px] w-full overflow-hidden">
                   <div className="absolute top-0 left-0 z-10 h-full w-32 bg-gradient-to-r from-transparent via-background/20 to-transparent" />
                   <div className="absolute top-0 right-0 z-10 h-full w-32 bg-gradient-to-l from-transparent via-background/20 to-transparent" />
-                  <div className="absolute top-0 left-0 w-full" style={{ display: "flex" }}>
+                  <div
+                    className="absolute top-0 left-0 w-full"
+                    style={{ display: "flex" }}
+                  >
                     <motion.div
                       className="flex w-full gap-4"
                       animate={{ x: ["-50%", "0%"] }}
