@@ -1,76 +1,93 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { MoreHorizontal, Play } from "lucide-react";
+import { TrackCard } from "@/components/shared/track-card";
 
 // Mock track data for demo
 const mockTracks = [
   {
     id: "1",
     title: "Summer Vibes",
+    artist: "0xE89f...2455",
+    artistAddress: "0xE89fEf221bdEd027C4c9F07D256b9Dc1422A2455",
     duration: "3:24",
     plays: 1250,
     verified: true,
+    likes: 89,
+    comments: 12,
+    isLiked: false,
+    imageUrl: "",
   },
   {
     id: "2",
     title: "Midnight Dreams",
+    artist: "0xE89f...2455",
+    artistAddress: "0xE89fEf221bdEd027C4c9F07D256b9Dc1422A2455",
     duration: "4:12",
     plays: 892,
     verified: true,
+    likes: 64,
+    comments: 8,
+    isLiked: true,
+    imageUrl: "",
   },
   {
     id: "3",
     title: "Urban Flow",
+    artist: "0xE89f...2455",
+    artistAddress: "0xE89fEf221bdEd027C4c9F07D256b9Dc1422A2455",
     duration: "2:56",
     plays: 2134,
     verified: false,
+    likes: 143,
+    comments: 23,
+    isLiked: false,
+    imageUrl: "",
   },
 ];
 
 export function TrackList() {
+  const handlePlay = (track: any) => {
+    console.log("Playing track:", track);
+    // Handle play logic - this would integrate with the music player
+  };
+
+  const handleLike = (trackId: string) => {
+    console.log("Liking track:", trackId);
+    // Handle like logic
+  };
+
+  const handleComment = (trackId: string) => {
+    console.log("Commenting on track:", trackId);
+    // Handle comment logic
+  };
+
+  const handleShare = (trackId: string) => {
+    console.log("Sharing track:", trackId);
+    // Handle share logic
+  };
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {mockTracks.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-6 text-center">
           <h3 className="mb-3 font-bold text-xl">No tracks published yet</h3>
           <p className="text-muted-foreground">Your uploaded tracks will appear here</p>
         </div>
       ) : (
-        mockTracks.map((track) => (
-          <Card key={track.id} className="cursor-pointer p-4 transition-colors hover:bg-accent/50">
-            <div className="flex items-center gap-4">
-              {/* Play Button */}
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                <Play className="h-4 w-4 fill-current" />
-              </Button>
-
-              {/* Track Info */}
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-medium">{track.title}</h4>
-                  {track.verified && (
-                    <div className="h-2 w-2 rounded-full bg-green-500" title="Verified" />
-                  )}
-                </div>
-                <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                  <span>{track.duration}</span>
-                  <span>{track.plays.toLocaleString()} plays</span>
-                </div>
-              </div>
-
-              {/* More Options */}
-              <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </div>
-          </Card>
-        ))
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-1">
+          {mockTracks.map((track) => (
+            <TrackCard
+              key={track.id}
+              track={track}
+              onPlay={handlePlay}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+              showArtist={false}
+              variant="profile"
+            />
+          ))}
+        </div>
       )}
     </div>
   );
