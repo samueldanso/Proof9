@@ -4,27 +4,24 @@ import { AppHeader } from "@/components/layout/app-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Loader } from "@/components/ui/loader";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useAccount } from "wagmi";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, isConnected, isLoading } = useTomoAuth();
+  // Official Tomo pattern - direct wagmi usage
+  const { address, isConnected } = useAccount();
   const isMobile = useIsMobile();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isConnected) {
+    if (!isConnected || !address) {
       router.push("/");
     }
-  }, [isLoading, isConnected, router]);
+  }, [isConnected, address, router]);
 
-  if (isLoading) {
+  if (!isConnected || !address) {
     return <Loader />;
-  }
-
-  if (!isConnected || !user) {
-    return null;
   }
 
   if (isMobile) {

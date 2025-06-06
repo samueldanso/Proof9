@@ -1,24 +1,22 @@
 "use client";
 
-import { Login } from "@/components/auth/login";
-import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import React from "react";
-
+import { ConnectButton } from "@/components/auth/connect";
 import IconHome from "@/components/icons/home.svg";
 import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Plus } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React from "react";
 import { useAccount } from "wagmi";
 import { Logo } from "./logo";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, isConnected } = useTomoAuth();
-  const { address } = useAccount();
+  // Official Tomo pattern - direct wagmi usage
+  const { address, isConnected } = useAccount();
 
   const navLinks = [
     {
@@ -41,7 +39,7 @@ export function Sidebar() {
     },
   ];
 
-  return isConnected && user ? (
+  return isConnected && address ? (
     <div className="flex h-full w-full flex-col py-6">
       {/* Logo at top */}
       <div className="mb-8 px-6">
@@ -77,6 +75,6 @@ export function Sidebar() {
       </div>
     </div>
   ) : (
-    <Login variant="sidebar" label="Sign in" />
+    <ConnectButton variant="sidebar" label="Sign in" />
   );
 }

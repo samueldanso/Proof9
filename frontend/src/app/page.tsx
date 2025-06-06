@@ -1,20 +1,21 @@
 "use client";
 
-import { Login } from "@/components/auth/login";
+import { ConnectButton } from "@/components/auth/connect";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { Loader } from "@/components/ui/loader";
 import { CREATOR_IMAGES } from "@/lib/constants";
-import { useTomoAuth } from "@/lib/tomo/use-tomo-auth";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
 
 export default function Home() {
   const [isClient, setIsClient] = useState(false);
-  const { user, isConnected, isLoading } = useTomoAuth();
+  // Official Tomo pattern - direct wagmi usage
+  const { address, isConnected } = useAccount();
 
   useEffect(() => {
     setIsClient(true);
@@ -22,13 +23,13 @@ export default function Home() {
 
   // Once client-side rendering is available, check if the user is authenticated
   useEffect(() => {
-    if (isClient && !isLoading && isConnected && user) {
+    if (isClient && isConnected && address) {
       redirect("/discover");
     }
-  }, [isClient, user, isConnected, isLoading]);
+  }, [isClient, isConnected, address]);
 
   // Show loading state while checking authentication
-  if (isLoading || !isClient) {
+  if (!isClient) {
     return <Loader />;
   }
 
@@ -51,24 +52,20 @@ export default function Home() {
             {/* Hero section */}
             <div className="flex flex-col items-center text-center">
               {/* Headline */}
-              <h1 className="max-w-4xl font-bold text-4xl tracking-tight text-foreground md:text-5xl lg:text-6xl pt-20">
+              <h1 className="max-w-4xl pt-20 font-bold text-4xl text-foreground tracking-tight md:text-5xl lg:text-6xl">
                 Protect, license, and monetize your sound — all in one place
               </h1>
 
               {/* Subheadline */}
               <p className="mt-10 max-w-2xl text-lg text-muted-foreground">
-                Proof9 is a sound rights platform where music creators protect
-                their IP, license it for use, monetize their work, and connect
-                with fans —
-                <span className="font-bold text-foreground">
-                  {" "}
-                  built on Story Protocol.
-                </span>
+                Proof9 is a sound rights platform where music creators protect their IP, license it
+                for use, monetize their work, and connect with fans —
+                <span className="font-bold text-foreground"> built on Story Protocol.</span>
               </p>
 
               {/* CTA Button */}
               <div className="mt-10 w-full max-w-xs">
-                <Login label="Get Started" />
+                <ConnectButton label="Get Started" />
               </div>
             </div>
 
@@ -78,10 +75,7 @@ export default function Home() {
                 <div className="relative h-[180px] w-full overflow-hidden">
                   <div className="absolute top-0 left-0 z-10 h-full w-32 bg-gradient-to-r from-transparent via-background/20 to-transparent" />
                   <div className="absolute top-0 right-0 z-10 h-full w-32 bg-gradient-to-l from-transparent via-background/20 to-transparent" />
-                  <div
-                    className="absolute top-0 left-0 w-full"
-                    style={{ display: "flex" }}
-                  >
+                  <div className="absolute top-0 left-0 w-full" style={{ display: "flex" }}>
                     <motion.div
                       className="flex w-full gap-4"
                       animate={{ x: ["-50%", "0%"] }}
