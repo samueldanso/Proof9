@@ -1,1 +1,1 @@
-# Proof9 App
+# Proof9 - Music Creators IP Protection Platform
