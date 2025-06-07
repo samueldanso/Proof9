@@ -1,6 +1,6 @@
+import { env } from "@/env";
 import type { Database } from "@/lib/db/schemas";
 import { createClient } from "@supabase/supabase-js";
-import { env } from "@/env";
 
 export const supabase = createClient<Database>(
   env.NEXT_PUBLIC_SUPABASE_URL,
@@ -9,5 +9,5 @@ export const supabase = createClient<Database>(
     auth: {
       persistSession: false,
     },
-  }
+  },
 );

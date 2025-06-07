@@ -12,12 +12,7 @@ export {
 export { supabase } from "@/lib/supabase/client";
 
 // Import the queries for destructuring
-import {
-  monetizationQueries,
-  profileQueries,
-  socialQueries,
-  trackQueries,
-} from "./queries";
+import { monetizationQueries, profileQueries, socialQueries, trackQueries } from "./queries";
 
 // Shorthand exports for most common operations
 export const {
@@ -30,14 +25,9 @@ export const {
 } = trackQueries;
 
 export const {
-  likes: {
-    toggle: toggleLike,
-    isLiked: isTrackLiked,
-    getForTrack: getTrackLikes,
-  },
+  likes: { toggle: toggleLike, isLiked: isTrackLiked, getForTrack: getTrackLikes },
   comments: { add: addComment, getForTrack: getTrackComments },
   follows: { toggle: toggleFollow, getFollowers, getFollowing },
 } = socialQueries;
 
-export const { getOrCreate: getUserProfile, update: updateUserProfile } =
-  profileQueries;
+export const { getOrCreate: getUserProfile, update: updateUserProfile } = profileQueries;
