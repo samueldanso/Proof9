@@ -15,7 +15,6 @@ import verificationRoutes from './routes/verification'
 import tracksRoutes from './routes/tracks'
 import usersRoutes from './routes/users'
 import uploadRoutes from './routes/upload'
-import socialRoutes from './routes/social'
 
 const app = new Hono()
 
@@ -35,7 +34,6 @@ app.route('/api/verification', verificationRoutes)
 app.route('/api/tracks', tracksRoutes)
 app.route('/api/users', usersRoutes)
 app.route('/api/upload', uploadRoutes)
-app.route('/api/social', socialRoutes)
 
 // API info route
 app.get('/', (c) => {
@@ -52,7 +50,7 @@ app.get('/', (c) => {
                 '/api/misc',
                 '/api/verification',
             ],
-            frontend: ['/api/tracks', '/api/users', '/api/upload', '/api/social'],
+            frontend: ['/api/tracks', '/api/users', '/api/upload'],
         },
     })
 })
