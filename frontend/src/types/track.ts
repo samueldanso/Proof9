@@ -1,4 +1,16 @@
-export interface Track {
+// Import types from our clean database schema
+export type {
+  Track,
+  LicenseTransaction,
+  RevenueClaim,
+  Profile as UserProfile,
+  Like,
+  Comment,
+  Follow,
+} from "@/lib/db/schemas";
+
+// Legacy interfaces for backward compatibility with existing components
+export interface LegacyTrack {
   id: string;
   title: string;
   artist: string;
@@ -13,8 +25,6 @@ export interface Track {
   comments: number;
   description?: string;
   genre?: string;
-  bpm?: number;
-  key?: string;
   createdAt?: string;
   license?: {
     type: string;

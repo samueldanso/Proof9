@@ -9,7 +9,7 @@ export class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<{ success: boolean; data: T; error?: string }> {
     const url = `${this.baseUrl}${endpoint}`;
 
@@ -22,9 +22,7 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ error: "Network error" }));
+      const errorData = await response.json().catch(() => ({ error: "Network error" }));
       throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 
@@ -32,16 +30,14 @@ export class ApiClient {
   }
 
   // GET request
-  async get<T>(
-    endpoint: string
-  ): Promise<{ success: boolean; data: T; error?: string }> {
+  async get<T>(endpoint: string): Promise<{ success: boolean; data: T; error?: string }> {
     return this.request<T>(endpoint, { method: "GET" });
   }
 
   // POST request
   async post<T>(
     endpoint: string,
-    data?: any
+    data?: any,
   ): Promise<{ success: boolean; data: T; error?: string }> {
     return this.request<T>(endpoint, {
       method: "POST",
@@ -52,7 +48,7 @@ export class ApiClient {
   // PUT request
   async put<T>(
     endpoint: string,
-    data?: any
+    data?: any,
   ): Promise<{ success: boolean; data: T; error?: string }> {
     return this.request<T>(endpoint, {
       method: "PUT",

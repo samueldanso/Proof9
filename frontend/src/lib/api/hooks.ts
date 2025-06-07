@@ -1,3 +1,4 @@
+import type { Track } from "@/types/track";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiClient } from "./client";
 import type {
@@ -6,10 +7,9 @@ import type {
   VerificationRequest,
   VerificationResponse,
 } from "./types";
-import type { Track } from "@/types/track";
 
 // Track hooks
-export function useTracks(tab: string = "following") {
+export function useTracks(tab = "following") {
   return useQuery({
     queryKey: ["tracks", tab],
     queryFn: () =>
@@ -107,10 +107,7 @@ export function useRegisterTrack() {
 export function useVerifyTrack() {
   return useMutation({
     mutationFn: (data: VerificationRequest) =>
-      apiClient.post<VerificationResponse>(
-        "/api/verification/verify-music",
-        data
-      ),
+      apiClient.post<VerificationResponse>("/api/verification/verify-music", data),
     onSuccess: (response) => {
       console.log("Track verified:", response.data);
     },
@@ -123,10 +120,7 @@ export function useVerifyTrack() {
 export function useVerificationStatus(tokenId: string) {
   return useQuery({
     queryKey: ["verification", tokenId],
-    queryFn: () =>
-      apiClient.get<VerificationResponse>(
-        `/api/verification/status/${tokenId}`
-      ),
+    queryFn: () => apiClient.get<VerificationResponse>(`/api/verification/status/${tokenId}`),
     enabled: !!tokenId,
   });
 }
