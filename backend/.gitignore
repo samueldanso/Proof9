@@ -1,9 +1,3 @@
 .env
 .env.local
-node_modules
-.yalc
-pnpm-lock.yaml
-yalc.lock
-package-lock.json
-
-original/
+node_modules/
