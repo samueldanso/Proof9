@@ -141,3 +141,37 @@ export function useMintLicense() {
     }) => apiClient.post("/api/licenses/mint", data),
   });
 }
+
+// Social features hooks
+export function useLikeTrack() {
+  return useMutation({
+    mutationFn: (data: { userAddress: string; trackId: string }) =>
+      apiClient.post("/api/social/like", data),
+  });
+}
+
+export function useAddComment() {
+  return useMutation({
+    mutationFn: (data: {
+      userAddress: string;
+      trackId: string;
+      content: string;
+    }) => apiClient.post("/api/social/comment", data),
+  });
+}
+
+export function useTrackComments(trackId: string) {
+  return useQuery({
+    queryKey: ["comments", trackId],
+    queryFn: () => apiClient.get(`/api/social/comments/${trackId}`),
+    enabled: !!trackId,
+  });
+}
+
+export function useUserLikes(userAddress: string) {
+  return useQuery({
+    queryKey: ["user", userAddress, "likes"],
+    queryFn: () => apiClient.get(`/api/social/user/${userAddress}/likes`),
+    enabled: !!userAddress,
+  });
+}
