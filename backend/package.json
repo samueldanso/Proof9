@@ -1,7 +1,7 @@
 {
     "name": "@proof9/backend",
     "version": "1.0.0",
-    "description": "",
+    "description": "Proof9 Backend - Music Creator IP Protection Platform",
     "main": "src/index.ts",
     "type": "module",
     "scripts": {
@@ -10,20 +10,12 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "register": "bun run ./scripts/registration/register.ts",
         "register-custom": "bun run ./scripts/registration/registerCustom.ts",
-        "derivative-commercial": "bun run ./scripts/derivative/registerDerivativeCommercial.ts",
-        "derivative-non-commercial": "bun run ./scripts/derivative/registerDerivativeNonCommercial.ts",
-        "derivative-commercial-custom": "bun run ./scripts/derivative/registerDerivativeCommercialCustom.ts",
-        "dispute": "bun run ./scripts/dispute/disputeIp.ts",
         "mint-license": "bun run ./scripts/licenses/mintLicense.ts",
-        "license-limit": "bun run ./scripts/licenses/oneTimeUseLicense.ts",
         "pay-revenue": "bun run ./scripts/royalty/payRevenue.ts",
-        "license-revenue": "bun run ./scripts/royalty/licenseRevenue.ts",
-        "transfer-royalty-tokens": "bun run ./scripts/royalty/transferRoyaltyTokens.ts",
         "claim-revenue": "bun run ./scripts/royalty/claimRevenue.ts",
-        "create-spg-collection": "bun run ./utils/functions/createSpgNftCollection.ts",
-        "send-raw-transaction": "bun run ./scripts/misc/sendRawTransaction.ts",
         "verify-and-register": "bun run ./scripts/verification/verifyAndRegister.ts",
-        "test-yakoa": "bun run ./scripts/verification/testYakoa.ts"
+        "test-yakoa": "bun run ./scripts/verification/testYakoa.ts",
+        "create-spg-collection": "bun run ./utils/functions/createSpgNftCollection.ts"
     },
     "author": "",
     "license": "ISC",
