@@ -195,7 +195,7 @@ export default function DiscoverPage() {
         </div>
 
         {/* Right Sidebar - Hidden on mobile */}
-        <div className="w-80 space-y-6 hidden lg:block">
+        <div className="w-72 space-y-6 hidden lg:block">
           {/* Trending Banner */}
           <TrendingBanner />
 

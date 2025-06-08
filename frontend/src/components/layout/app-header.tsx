@@ -61,7 +61,7 @@ export function AppHeader() {
 
   return (
     <header className="flex h-16 w-full items-center bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto w-full max-w-6xl">
+      <div className="mx-auto w-full max-w-2xl">
         <SearchBar />
       </div>
     </header>
