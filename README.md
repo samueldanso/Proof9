@@ -1,4 +1,4 @@
-![Proof9 Banner](https://raw.githubusercontent.com/samueldanso/Proof9/main/frontend/public/banner.png)
+![Proof9 Banner](banner.png)
 
 # Proof9 — Protect, license, and monetize your sound, on Story
 
