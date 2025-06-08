@@ -1,4 +1,4 @@
-![Proof9 Banner](/github-banner.png)
+![Proof9 Banner](https://raw.githubusercontent.com/samueldanso/Proof9/main/public/banner.png)
 
 # Proof9 — Protect, license, and monetize your sound, on Story
 
@@ -63,12 +63,28 @@ Proof9 is a sound rights platform that gives creators the tools to protect their
 -   **Story Protocol**: [@story-protocol/core-sdk](https://docs.storyprotocol.xyz/)
 -   **Web3 Integration**: [viem](https://viem.sh/)
 -   **Validation**: [zod](https://zod.dev/), [@hono/zod-validator](https://hono.dev/middleware/validator)
+-   **Offchain Database**: [Supabase](https://supabase.com/) (PostgreSQL)
 -   **Storage**: [IPFS (via Pinata)](https://www.pinata.cloud/)
 -   **Verification**: [Yakoa API](https://docs.yakoa.ai/)
 
 ## Story Protocol Integration
 
+Proof9 utilizes Story Protocol for on-chain IP registration and licensing:
+
+-   **IP Asset Registration**: `/api/registration/register` and `/api/registration/register-custom` - Register music as IP assets with commercial remix terms and royalty sharing
+-   **License Token Minting**: `/api/licenses/mint` - Create transferable license tokens for commercial use
+-   **Limited License Creation**: `/api/licenses/one-time-use` - Generate IP assets with constrained licensing (token limits via hooks)
+-   **Royalty Management**: `/api/royalty/pay`, `/api/royalty/claim`, and `/api/royalty/transfer` - Revenue distribution and collection between IP owners
+-   **IPFS Metadata Storage**: All IP and NFT metadata uploaded to IPFS with proper hashing for blockchain verification
+
 ## Yakoa Integration
+
+Proof9 integrates Yakoa for basic music content verification:
+
+-   **Content Registration**: `/api/verification/verify-music` - Register music tokens with Yakoa's verification service
+-   **Status Monitoring**: `/api/verification/status/:tokenId` - Check verification status and infringement detection results
+-   **Brand Authorization**: `/api/verification/authorize` - Manage brand permissions for licensed content
+-   **Pre-Registration Verification**: Verify content authenticity before Story Protocol IP registration
 
 ## Setup
 
@@ -76,6 +92,7 @@ Proof9 is a sound rights platform that gives creators the tools to protect their
 
 -   Node.js 18+
 -   **Package Manager**: [Bun](https://bun.sh/)
+-   **Backend Framework**: [Hono](https://hono.dev/)
 -   **Linting & Formatting**: [Biome](https://biomejs.dev/)
 
 1. Clone the repository:
