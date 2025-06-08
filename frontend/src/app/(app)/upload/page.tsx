@@ -195,12 +195,12 @@ export default function UploadPage() {
       </div>
 
       {/* Progress and Content - Left aligned */}
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-4xl space-y-6">
         {/* Progress Indicator */}
         <div className="space-y-4">
           <Progress
             value={(currentStep / steps.length) * 100}
-            className="h-2"
+            className="h-2 [&>div]:bg-primary"
           />
           <div className="flex justify-between text-sm">
             {steps.map((step) => (
@@ -208,14 +208,14 @@ export default function UploadPage() {
                 key={step.id}
                 className={`flex flex-col items-center space-y-1 ${
                   currentStep >= step.id
-                    ? "text-foreground"
+                    ? "text-primary"
                     : "text-muted-foreground"
                 }`}
               >
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-full font-medium text-xs ${
                     currentStep >= step.id
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-black"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
