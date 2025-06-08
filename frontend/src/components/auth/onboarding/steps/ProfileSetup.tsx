@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StepHeader } from "../StepHeader";
 import { apiClient } from "@/lib/api/client";
+import { toast } from "sonner";
 
 export function ProfileSetup() {
   const { address } = useAccount();
@@ -30,22 +31,30 @@ export function ProfileSetup() {
   };
 
   const handleComplete = async () => {
-    if (!displayName.trim() || !address) return;
+    if (!displayName.trim() || !address) {
+      toast.error("Please enter a display name");
+      return;
+    }
 
     setIsLoading(true);
     try {
-      // For now, we'll create the profile without avatar upload
-      // Avatar upload can be implemented later with IPFS
-      await apiClient.post("/api/users/create-profile", {
+      const response = await apiClient.post("/api/users/create-profile", {
         address,
         display_name: displayName.trim(),
         avatar_url: null, // Will implement avatar upload later
       });
 
-      // Reload the page to trigger the layout check
-      window.location.reload();
+      if (response.success) {
+        toast.success("Profile created successfully!");
+        // Small delay to show the toast before reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        toast.error(response.error || "Failed to create profile");
+      }
     } catch (error) {
-      console.error("Profile creation failed:", error);
+      toast.error("Network error. Please check if the backend is running.");
     } finally {
       setIsLoading(false);
     }
