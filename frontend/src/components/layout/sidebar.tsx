@@ -39,27 +39,28 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex h-full w-full flex-col py-6">
+    <div className="flex h-full w-full flex-col py-8">
       {/* Logo at top */}
-      <div className="mb-8 px-6">
+      <div className="mb-12 px-6">
         <Logo variant="sidebar" />
       </div>
 
       {/* Navigation Links - Centered */}
       <nav className="flex flex-1 items-center justify-center px-4">
         {isConnected && address ? (
-          <div className="space-y-3 w-full">
+          <div className="space-y-4 w-full">
             {navLinks.map((link) => {
               const IconComponent =
                 pathname === link.href ? link.iconFill : link.icon;
+              const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-3 font-medium transition-colors ${
-                    pathname === link.href
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                  className={`flex items-center gap-3 px-3 py-3 font-medium transition-colors ${
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <IconComponent className="h-5 w-5" />
@@ -78,7 +79,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section: Wallet + Theme */}
-      <div className="space-y-3 px-4 mt-8">
+      <div className="space-y-4 px-4">
         {/* Wallet Connection - Modern sidebar placement */}
         <ConnectButton variant="sidebar" label="Connect Wallet" />
 
