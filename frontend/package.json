@@ -91,7 +91,9 @@
   "trustedDependencies": [
     "@biomejs/biome",
     "@tailwindcss/oxide",
+    "bigint-buffer",
     "bufferutil",
+    "core-js-pure",
     "keccak",
     "sharp",
     "utf-8-validate"
