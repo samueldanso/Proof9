@@ -4,7 +4,7 @@ import Link from "next/link";
 
 interface LogoProps {
   className?: string;
-  variant?: "full" | "icon";
+  variant?: "full" | "icon" | "sidebar";
 }
 
 export function Logo({ className = "", variant = "full" }: LogoProps) {
@@ -15,7 +15,7 @@ export function Logo({ className = "", variant = "full" }: LogoProps) {
       viewBox="0 0 410 412"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="h-10 w-10"
+      className={variant === "sidebar" ? "h-8 w-8" : "h-10 w-10"}
     >
       <path
         d="M0 205.006C0 91.7845 91.7816 0 205 0C318.218 0 410 91.7845 410 205.006C410 318.228 318.218 410.013 205 410.013C91.7816 410.013 0 318.228 0 205.006Z"
@@ -48,6 +48,15 @@ export function Logo({ className = "", variant = "full" }: LogoProps) {
     return (
       <Link href="/" className={`${className} flex items-center`}>
         {iconSvg}
+      </Link>
+    );
+  }
+
+  if (variant === "sidebar") {
+    return (
+      <Link href="/" className={`${className} flex items-center gap-2`}>
+        {iconSvg}
+        <span className="font-bold text-foreground text-lg">Proof9</span>
       </Link>
     );
   }
