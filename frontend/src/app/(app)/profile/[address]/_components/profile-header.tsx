@@ -4,29 +4,33 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
+import { useUser } from "@/lib/api/hooks";
 
-interface ProfileHeaderProps {
-  trackCount?: number;
-  followingCount?: number;
-  followersCount?: number;
-}
-
-export function ProfileHeader({
-  trackCount = 0,
-  followingCount = 0,
-  followersCount = 0,
-}: ProfileHeaderProps) {
+export function ProfileHeader() {
   const params = useParams();
   const { address: connectedAddress } = useAccount();
   const profileAddress = params.address as string;
 
   // Check if this is the current user's profile
-  const isOwnProfile = connectedAddress?.toLowerCase() === profileAddress?.toLowerCase();
+  const isOwnProfile =
+    connectedAddress?.toLowerCase() === profileAddress?.toLowerCase();
 
-  // Create display name from address
-  const displayName = profileAddress
-    ? `${profileAddress.substring(0, 6)}...${profileAddress.substring(profileAddress.length - 4)}`
-    : "Unknown";
+  // Get user data from API
+  const { data: userResponse, isLoading } = useUser(profileAddress);
+  const userData = userResponse?.data;
+
+  const displayName =
+    userData?.displayName ||
+    (profileAddress
+      ? `${profileAddress.substring(0, 6)}...${profileAddress.substring(
+          profileAddress.length - 4
+        )}`
+      : "Unknown");
+
+  // Get stats from API or default to 0
+  const trackCount = userData?.trackCount || 0;
+  const followingCount = userData?.followingCount || 0;
+  const followersCount = userData?.followersCount || 0;
 
   const renderActionButtons = () => {
     if (isOwnProfile) {
@@ -66,7 +70,9 @@ export function ProfileHeader({
 
       {/* Profile Info - Centered */}
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="font-semibold text-[28px] leading-[32px]">{displayName}</h1>
+        <h1 className="font-semibold text-[28px] leading-[32px]">
+          {displayName}
+        </h1>
         <p className="font-medium text-[18px] text-muted-foreground leading-[24px]">
           {profileAddress}
         </p>
@@ -75,12 +81,16 @@ export function ProfileHeader({
       {/* Stats - Centered with separator */}
       <div className="flex items-center gap-2 font-medium text-muted-foreground">
         <span>
-          <span className="font-semibold text-foreground">{followingCount} </span>
+          <span className="font-semibold text-foreground">
+            {followingCount}{" "}
+          </span>
           Following
         </span>
         <p className="font-semibold text-muted-foreground/40">·</p>
         <span>
-          <span className="font-semibold text-foreground">{followersCount} </span>
+          <span className="font-semibold text-foreground">
+            {followersCount}{" "}
+          </span>
           Followers
         </span>
         <p className="font-semibold text-muted-foreground/40">·</p>
@@ -91,7 +101,9 @@ export function ProfileHeader({
       </div>
 
       {/* Action Buttons - Full width */}
-      <div className="flex w-full items-center gap-2">{renderActionButtons()}</div>
+      <div className="flex w-full items-center gap-2">
+        {renderActionButtons()}
+      </div>
     </div>
   );
 }
