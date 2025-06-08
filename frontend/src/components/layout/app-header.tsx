@@ -22,7 +22,7 @@ export function AppHeader() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0">
+            <SheetContent side="left" className="w-64 p-0">
               <div className="flex h-full flex-col">
                 <div className="p-4">
                   <SearchBar />

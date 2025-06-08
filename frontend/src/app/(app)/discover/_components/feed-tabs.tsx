@@ -14,7 +14,7 @@ export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {/* Tab Headers - Rounded pill design */}
+      {/* Tab Headers - Rounded pill design with softer colors */}
       <div className="flex items-center gap-2">
         {tabs.map((tab) => (
           <button
@@ -22,8 +22,8 @@ export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
             type="button"
             className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
               activeTab === tab.key
-                ? "bg-foreground text-background"
-                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
             }`}
             onClick={() => onTabChange(tab.key)}
           >

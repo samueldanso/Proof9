@@ -37,7 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <aside className="w-72 flex-shrink-0 bg-background">
+      <aside className="w-64 flex-shrink-0 bg-background">
         <Sidebar />
       </aside>
       <div className="flex h-full flex-1 flex-col overflow-hidden">
