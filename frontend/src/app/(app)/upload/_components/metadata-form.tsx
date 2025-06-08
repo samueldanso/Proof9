@@ -43,7 +43,12 @@ const GENRES = [
   "Other",
 ];
 
-export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: MetadataFormProps) {
+export default function MetadataForm({
+  initialData,
+  onSubmit,
+  onNext,
+  onBack,
+}: MetadataFormProps) {
   const [formData, setFormData] = useState<MetadataFormData>({
     title: initialData?.title || "",
     description: initialData?.description || "",
@@ -83,7 +88,11 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
   };
 
   const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim()) && formData.tags.length < 10) {
+    if (
+      newTag.trim() &&
+      !formData.tags.includes(newTag.trim()) &&
+      formData.tags.length < 10
+    ) {
       setFormData((prev) => ({
         ...prev,
         tags: [...prev.tags, newTag.trim()],
@@ -108,7 +117,7 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 text-center">
+      <div className="space-y-2">
         <h2 className="font-bold text-2xl">Track Details</h2>
         <p className="text-muted-foreground">
           Add information about your track for better discoverability
@@ -122,11 +131,15 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
           <Input
             id="title"
             value={formData.title}
-            onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
+            }
             placeholder="Enter your track title"
             className={errors.title ? "border-red-500" : ""}
           />
-          {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+          {errors.title && (
+            <p className="text-red-500 text-sm">{errors.title}</p>
+          )}
         </div>
 
         {/* Description */}
@@ -135,12 +148,16 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
           <Textarea
             id="description"
             value={formData.description}
-            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
             placeholder="Describe your track, its inspiration, or story behind it..."
             rows={4}
             className={errors.description ? "border-red-500" : ""}
           />
-          {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+          {errors.description && (
+            <p className="text-red-500 text-sm">{errors.description}</p>
+          )}
         </div>
 
         {/* Genre */}
@@ -149,7 +166,9 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
           <select
             id="genre"
             value={formData.genre}
-            onChange={(e) => setFormData((prev) => ({ ...prev, genre: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, genre: e.target.value }))
+            }
             className={`flex h-10 w-full rounded-md border px-3 py-2 text-sm transition-colors ${
               errors.genre
                 ? "border-red-500"
@@ -163,7 +182,9 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
               </option>
             ))}
           </select>
-          {errors.genre && <p className="text-red-500 text-sm">{errors.genre}</p>}
+          {errors.genre && (
+            <p className="text-red-500 text-sm">{errors.genre}</p>
+          )}
         </div>
 
         {/* Tags */}
@@ -202,7 +223,11 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
           {formData.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {formData.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
                   {tag}
                   <button
                     type="button"
@@ -216,19 +241,26 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
             </div>
           )}
 
-          <p className="text-muted-foreground text-xs">{formData.tags.length}/10 tags</p>
+          <p className="text-muted-foreground text-xs">
+            {formData.tags.length}/10 tags
+          </p>
         </div>
 
         {/* Preview Card */}
         <Card className="p-4">
           <h4 className="mb-3 font-medium">Preview</h4>
           <div className="space-y-2">
-            <h5 className="font-semibold">{formData.title || "Your Track Title"}</h5>
+            <h5 className="font-semibold">
+              {formData.title || "Your Track Title"}
+            </h5>
             <p className="text-muted-foreground text-sm">
-              {formData.description || "Your track description will appear here..."}
+              {formData.description ||
+                "Your track description will appear here..."}
             </p>
             <div className="flex items-center gap-2">
-              {formData.genre && <Badge variant="outline">{formData.genre}</Badge>}
+              {formData.genre && (
+                <Badge variant="outline">{formData.genre}</Badge>
+              )}
               {formData.tags.slice(0, 3).map((tag) => (
                 <Badge key={tag} variant="secondary" className="text-xs">
                   {tag}
@@ -245,11 +277,19 @@ export default function MetadataForm({ initialData, onSubmit, onNext, onBack }: 
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={onBack} className="flex-1">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="flex-1"
+          >
             ← Back
           </Button>
 
-          <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+          <Button
+            type="submit"
+            className="flex-1 bg-primary hover:bg-primary/90"
+          >
             Continue →
           </Button>
         </div>

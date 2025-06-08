@@ -27,7 +27,9 @@ export default function UploadProgress({
   onBack,
 }: UploadProgressProps) {
   const [progress, setProgress] = useState(0);
-  const [stage, setStage] = useState<"uploading" | "analyzing" | "complete">("uploading");
+  const [stage, setStage] = useState<"uploading" | "analyzing" | "complete">(
+    "uploading"
+  );
   const [yakoaResult, setYakoaResult] = useState<YakoaResult | null>(null);
 
   useEffect(() => {
@@ -56,7 +58,8 @@ export default function UploadProgress({
       const mockResult: YakoaResult = {
         verified: Math.random() > 0.3, // 70% chance of being verified
         confidence: Math.floor(Math.random() * 30) + 70, // 70-100% confidence
-        originality: Math.random() > 0.5 ? "Original" : "Derivative Work Detected",
+        originality:
+          Math.random() > 0.5 ? "Original" : "Derivative Work Detected",
       };
 
       setYakoaResult(mockResult);
@@ -93,7 +96,7 @@ export default function UploadProgress({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 text-center">
+      <div className="space-y-2">
         <h2 className="font-bold text-2xl">AI Verification</h2>
         <p className="text-muted-foreground">
           Yakoa is analyzing your audio for originality and authenticity
@@ -136,8 +139,8 @@ export default function UploadProgress({
                 stage === "uploading"
                   ? "text-primary"
                   : progress > 40
-                    ? "text-green-600"
-                    : "text-muted-foreground"
+                  ? "text-green-600"
+                  : "text-muted-foreground"
               }`}
             >
               <div className="rounded-full bg-current/10 p-2">
@@ -151,8 +154,8 @@ export default function UploadProgress({
                 stage === "analyzing"
                   ? "text-primary"
                   : progress === 100
-                    ? "text-green-600"
-                    : "text-muted-foreground"
+                  ? "text-green-600"
+                  : "text-muted-foreground"
               }`}
             >
               <div className="rounded-full bg-current/10 p-2">
@@ -163,7 +166,9 @@ export default function UploadProgress({
 
             <div
               className={`flex flex-col items-center space-y-2 ${
-                stage === "complete" ? "text-green-600" : "text-muted-foreground"
+                stage === "complete"
+                  ? "text-green-600"
+                  : "text-muted-foreground"
               }`}
             >
               <div className="rounded-full bg-current/10 p-2">
@@ -186,7 +191,9 @@ export default function UploadProgress({
                 <AlertTriangle className="h-6 w-6 text-orange-600" />
               )}
               <h3 className="font-bold text-xl">
-                {yakoaResult.verified ? "Verification Successful" : "Review Required"}
+                {yakoaResult.verified
+                  ? "Verification Successful"
+                  : "Review Required"}
               </h3>
             </div>
 
@@ -194,30 +201,43 @@ export default function UploadProgress({
               <div className="space-y-2">
                 <span className="text-muted-foreground text-sm">Status</span>
                 <div>
-                  <Badge variant={yakoaResult.verified ? "default" : "secondary"}>
-                    {yakoaResult.verified ? "Verified Original" : "Needs Review"}
+                  <Badge
+                    variant={yakoaResult.verified ? "default" : "secondary"}
+                  >
+                    {yakoaResult.verified
+                      ? "Verified Original"
+                      : "Needs Review"}
                   </Badge>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <span className="text-muted-foreground text-sm">Confidence</span>
-                <div className={`font-semibold ${getConfidenceColor(yakoaResult.confidence)}`}>
+                <span className="text-muted-foreground text-sm">
+                  Confidence
+                </span>
+                <div
+                  className={`font-semibold ${getConfidenceColor(
+                    yakoaResult.confidence
+                  )}`}
+                >
                   {yakoaResult.confidence}%
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <span className="text-muted-foreground text-sm">Analysis Result</span>
+              <span className="text-muted-foreground text-sm">
+                Analysis Result
+              </span>
               <p className="font-medium">{yakoaResult.originality}</p>
             </div>
 
             {!yakoaResult.verified && (
               <div className="rounded-lg bg-orange-50 p-4 dark:bg-orange-950/20">
                 <p className="text-orange-800 text-sm dark:text-orange-200">
-                  Your track may contain elements similar to existing works. You can still proceed,
-                  but consider reviewing your licensing terms.
+                  Your track may contain elements similar to existing works. You
+                  can still proceed, but consider reviewing your licensing
+                  terms.
                 </p>
               </div>
             )}

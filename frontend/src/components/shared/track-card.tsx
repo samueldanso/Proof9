@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pause, Play } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TrackActions } from "./track-actions";
 
@@ -45,6 +46,7 @@ export function TrackCard({
   variant = "feed",
 }: TrackCardProps) {
   const [imageError, setImageError] = useState(false);
+  const router = useRouter();
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -53,8 +55,8 @@ export function TrackCard({
   };
 
   const handleCardClick = () => {
-    // Navigate to track detail page
-    window.location.href = `/track/${track.id}`;
+    // Navigate to track detail page using Next.js router
+    router.push(`/track/${track.id}`);
   };
 
   return (
@@ -126,7 +128,9 @@ export function TrackCard({
 
           {/* Track Info */}
           <div className="space-y-1">
-            <h3 className="font-semibold text-lg leading-tight">{track.title}</h3>
+            <h3 className="font-semibold text-lg leading-tight">
+              {track.title}
+            </h3>
             <div className="flex items-center gap-4 text-muted-foreground text-sm">
               <span>{track.duration}</span>
               <span>{track.plays.toLocaleString()} plays</span>

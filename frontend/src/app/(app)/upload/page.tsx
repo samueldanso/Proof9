@@ -108,11 +108,12 @@ export default function UploadPage() {
         );
       case 5:
         return (
-          <div className="space-y-6 text-center">
+          <div className="space-y-6">
             <div className="space-y-4">
               <h3 className="font-bold text-2xl">Ready to Register</h3>
               <p className="text-muted-foreground">
-                Your track will be registered on Story Protocol with blockchain-backed ownership
+                Your track will be registered on Story Protocol with
+                blockchain-backed ownership
               </p>
 
               {/* Summary */}
@@ -131,13 +132,19 @@ export default function UploadPage() {
                       <span>{uploadData.metadata?.title}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Verification:</span>
+                      <span className="text-muted-foreground">
+                        Verification:
+                      </span>
                       <span
                         className={
-                          uploadData.yakoa?.verified ? "text-green-500" : "text-orange-500"
+                          uploadData.yakoa?.verified
+                            ? "text-green-500"
+                            : "text-orange-500"
                         }
                       >
-                        {uploadData.yakoa?.verified ? "✅ Verified Original" : "⚠️ Needs Review"}
+                        {uploadData.yakoa?.verified
+                          ? "✅ Verified Original"
+                          : "⚠️ Needs Review"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -178,9 +185,9 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6">
+    <div className="w-full max-w-2xl space-y-6">
       {/* Header */}
-      <div className="space-y-2 text-center">
+      <div className="space-y-2">
         <h1 className="font-bold text-3xl">Upload Your Sound</h1>
         <p className="text-muted-foreground">
           Protect your IP with AI verification and blockchain registration
@@ -195,7 +202,9 @@ export default function UploadPage() {
             <div
               key={step.id}
               className={`flex flex-col items-center space-y-1 ${
-                currentStep >= step.id ? "text-foreground" : "text-muted-foreground"
+                currentStep >= step.id
+                  ? "text-foreground"
+                  : "text-muted-foreground"
               }`}
             >
               <div

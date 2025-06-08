@@ -57,10 +57,10 @@ export function Sidebar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-3 px-3 py-3 font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-3 font-medium transition-colors rounded-lg ${
                     isActive
                       ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                   }`}
                 >
                   <IconComponent className="h-5 w-5" />

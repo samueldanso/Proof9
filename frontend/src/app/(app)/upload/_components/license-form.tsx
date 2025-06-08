@@ -28,14 +28,21 @@ const LICENSE_TYPES = [
   {
     id: "standard",
     name: "Standard License",
-    description: "For personal projects, small businesses, and independent creators",
-    features: ["Up to 1M views/streams", "Social media use", "YouTube monetization", "Podcast use"],
+    description:
+      "For personal projects, small businesses, and independent creators",
+    features: [
+      "Up to 1M views/streams",
+      "Social media use",
+      "YouTube monetization",
+      "Podcast use",
+    ],
     recommended: true,
   },
   {
     id: "commercial",
     name: "Commercial License",
-    description: "For commercial use, advertising, and large-scale distribution",
+    description:
+      "For commercial use, advertising, and large-scale distribution",
     features: [
       "Unlimited views/streams",
       "Commercial advertising",
@@ -75,7 +82,12 @@ const TERRITORIES = [
   { id: "custom", name: "Custom Territory" },
 ];
 
-export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: LicenseFormProps) {
+export default function LicenseForm({
+  initialData,
+  onSubmit,
+  onNext,
+  onBack,
+}: LicenseFormProps) {
   const [formData, setFormData] = useState<LicenseFormData>({
     type: initialData?.type || "standard",
     price: initialData?.price || "",
@@ -91,7 +103,10 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
 
     if (!formData.price.trim()) {
       newErrors.price = "Price is required";
-    } else if (Number.isNaN(Number(formData.price)) || Number(formData.price) < 0) {
+    } else if (
+      Number.isNaN(Number(formData.price)) ||
+      Number(formData.price) < 0
+    ) {
       newErrors.price = "Please enter a valid price";
     }
 
@@ -127,9 +142,11 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 text-center">
+      <div className="space-y-2">
         <h2 className="font-bold text-2xl">License Terms</h2>
-        <p className="text-muted-foreground">Set your licensing terms and pricing for your track</p>
+        <p className="text-muted-foreground">
+          Set your licensing terms and pricing for your track
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -138,13 +155,17 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
           <Label className="font-semibold text-base">License Type</Label>
           <RadioGroup
             value={formData.type}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, type: value }))
+            }
           >
             {LICENSE_TYPES.map((license) => (
               <div key={license.id} className="relative">
                 <div
                   className={`flex items-start space-x-3 rounded-lg border p-4 transition-all ${
-                    formData.type === license.id ? "border-primary bg-primary/5" : "border-border"
+                    formData.type === license.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border"
                   }`}
                 >
                   <RadioGroupItem value={license.id} className="mt-1" />
@@ -157,10 +178,16 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
                         </Badge>
                       )}
                     </div>
-                    <p className="text-muted-foreground text-sm">{license.description}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {license.description}
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {license.features.map((feature) => (
-                        <Badge key={feature} variant="outline" className="text-xs">
+                        <Badge
+                          key={feature}
+                          variant="outline"
+                          className="text-xs"
+                        >
                           {feature}
                         </Badge>
                       ))}
@@ -180,7 +207,9 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
               <DollarSign className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
               <Input
                 value={formData.price}
-                onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, price: e.target.value }))
+                }
                 placeholder="Enter price"
                 className={`pl-10 ${errors.price ? "border-red-500" : ""}`}
                 type="number"
@@ -188,9 +217,12 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
                 step="0.01"
               />
             </div>
-            {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
+            {errors.price && (
+              <p className="text-red-500 text-sm">{errors.price}</p>
+            )}
             <p className="text-muted-foreground text-sm">
-              Suggested price for {getSelectedLicense()?.name}: ${getSuggestedPrice()}
+              Suggested price for {getSelectedLicense()?.name}: $
+              {getSuggestedPrice()}
             </p>
           </div>
         </div>
@@ -200,19 +232,25 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
           <Label className="font-semibold text-base">Usage Rights</Label>
           <RadioGroup
             value={formData.usage}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, usage: value }))}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, usage: value }))
+            }
           >
             {USAGE_TYPES.map((usage) => (
               <div
                 key={usage.id}
                 className={`flex items-center space-x-3 rounded-lg border p-3 ${
-                  formData.usage === usage.id ? "border-primary bg-primary/5" : "border-border"
+                  formData.usage === usage.id
+                    ? "border-primary bg-primary/5"
+                    : "border-border"
                 }`}
               >
                 <RadioGroupItem value={usage.id} />
                 <div className="flex-1">
                   <h5 className="font-medium">{usage.name}</h5>
-                  <p className="text-muted-foreground text-sm">{usage.description}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {usage.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -224,7 +262,9 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
           <Label className="font-semibold text-base">Territory</Label>
           <RadioGroup
             value={formData.territory}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, territory: value }))}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, territory: value }))
+            }
           >
             {TERRITORIES.map((territory) => (
               <div
@@ -273,7 +313,9 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-muted-foreground text-sm">License Type:</span>
+                <span className="text-muted-foreground text-sm">
+                  License Type:
+                </span>
                 <p className="font-medium">{getSelectedLicense()?.name}</p>
               </div>
               <div>
@@ -287,7 +329,9 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
                 </p>
               </div>
               <div>
-                <span className="text-muted-foreground text-sm">Territory:</span>
+                <span className="text-muted-foreground text-sm">
+                  Territory:
+                </span>
                 <p className="font-medium">
                   {TERRITORIES.find((t) => t.id === formData.territory)?.name}
                 </p>
@@ -298,7 +342,8 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
               <div className="rounded-lg bg-primary/10 p-3">
                 <p className="text-primary text-sm">
                   <Info className="mr-1 inline h-3 w-3" />
-                  Ongoing royalties: 5% of licensee revenue will be automatically distributed to you
+                  Ongoing royalties: 5% of licensee revenue will be
+                  automatically distributed to you
                 </p>
               </div>
             )}
@@ -307,11 +352,19 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={onBack} className="flex-1">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="flex-1"
+          >
             ← Back
           </Button>
 
-          <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+          <Button
+            type="submit"
+            className="flex-1 bg-primary hover:bg-primary/90"
+          >
             Continue →
           </Button>
         </div>
