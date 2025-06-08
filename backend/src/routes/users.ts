@@ -2,6 +2,18 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 
+// For now using mock data, but will replace with Supabase
+const mockProfiles = new Map<
+    string,
+    {
+        address: string
+        display_name: string
+        avatar_url: string | null
+        verified: boolean
+        created_at: string
+    }
+>()
+
 // Create router
 const app = new Hono()
 
@@ -109,6 +121,75 @@ app.get('/:address/tracks', zValidator('param', z.object({ address: AddressSchem
         })
     } catch (error: any) {
         console.error('Get user tracks error:', error)
+        return c.json(
+            {
+                success: false,
+                error: error.message,
+            },
+            500
+        )
+    }
+})
+
+// Schema for profile creation
+const CreateProfileSchema = z.object({
+    address: AddressSchema,
+    display_name: z.string().min(1, 'Display name is required'),
+    avatar_url: z.string().nullable().optional(),
+})
+
+/**
+ * Create user profile
+ */
+app.post('/create-profile', zValidator('json', CreateProfileSchema), async (c) => {
+    try {
+        const profileData = c.req.valid('json')
+
+        // For now, store in mock data
+        // TODO: Replace with Supabase integration
+        const profile = {
+            address: profileData.address,
+            display_name: profileData.display_name,
+            avatar_url: profileData.avatar_url || null,
+            verified: false,
+            created_at: new Date().toISOString(),
+        }
+
+        mockProfiles.set(profileData.address, profile)
+
+        return c.json({
+            success: true,
+            data: profile,
+        })
+    } catch (error: any) {
+        console.error('Create profile error:', error)
+        return c.json(
+            {
+                success: false,
+                error: error.message,
+            },
+            500
+        )
+    }
+})
+
+/**
+ * Check onboarding status
+ */
+app.get('/:address/onboarding-status', zValidator('param', z.object({ address: AddressSchema })), async (c) => {
+    try {
+        const { address } = c.req.valid('param')
+
+        // Check if profile exists in mock data
+        // TODO: Replace with Supabase query
+        const hasProfile = mockProfiles.has(address)
+
+        return c.json({
+            success: true,
+            data: { hasProfile },
+        })
+    } catch (error: any) {
+        console.error('Check onboarding status error:', error)
         return c.json(
             {
                 success: false,
