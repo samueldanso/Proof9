@@ -110,9 +110,11 @@ export default function DiscoverPage() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<string>(
-    tabParam === "verified" || tabParam === "trending" || tabParam === "following"
+    tabParam === "verified" ||
+      tabParam === "trending" ||
+      tabParam === "following"
       ? tabParam
-      : "following",
+      : "following"
   );
 
   // Music player state
@@ -192,8 +194,8 @@ export default function DiscoverPage() {
           </div>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="w-80 space-y-6">
+        {/* Right Sidebar - Hidden on mobile */}
+        <div className="w-80 space-y-6 hidden lg:block">
           {/* Trending Banner */}
           <TrendingBanner />
 
@@ -210,8 +212,12 @@ export default function DiscoverPage() {
                     {index + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="truncate font-medium text-sm">{track.title}</h4>
-                    <p className="truncate text-muted-foreground text-xs">{track.artist}</p>
+                    <h4 className="truncate font-medium text-sm">
+                      {track.title}
+                    </h4>
+                    <p className="truncate text-muted-foreground text-xs">
+                      {track.artist}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1 text-muted-foreground text-xs">
                     <span>{track.plays.toLocaleString()}</span>
@@ -227,7 +233,9 @@ export default function DiscoverPage() {
             <p className="mb-4 text-muted-foreground text-sm">
               Discover verified creators making waves on Proof9
             </p>
-            <div className="text-center text-muted-foreground text-sm">Coming soon...</div>
+            <div className="text-center text-muted-foreground text-sm">
+              Coming soon...
+            </div>
           </div>
         </div>
       </div>

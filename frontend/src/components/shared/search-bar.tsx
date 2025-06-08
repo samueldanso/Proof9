@@ -8,7 +8,7 @@ export const SearchBar = () => {
       <Search className="-translate-y-1/2 absolute top-1/2 left-4 h-4 w-4 text-muted-foreground" />
       <Input
         type="text"
-        placeholder="Search for inspiration..."
+        placeholder="Search for sounds and creators..."
         className="h-10 rounded-full border-none bg-muted/50 pr-4 pl-11 focus:bg-background focus:ring-2 focus:ring-ring"
       />
     </div>
