@@ -45,10 +45,10 @@ export function Sidebar() {
         <Logo variant="sidebar" />
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 px-4">
+      {/* Navigation Links - Centered */}
+      <nav className="flex flex-1 items-center justify-center px-4">
         {isConnected && address ? (
-          <div className="space-y-2">
+          <div className="space-y-3 w-full">
             {navLinks.map((link) => {
               const IconComponent =
                 pathname === link.href ? link.iconFill : link.icon;
@@ -69,7 +69,7 @@ export function Sidebar() {
             })}
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-center">
+          <div className="flex items-center justify-center text-center px-4">
             <p className="text-muted-foreground text-sm">
               Connect your wallet to access features
             </p>
@@ -78,7 +78,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section: Wallet + Theme */}
-      <div className="space-y-3 px-4">
+      <div className="space-y-3 px-4 mt-8">
         {/* Wallet Connection - Modern sidebar placement */}
         <ConnectButton variant="sidebar" label="Connect Wallet" />
 

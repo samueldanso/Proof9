@@ -11,7 +11,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: " Proof9 | Protect, License & Monetize Your Sound",
+  title: " Proof9 – Protect, License & Monetize Your Sound",
   description:
     "Proof9 is a sound rights platform where creators protect their IP, license it for use, monetize their work, and connect with fans.",
   icons: [{ rel: "icon", url: "/favicon.svg" }],
@@ -23,7 +23,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} font-sans`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${plusJakartaSans.variable} font-sans`}
+    >
       <body className="min-h-screen bg-background antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <Web3Provider>{children}</Web3Provider>
