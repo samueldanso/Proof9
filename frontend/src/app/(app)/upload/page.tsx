@@ -185,48 +185,54 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="w-full max-w-2xl space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
+    <div className="w-full space-y-8">
+      {/* Header - Centered like profile page */}
+      <div className="mx-auto max-w-2xl space-y-2 text-center">
         <h1 className="font-bold text-3xl">Upload Your Sound</h1>
         <p className="text-muted-foreground">
           Protect your IP with AI verification and blockchain registration
         </p>
       </div>
 
-      {/* Progress Indicator */}
-      <div className="space-y-4">
-        <Progress value={(currentStep / steps.length) * 100} className="h-2" />
-        <div className="flex justify-between text-sm">
-          {steps.map((step) => (
-            <div
-              key={step.id}
-              className={`flex flex-col items-center space-y-1 ${
-                currentStep >= step.id
-                  ? "text-foreground"
-                  : "text-muted-foreground"
-              }`}
-            >
+      {/* Progress and Content - Left aligned */}
+      <div className="max-w-2xl space-y-6">
+        {/* Progress Indicator */}
+        <div className="space-y-4">
+          <Progress
+            value={(currentStep / steps.length) * 100}
+            className="h-2"
+          />
+          <div className="flex justify-between text-sm">
+            {steps.map((step) => (
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full font-medium text-xs ${
+                key={step.id}
+                className={`flex flex-col items-center space-y-1 ${
                   currentStep >= step.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                    ? "text-foreground"
+                    : "text-muted-foreground"
                 }`}
               >
-                {step.id}
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full font-medium text-xs ${
+                    currentStep >= step.id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {step.id}
+                </div>
+                <span className="font-medium">{step.title}</span>
+                <span className="text-xs">{step.description}</span>
               </div>
-              <span className="font-medium">{step.title}</span>
-              <span className="text-xs">{step.description}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Step Content */}
-      <Card>
-        <CardContent className="p-8">{renderStepContent()}</CardContent>
-      </Card>
+        {/* Step Content */}
+        <Card>
+          <CardContent className="p-8">{renderStepContent()}</CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
