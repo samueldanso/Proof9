@@ -13,7 +13,7 @@ export function AppHeader() {
 
   if (isMobile) {
     return (
-      <header className="flex h-16 w-full items-center justify-between border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="flex h-16 w-full items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <Logo className="h-8 w-8" />
         <div className="flex items-center gap-3">
           <Sheet>
@@ -24,7 +24,7 @@ export function AppHeader() {
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
               <div className="flex h-full flex-col">
-                <div className="border-b p-4">
+                <div className="p-4">
                   <SearchBar />
                 </div>
                 <div className="flex-1">
@@ -39,7 +39,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="flex h-16 w-full items-center justify-center border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="flex h-16 w-full items-center justify-center bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="w-full max-w-md">
         <SearchBar />
       </div>
