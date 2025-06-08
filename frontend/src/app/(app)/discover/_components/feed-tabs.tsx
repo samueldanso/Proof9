@@ -13,15 +13,17 @@ export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
   ];
 
   return (
-    <div className="flex w-full flex-col gap-3">
-      {/* Tab Headers - Simple text buttons like profile tabs */}
-      <div className="flex items-center gap-6 font-medium text-muted-foreground">
+    <div className="flex w-full flex-col gap-4">
+      {/* Tab Headers - Rounded pill design */}
+      <div className="flex items-center gap-2">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             type="button"
-            className={`cursor-pointer transition-colors ${
-              activeTab === tab.key ? "text-foreground" : "hover:text-foreground/80"
+            className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
+              activeTab === tab.key
+                ? "bg-foreground text-background"
+                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
             }`}
             onClick={() => onTabChange(tab.key)}
           >
@@ -29,9 +31,6 @@ export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
           </button>
         ))}
       </div>
-
-      {/* Optional: Add subtle divider */}
-      <div className="h-px bg-border" />
     </div>
   );
 }

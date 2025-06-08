@@ -48,7 +48,7 @@ export function Sidebar() {
       {/* Navigation Links - Centered */}
       <nav className="flex flex-1 items-center justify-center px-4">
         {isConnected && address ? (
-          <div className="space-y-4 w-full">
+          <div className="space-y-3 w-full">
             {navLinks.map((link) => {
               const IconComponent =
                 pathname === link.href ? link.iconFill : link.icon;
@@ -79,7 +79,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section: Wallet + Theme */}
-      <div className="space-y-4 px-4">
+      <div className="space-y-3 px-4">
         {/* Wallet Connection - Modern sidebar placement */}
         <ConnectButton variant="sidebar" label="Connect Wallet" />
 

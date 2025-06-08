@@ -21,13 +21,15 @@ export function ConnectButton({
 
   // For connected users - show account modal
   if (isConnected && address) {
-    const displayAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+    const displayAddress = `${address.substring(0, 6)}...${address.substring(
+      address.length - 4
+    )}`;
 
     if (variant === "sidebar") {
       return (
         <div
           onClick={openAccountModal}
-          className={`w-full cursor-pointer rounded-lg border border-border/30 bg-transparent px-3 py-2 text-foreground transition-colors hover:border-border/60 ${className}`}
+          className={`w-full cursor-pointer rounded-lg bg-transparent px-3 py-2 text-foreground transition-colors hover:bg-accent/20 ${className}`}
         >
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 rounded-full bg-green-500" />
