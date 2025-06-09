@@ -1,6 +1,5 @@
 "use client";
 
-import { ConnectButton } from "@/components/auth/connect";
 import IconHome from "@/components/icons/home.svg";
 import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
@@ -83,12 +82,8 @@ export function Sidebar() {
         )}
       </nav>
 
-      {/* Bottom section: Wallet + Theme */}
-      <div className="space-y-4 px-4">
-        {/* Wallet Connection - Modern sidebar placement */}
-        <ConnectButton variant="sidebar" label="Connect Wallet" />
-
-        {/* Theme toggle */}
+      {/* Bottom section: Theme Toggle */}
+      <div className="px-4">
         <ThemeToggle />
       </div>
     </div>
