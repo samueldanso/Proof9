@@ -68,12 +68,18 @@ export function ProfileHeader() {
   return (
     <div className="mt-8 flex w-full flex-col items-center justify-center gap-6 pb-8">
       {/* Profile Avatar - Centered */}
-      <Avatar className="h-28 w-28">
-        <AvatarImage src={userData?.avatar_url || ""} alt={displayName} />
-        <AvatarFallback className="bg-primary font-bold text-2xl text-primary-foreground">
-          {userData?.address?.substring(2, 4).toUpperCase() || "??"}
-        </AvatarFallback>
-      </Avatar>
+      <div className="relative">
+        <Avatar className="h-28 w-28 ring-2 ring-border shadow-xl">
+          <AvatarImage
+            src={userData?.avatar_url || ""}
+            alt={displayName}
+            className="object-cover object-center"
+          />
+          <AvatarFallback className="bg-primary font-bold text-2xl text-primary-foreground">
+            {userData?.address?.substring(2, 4).toUpperCase() || "??"}
+          </AvatarFallback>
+        </Avatar>
+      </div>
 
       {/* Profile Info - Centered */}
       <div className="flex flex-col items-center gap-2 text-center">
