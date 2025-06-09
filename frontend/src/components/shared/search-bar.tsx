@@ -19,7 +19,8 @@ export const SearchBar = () => {
   const debouncedQuery = useDebounce(query, 300);
 
   // Search for users
-  const { data: searchResults = [], isLoading } = useSearchUsers(debouncedQuery);
+  const { data: searchResults = [], isLoading } =
+    useSearchUsers(debouncedQuery);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -62,7 +63,9 @@ export const SearchBar = () => {
   const getDisplayName = (user: any) => {
     return (
       user.display_name ||
-      `${user.address?.substring(0, 6)}...${user.address?.substring(user.address.length - 4)}`
+      `${user.address?.substring(0, 6)}...${user.address?.substring(
+        user.address.length - 4
+      )}`
     );
   };
 
@@ -72,7 +75,7 @@ export const SearchBar = () => {
       <Input
         ref={inputRef}
         type="text"
-        placeholder="Search sounds & creators..."
+        placeholder="Search sounds & creators"
         value={query}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
@@ -87,7 +90,9 @@ export const SearchBar = () => {
           className="absolute top-12 left-0 z-50 max-h-80 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-lg"
         >
           {isLoading ? (
-            <div className="p-4 text-center text-muted-foreground">Searching creators...</div>
+            <div className="p-4 text-center text-muted-foreground">
+              Searching creators...
+            </div>
           ) : searchResults.length > 0 ? (
             <div className="py-2">
               <div className="px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
@@ -127,7 +132,9 @@ export const SearchBar = () => {
                       )}
                     </div>
                     {user.username && (
-                      <span className="text-muted-foreground text-sm">@{user.username}</span>
+                      <span className="text-muted-foreground text-sm">
+                        @{user.username}
+                      </span>
                     )}
                   </div>
                 </button>
