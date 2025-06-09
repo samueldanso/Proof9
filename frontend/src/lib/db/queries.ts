@@ -298,6 +298,25 @@ export const socialQueries = {
       if (error) throw error;
       return data || [];
     },
+
+    /**
+     * Check if user is following another user
+     */
+    isFollowing: async (followerAddress: string, followingAddress: string): Promise<boolean> => {
+      const { data, error } = await supabase
+        .from("follows")
+        .select("id")
+        .eq("follower_address", followerAddress)
+        .eq("following_address", followingAddress)
+        .single();
+
+      if (error && error.code === "PGRST116") {
+        return false; // No follow relationship found
+      }
+
+      if (error) throw error;
+      return !!data;
+    },
   },
 };
 
@@ -491,6 +510,23 @@ export const profileQueries = {
 
     if (error) throw error;
     return data;
+  },
+
+  /**
+   * Search users by username or display name
+   */
+  search: async (query: string, limit = 10): Promise<Profile[]> => {
+    if (!query.trim()) return [];
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .or(`username.ilike.%${query}%,display_name.ilike.%${query}%,address.ilike.%${query}%`)
+      .limit(limit)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
   },
 };
 

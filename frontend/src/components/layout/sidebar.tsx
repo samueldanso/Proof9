@@ -1,6 +1,5 @@
 "use client";
 
-import { ConnectButton } from "@/components/auth/connect";
 import IconHome from "@/components/icons/home.svg";
 import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
@@ -47,9 +46,9 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex h-full w-full flex-col py-4">
-      {/* Logo at top */}
-      <div className="mb-8 px-6 pt-4">
+    <div className="flex h-full w-full flex-col py-2">
+      {/* Logo at top - aligned with header */}
+      <div className="flex h-16 items-center px-6">
         <Logo variant="sidebar" />
       </div>
 
@@ -83,12 +82,8 @@ export function Sidebar() {
         )}
       </nav>
 
-      {/* Bottom section: Wallet + Theme */}
-      <div className="space-y-4 px-4">
-        {/* Wallet Connection - Modern sidebar placement */}
-        <ConnectButton variant="sidebar" label="Connect Wallet" />
-
-        {/* Theme toggle */}
+      {/* Bottom section: Theme Toggle */}
+      <div className="px-4">
         <ThemeToggle />
       </div>
     </div>

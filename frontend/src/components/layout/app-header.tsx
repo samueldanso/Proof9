@@ -1,5 +1,6 @@
 "use client";
 
+import { ConnectButton } from "@/components/auth/connect";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -18,7 +19,8 @@ export function AppHeader() {
       <header className="flex h-16 w-full items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         {!isSearchExpanded ? (
           <>
-            <div />
+            {/* Connected Address on Mobile */}
+            <ConnectButton variant="default" />
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(true)}>
                 <Search className="h-5 w-5" />
@@ -52,9 +54,18 @@ export function AppHeader() {
   }
 
   return (
-    <header className="flex h-16 w-full items-center bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto w-full max-w-2xl">
+    <header className="flex h-16 w-full items-center justify-between bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Empty space for balance */}
+      <div />
+
+      {/* Search Bar - Centered */}
+      <div className="-translate-x-1/2 absolute left-1/2 transform">
         <SearchBar />
+      </div>
+
+      {/* Wallet Connection */}
+      <div className="flex items-center">
+        <ConnectButton variant="default" />
       </div>
     </header>
   );

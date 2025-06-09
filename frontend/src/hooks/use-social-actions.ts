@@ -79,6 +79,10 @@ export function useFollow() {
         queryKey: ["user-followers", followingAddress],
       });
       queryClient.invalidateQueries({ queryKey: ["user-following", address] });
+      queryClient.invalidateQueries({
+        queryKey: ["is-following", address, followingAddress],
+      });
+      queryClient.invalidateQueries({ queryKey: ["user", followingAddress] }); // Refresh follower count
 
       toast.success(data.isFollowing ? "Following!" : "Unfollowed!");
     },
@@ -156,6 +160,19 @@ export function useUserFollowing(userAddress: string) {
     queryKey: ["user-following", userAddress],
     queryFn: () => socialQueries.follows.getFollowing(userAddress),
     enabled: !!userAddress,
+  });
+}
+
+/**
+ * Hook to check if current user is following another user
+ */
+export function useIsFollowing(followingAddress: string) {
+  const { address } = useAccount();
+
+  return useQuery({
+    queryKey: ["is-following", address, followingAddress],
+    queryFn: () => socialQueries.follows.isFollowing(address!, followingAddress),
+    enabled: !!address && !!followingAddress && address !== followingAddress,
   });
 }
 

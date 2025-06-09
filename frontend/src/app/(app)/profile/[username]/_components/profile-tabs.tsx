@@ -12,8 +12,8 @@ export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {/* Tab Headers - Rounded pill design with softer colors */}
-      <div className="flex items-center gap-2">
+      {/* Tab Headers*/}
+      <div className="flex items-center justify-center gap-2">
         <button
           type="button"
           className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
