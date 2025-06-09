@@ -9,6 +9,7 @@ import { useUser } from "@/lib/api/hooks";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { AddressDisplay } from "@/components/shared/address-display";
+import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 
 export function ProfileHeader() {
   const params = useParams();
@@ -71,12 +72,12 @@ export function ProfileHeader() {
       <div className="relative">
         <Avatar className="h-28 w-28 ring-2 ring-border shadow-xl">
           <AvatarImage
-            src={userData?.avatar_url || ""}
+            src={getAvatarUrl(userData?.avatar_url)}
             alt={displayName}
             className="object-cover object-center"
           />
           <AvatarFallback className="bg-primary font-bold text-2xl text-primary-foreground">
-            {userData?.address?.substring(2, 4).toUpperCase() || "??"}
+            {getUserInitials(userData?.displayName || userData?.address)}
           </AvatarFallback>
         </Avatar>
       </div>
