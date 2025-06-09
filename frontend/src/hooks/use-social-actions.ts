@@ -79,6 +79,10 @@ export function useFollow() {
         queryKey: ["user-followers", followingAddress],
       });
       queryClient.invalidateQueries({ queryKey: ["user-following", address] });
+      queryClient.invalidateQueries({
+        queryKey: ["is-following", address, followingAddress],
+      });
+      queryClient.invalidateQueries({ queryKey: ["user", followingAddress] }); // Refresh follower count
 
       toast.success(data.isFollowing ? "Following!" : "Unfollowed!");
     },
@@ -160,6 +164,20 @@ export function useUserFollowing(userAddress: string) {
 }
 
 /**
+ * Hook to check if current user is following another user
+ */
+export function useIsFollowing(followingAddress: string) {
+  const { address } = useAccount();
+
+  return useQuery({
+    queryKey: ["is-following", address, followingAddress],
+    queryFn: () =>
+      socialQueries.follows.isFollowing(address!, followingAddress),
+    enabled: !!address && !!followingAddress && address !== followingAddress,
+  });
+}
+
+/**
  * Combined hook for all social actions (backward compatibility)
  */
 export function useSocialActions() {
@@ -169,7 +187,8 @@ export function useSocialActions() {
 
   return {
     likeTrack: likeTrack.mutate,
-    addComment: (trackId: string, content: string) => addComment.mutate({ trackId, content }),
+    addComment: (trackId: string, content: string) =>
+      addComment.mutate({ trackId, content }),
     follow: follow.mutate,
     isLoading: likeTrack.isPending || addComment.isPending || follow.isPending,
   };

@@ -11,6 +11,7 @@ import { EditProfileDialog } from "./edit-profile-dialog";
 import PencilIcon from "@/components/icons/pencil.svg";
 import { getAvatarUrl } from "@/lib/avatar";
 import { AddressDisplay } from "@/components/shared/address-display";
+import { useFollow, useIsFollowing } from "@/hooks/use-social-actions";
 
 export function ProfileHeader() {
   const params = useParams();
@@ -26,6 +27,17 @@ export function ProfileHeader() {
   // Check if this is the current user's profile (compare addresses)
   const isOwnProfile =
     connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
+
+  // Follow functionality
+  const followMutation = useFollow();
+  const { data: isFollowing, isLoading: isFollowLoading } = useIsFollowing(
+    userData?.address || ""
+  );
+
+  const handleFollow = () => {
+    if (!userData?.address) return;
+    followMutation.mutate(userData.address);
+  };
 
   const displayName =
     userData?.displayName ||
@@ -60,10 +72,19 @@ export function ProfileHeader() {
       );
     }
 
-    // User viewing another profile - show Follow
+    // User viewing another profile - show Follow/Following
+    const isUserFollowing = isFollowing || false;
+    const isLoading = isFollowLoading || followMutation.isPending;
+
     return (
-      <Button variant="default" className="rounded-full px-8">
-        Follow
+      <Button
+        variant={isUserFollowing ? "secondary" : "default"}
+        className="rounded-full px-8"
+        onClick={handleFollow}
+        disabled={isLoading || !connectedAddress}
+        type="button"
+      >
+        {isLoading ? "..." : isUserFollowing ? "Following" : "Follow"}
       </Button>
     );
   };
