@@ -52,8 +52,8 @@ export function Sidebar() {
         <Logo variant="sidebar" />
       </div>
 
-      {/* Navigation Links - Centered */}
-      <nav className="flex flex-1 items-center justify-center px-4">
+      {/* Navigation Links - Aligned below logo */}
+      <nav className="flex-1 px-4 pt-2">
         {isConnected && address ? (
           <div className="w-full space-y-3">
             {navLinks.map((link) => {

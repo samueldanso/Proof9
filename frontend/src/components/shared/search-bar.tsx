@@ -67,7 +67,7 @@ export const SearchBar = () => {
   };
 
   return (
-    <div className="relative w-full max-w-lg">
+    <div className="relative w-full max-w-2xl">
       <Search className="-translate-y-1/2 absolute top-1/2 left-4 h-4 w-4 text-muted-foreground" />
       <Input
         ref={inputRef}
