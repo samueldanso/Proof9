@@ -122,9 +122,7 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
 
           <div className="space-y-2 text-center">
             <h3 className="font-semibold">Drop your audio file here</h3>
-            <p className="text-muted-foreground text-sm">
-              or click to browse your files
-            </p>
+            <p className="text-muted-foreground text-sm">or click to browse your files</p>
           </div>
 
           <div className="text-muted-foreground text-xs">
@@ -150,10 +148,7 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
               </div>
             </div>
 
-            <Button
-              onClick={handleUpload}
-              className="bg-primary hover:bg-primary/90"
-            >
+            <Button onClick={handleUpload} className="bg-primary hover:bg-primary/90">
               Continue →
             </Button>
           </div>

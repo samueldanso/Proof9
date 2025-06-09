@@ -1,18 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useAccount } from "wagmi";
-import { User, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { apiClient } from "@/lib/api/client";
+import { Camera, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useAccount } from "wagmi";
 
 interface EditProfileDialogProps {
   open: boolean;
@@ -35,9 +30,7 @@ export function EditProfileDialog({
   const [displayName, setDisplayName] = useState(currentDisplayName);
   const [username, setUsername] = useState(currentUsername || "");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string>(
-    currentAvatarUrl || ""
-  );
+  const [avatarPreview, setAvatarPreview] = useState<string>(currentAvatarUrl || "");
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,15 +73,12 @@ export function EditProfileDialog({
 
       const base64Data = await base64Promise;
 
-      const uploadResponse = await apiClient.post<{ avatarUrl: string }>(
-        "/api/upload/avatar",
-        {
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-          fileData: base64Data,
-        }
-      );
+      const uploadResponse = await apiClient.post<{ avatarUrl: string }>("/api/upload/avatar", {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        fileData: base64Data,
+      });
 
       if (uploadResponse.success) {
         return uploadResponse.data.avatarUrl;
@@ -156,7 +146,7 @@ export function EditProfileDialog({
         <div className="flex w-full flex-col gap-6 py-4">
           {/* Avatar Upload */}
           <div
-            className="flex h-[120px] w-full cursor-pointer items-center justify-center rounded-[16px] border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-muted-foreground/50"
+            className="flex h-[120px] w-full cursor-pointer items-center justify-center rounded-[16px] border-2 border-muted-foreground/30 border-dashed transition-colors hover:border-muted-foreground/50"
             onClick={handleAvatarClick}
           >
             <div className="relative flex aspect-square w-[80px] items-center justify-center rounded-full bg-muted">
@@ -169,7 +159,7 @@ export function EditProfileDialog({
               ) : (
                 <User className="h-6 w-6 text-muted-foreground" />
               )}
-              <div className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-[#ced925] text-black">
+              <div className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-[#ced925] text-black">
                 <Camera className="h-3 w-3" />
               </div>
             </div>
@@ -185,10 +175,7 @@ export function EditProfileDialog({
 
           {/* Display Name Input */}
           <div className="space-y-2">
-            <label
-              htmlFor="displayName"
-              className="text-sm font-medium text-foreground"
-            >
+            <label htmlFor="displayName" className="font-medium text-foreground text-sm">
               Display Name
             </label>
             <Input
@@ -202,24 +189,17 @@ export function EditProfileDialog({
 
           {/* Username Input */}
           <div className="space-y-2">
-            <label
-              htmlFor="username"
-              className="text-sm font-medium text-foreground"
-            >
+            <label htmlFor="username" className="font-medium text-foreground text-sm">
               Username
             </label>
             <Input
               id="username"
               placeholder="Enter your username"
               value={username}
-              onChange={(e) =>
-                setUsername(
-                  e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "")
-                )
-              }
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
               className="h-11"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               3-30 characters, letters and numbers only
             </p>
           </div>

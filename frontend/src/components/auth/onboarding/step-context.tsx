@@ -16,10 +16,7 @@ interface StepProviderProps {
   totalSteps?: number;
 }
 
-export const StepProvider = ({
-  children,
-  totalSteps = 2,
-}: StepProviderProps) => {
+export const StepProvider = ({ children, totalSteps = 2 }: StepProviderProps) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
 
@@ -42,7 +39,7 @@ export const StepProvider = ({
       }
       setStepIndex(Math.max(0, Math.min(index, totalSteps - 1)));
     },
-    [stepIndex, totalSteps]
+    [stepIndex, totalSteps],
   );
 
   return (

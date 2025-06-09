@@ -18,9 +18,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Potential future sidebar space */}
-        <div className="w-72 hidden lg:block">
-          {/* Reserved for future content */}
-        </div>
+        <div className="hidden w-72 lg:block">{/* Reserved for future content */}</div>
       </div>
     </div>
   );

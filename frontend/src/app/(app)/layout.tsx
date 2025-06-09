@@ -1,15 +1,15 @@
 "use client";
 
+import { Onboarding } from "@/components/auth/onboarding";
+import { ProfileSetupGuard } from "@/components/auth/profile-setup-guard";
 import { AppHeader } from "@/components/layout/app-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Loader } from "@/components/ui/loader";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { apiClient } from "@/lib/api/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { Onboarding } from "@/components/auth/onboarding";
-import { ProfileSetupGuard } from "@/components/auth/profile-setup-guard";
-import { apiClient } from "@/lib/api/client";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Official Tomo pattern - direct wagmi usage
@@ -31,7 +31,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       try {
         const response = await apiClient.get<{ hasProfile: boolean }>(
-          `/api/users/${address}/onboarding-status`
+          `/api/users/${address}/onboarding-status`,
         );
         setProfileStatus({
           loading: false,

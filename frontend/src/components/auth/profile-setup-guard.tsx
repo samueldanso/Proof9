@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
 import { useUser } from "@/lib/api/hooks";
+import { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
 import { ProfileSetupDialog } from "./profile-setup-dialog";
 
 interface ProfileSetupGuardProps {
@@ -21,8 +21,7 @@ export function ProfileSetupGuard({ children }: ProfileSetupGuardProps) {
     // Only check for authenticated users
     if (isConnected && address && userData && !isLoading) {
       // Check if user has no display name (needs profile setup)
-      const needsProfileSetup =
-        !userData.displayName || userData.displayName.includes("...");
+      const needsProfileSetup = !userData.displayName || userData.displayName.includes("...");
 
       if (needsProfileSetup) {
         setShowSetupDialog(true);

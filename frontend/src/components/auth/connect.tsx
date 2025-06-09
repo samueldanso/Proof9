@@ -21,9 +21,7 @@ export function ConnectButton({
 
   // For connected users - show account modal
   if (isConnected && address) {
-    const displayAddress = `${address.substring(0, 6)}...${address.substring(
-      address.length - 4
-    )}`;
+    const displayAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 
     if (variant === "sidebar") {
       return (

@@ -18,13 +18,9 @@ export function AppHeader() {
       <header className="flex h-16 w-full items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         {!isSearchExpanded ? (
           <>
-            <div></div>
+            <div />
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsSearchExpanded(true)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(true)}>
                 <Search className="h-5 w-5" />
               </Button>
               <Sheet>
@@ -46,11 +42,7 @@ export function AppHeader() {
             <div className="flex-1">
               <SearchBar />
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsSearchExpanded(false)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(false)}>
               <X className="h-5 w-5" />
             </Button>
           </div>

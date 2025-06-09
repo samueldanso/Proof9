@@ -6,13 +6,13 @@ import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { useUser } from "@/lib/api/hooks";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 import { useAccount } from "wagmi";
 import { Logo } from "./logo";
-import { useUser } from "@/lib/api/hooks";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -56,16 +56,15 @@ export function Sidebar() {
       {/* Navigation Links - Centered */}
       <nav className="flex flex-1 items-center justify-center px-4">
         {isConnected && address ? (
-          <div className="space-y-3 w-full">
+          <div className="w-full space-y-3">
             {navLinks.map((link) => {
-              const IconComponent =
-                pathname === link.href ? link.iconFill : link.icon;
+              const IconComponent = pathname === link.href ? link.iconFill : link.icon;
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-3 px-3 py-3 font-medium transition-colors rounded-lg ${
+                  className={`flex items-center gap-3 rounded-lg px-3 py-3 font-medium transition-colors ${
                     isActive
                       ? "text-foreground"
                       : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
@@ -78,10 +77,8 @@ export function Sidebar() {
             })}
           </div>
         ) : (
-          <div className="flex items-center justify-center text-center px-4">
-            <p className="text-muted-foreground text-sm">
-              Connect your wallet to access features
-            </p>
+          <div className="flex items-center justify-center px-4 text-center">
+            <p className="text-muted-foreground text-sm">Connect your wallet to access features</p>
           </div>
         )}
       </nav>

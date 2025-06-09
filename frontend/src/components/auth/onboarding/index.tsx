@@ -43,7 +43,7 @@ function StepsRenderer() {
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute bottom-6 flex items-center gap-2 text-[13px] leading-[16px] text-muted-foreground">
+      <div className="absolute bottom-6 flex items-center gap-2 text-[13px] text-muted-foreground leading-[16px]">
         <p>© 2025 Proof9</p>
         <p className="font-bold text-muted-foreground/40">·</p>
         <p>Protect, License & Monetize Your Sound</p>

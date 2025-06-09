@@ -16,7 +16,7 @@ export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
+          className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
             activeTab === "tracks"
               ? "bg-accent text-accent-foreground"
               : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
@@ -27,7 +27,7 @@ export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
         </button>
         <button
           type="button"
-          className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
+          className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
             activeTab === "likes"
               ? "bg-accent text-accent-foreground"
               : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
@@ -44,9 +44,7 @@ export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
       ) : (
         <div className="flex flex-col items-center justify-center p-6 text-center">
           <h3 className="mb-3 font-bold text-xl">No liked sounds yet</h3>
-          <p className="text-muted-foreground">
-            Sounds you like will appear here
-          </p>
+          <p className="text-muted-foreground">Sounds you like will appear here</p>
         </div>
       )}
     </div>

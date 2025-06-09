@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Copy, Check } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Check, Copy } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface AddressDisplayProps {
   address: string;
@@ -38,9 +38,9 @@ export function AddressDisplay({
   };
 
   return (
-    <div className={cn("flex items-center gap-2 group", className)}>
+    <div className={cn("group flex items-center gap-2", className)}>
       <span
-        className="font-mono text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+        className="cursor-pointer font-mono text-muted-foreground transition-colors hover:text-foreground"
         title={address}
         onClick={handleCopy}
       >
@@ -49,8 +49,9 @@ export function AddressDisplay({
 
       {showCopyButton && (
         <button
+          type="button"
           onClick={handleCopy}
-          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-accent rounded-sm"
+          className="rounded-sm p-1 opacity-0 transition-opacity duration-200 hover:bg-accent group-hover:opacity-100"
           title="Copy address"
         >
           {copied ? (

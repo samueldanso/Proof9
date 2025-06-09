@@ -1,18 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { User, Camera } from "lucide-react";
-import { toast } from "sonner";
 import { apiClient } from "@/lib/api/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { Camera, User } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface ProfileSetupDialogProps {
   open: boolean;
@@ -61,15 +56,12 @@ export function ProfileSetupDialog({
 
       const base64Data = await base64Promise;
 
-      const uploadResponse = await apiClient.post<{ avatarUrl: string }>(
-        "/api/upload/avatar",
-        {
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-          fileData: base64Data,
-        }
-      );
+      const uploadResponse = await apiClient.post<{ avatarUrl: string }>("/api/upload/avatar", {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        fileData: base64Data,
+      });
 
       if (uploadResponse.success) {
         return uploadResponse.data.avatarUrl;
@@ -126,10 +118,8 @@ export function ProfileSetupDialog({
     <Dialog open={open} onOpenChange={() => {}} modal>
       <DialogContent className="sm:max-w-[400px] [&>button]:hidden">
         <DialogHeader>
-          <DialogTitle className="text-center">
-            Complete Your Profile
-          </DialogTitle>
-          <p className="text-center text-sm text-muted-foreground">
+          <DialogTitle className="text-center">Complete Your Profile</DialogTitle>
+          <p className="text-center text-muted-foreground text-sm">
             Set up your profile to get started on Proof9
           </p>
         </DialogHeader>
@@ -137,7 +127,7 @@ export function ProfileSetupDialog({
         <div className="flex w-full flex-col gap-6 py-4">
           {/* Avatar Upload (Optional) */}
           <div
-            className="flex h-[120px] w-full cursor-pointer items-center justify-center rounded-[16px] border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-muted-foreground/50"
+            className="flex h-[120px] w-full cursor-pointer items-center justify-center rounded-[16px] border-2 border-muted-foreground/30 border-dashed transition-colors hover:border-muted-foreground/50"
             onClick={handleAvatarClick}
           >
             <div className="relative flex aspect-square w-[80px] items-center justify-center rounded-full bg-muted">
@@ -150,7 +140,7 @@ export function ProfileSetupDialog({
               ) : (
                 <User className="h-6 w-6 text-muted-foreground" />
               )}
-              <div className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-[#ced925] text-black">
+              <div className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-[#ced925] text-black">
                 <Camera className="h-3 w-3" />
               </div>
             </div>
@@ -166,10 +156,7 @@ export function ProfileSetupDialog({
 
           {/* Display Name Input (Required) */}
           <div className="space-y-2">
-            <label
-              htmlFor="displayName"
-              className="text-sm font-medium text-foreground"
-            >
+            <label htmlFor="displayName" className="font-medium text-foreground text-sm">
               Display Name <span className="text-red-500">*</span>
             </label>
             <Input
@@ -180,9 +167,8 @@ export function ProfileSetupDialog({
               className="h-11"
               required
             />
-            <p className="text-xs text-muted-foreground">
-              This will be used to generate your username and help others find
-              you
+            <p className="text-muted-foreground text-xs">
+              This will be used to generate your username and help others find you
             </p>
           </div>
 

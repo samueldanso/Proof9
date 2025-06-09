@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useAccount } from "wagmi";
-import { User, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { StepHeader } from "../step-header";
 import { apiClient } from "@/lib/api/client";
+import { Camera, User } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useAccount } from "wagmi";
+import { StepHeader } from "../step-header";
 
 export function ProfileSetup() {
   const { address } = useAccount();
@@ -47,15 +47,12 @@ export function ProfileSetup() {
 
       const base64Data = await base64Promise;
 
-      const uploadResponse = await apiClient.post<{ avatarUrl: string }>(
-        "/api/upload/avatar",
-        {
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-          fileData: base64Data,
-        }
-      );
+      const uploadResponse = await apiClient.post<{ avatarUrl: string }>("/api/upload/avatar", {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        fileData: base64Data,
+      });
 
       if (uploadResponse.success) {
         return uploadResponse.data.avatarUrl;
@@ -117,7 +114,7 @@ export function ProfileSetup() {
       <div className="flex w-full flex-col gap-6 px-6">
         {/* Avatar Upload */}
         <div
-          className="flex h-[144px] w-full cursor-pointer items-center justify-center rounded-[24px] border-2 border-dashed border-muted-foreground/30 transition-colors hover:border-muted-foreground/50"
+          className="flex h-[144px] w-full cursor-pointer items-center justify-center rounded-[24px] border-2 border-muted-foreground/30 border-dashed transition-colors hover:border-muted-foreground/50"
           onClick={handleAvatarClick}
         >
           <div className="relative flex aspect-square w-[96px] items-center justify-center rounded-full bg-muted">
@@ -130,7 +127,7 @@ export function ProfileSetup() {
             ) : (
               <User className="h-8 w-8 text-muted-foreground" />
             )}
-            <div className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#ced925] text-black">
+            <div className="absolute right-0 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#ced925] text-black">
               <Camera className="h-4 w-4" />
             </div>
           </div>
@@ -146,10 +143,7 @@ export function ProfileSetup() {
 
         {/* Display Name Input */}
         <div className="space-y-2">
-          <label
-            htmlFor="displayName"
-            className="text-sm font-medium text-foreground"
-          >
+          <label htmlFor="displayName" className="font-medium text-foreground text-sm">
             Display Name
           </label>
           <Input

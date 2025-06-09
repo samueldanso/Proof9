@@ -5,12 +5,12 @@
  */
 export function getAvatarUrl(avatarUrl?: string | null): string {
   // If user has a custom avatar, use it
-  if (avatarUrl && avatarUrl.trim()) {
+  if (avatarUrl?.trim()) {
     return avatarUrl;
   }
 
   // Otherwise, use default avatar
-  return "/default-avatar.svg";
+  return "/profile.png";
 }
 
 /**

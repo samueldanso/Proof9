@@ -3,12 +3,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
 import { Pause, Play } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TrackActions } from "./track-actions";
-import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
 
 interface Track {
   id: string;
@@ -129,9 +129,7 @@ export function TrackCard({
 
           {/* Track Info */}
           <div className="space-y-1">
-            <h3 className="font-semibold text-lg leading-tight">
-              {track.title}
-            </h3>
+            <h3 className="font-semibold text-lg leading-tight">{track.title}</h3>
             <div className="flex items-center gap-4 text-muted-foreground text-sm">
               <span>{track.duration}</span>
               <span>{track.plays.toLocaleString()} plays</span>
