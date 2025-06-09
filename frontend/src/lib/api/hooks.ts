@@ -37,20 +37,21 @@ export function useTrendingTracks() {
 }
 
 // User hooks
-export function useUser(address: string) {
+export function useUser(identifier: string) {
   return useQuery({
-    queryKey: ["user", address],
+    queryKey: ["user", identifier],
     queryFn: () =>
       apiClient.get<{
         address: string;
+        username?: string | null;
         displayName: string;
         trackCount: number;
         followingCount: number;
         followersCount: number;
         verified: boolean;
         avatar_url?: string | null;
-      }>(`/api/users/${address}`),
-    enabled: !!address,
+      }>(`/api/users/${identifier}`),
+    enabled: !!identifier,
   });
 }
 

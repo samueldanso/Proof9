@@ -13,22 +13,22 @@ export function ProfileHeader() {
   const params = useParams();
   const { address: connectedAddress } = useAccount();
   const queryClient = useQueryClient();
-  const profileAddress = params.address as string;
+  const profileIdentifier = params.username as string;
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // Check if this is the current user's profile
-  const isOwnProfile =
-    connectedAddress?.toLowerCase() === profileAddress?.toLowerCase();
-
-  // Get user data from API
-  const { data: userResponse, isLoading } = useUser(profileAddress);
+  // Get user data from API (works with both username and address)
+  const { data: userResponse, isLoading } = useUser(profileIdentifier);
   const userData = userResponse?.data;
+
+  // Check if this is the current user's profile (compare addresses)
+  const isOwnProfile =
+    connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
 
   const displayName =
     userData?.displayName ||
-    (profileAddress
-      ? `${profileAddress.substring(0, 6)}...${profileAddress.substring(
-          profileAddress.length - 4
+    (userData?.address
+      ? `${userData.address.substring(0, 6)}...${userData.address.substring(
+          userData.address.length - 4
         )}`
       : "Unknown");
 
@@ -39,7 +39,7 @@ export function ProfileHeader() {
 
   const handleProfileUpdate = () => {
     // Invalidate the user query to refetch updated data
-    queryClient.invalidateQueries({ queryKey: ["user", profileAddress] });
+    queryClient.invalidateQueries({ queryKey: ["user", profileIdentifier] });
   };
 
   const renderActionButtons = () => {
@@ -70,7 +70,7 @@ export function ProfileHeader() {
       <Avatar className="h-28 w-28">
         <AvatarImage src={userData?.avatar_url || ""} alt={displayName} />
         <AvatarFallback className="bg-primary font-bold text-2xl text-primary-foreground">
-          {profileAddress?.substring(2, 4).toUpperCase() || "??"}
+          {userData?.address?.substring(2, 4).toUpperCase() || "??"}
         </AvatarFallback>
       </Avatar>
 
@@ -80,7 +80,7 @@ export function ProfileHeader() {
           {displayName}
         </h1>
         <p className="font-medium text-[18px] text-muted-foreground leading-[24px]">
-          {profileAddress}
+          {userData?.address}
         </p>
       </div>
 
@@ -114,6 +114,7 @@ export function ProfileHeader() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         currentDisplayName={userData?.displayName || ""}
+        currentUsername={userData?.username}
         currentAvatarUrl={userData?.avatar_url}
         onProfileUpdate={handleProfileUpdate}
       />

@@ -18,6 +18,7 @@ interface EditProfileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentDisplayName: string;
+  currentUsername?: string | null;
   currentAvatarUrl?: string | null;
   onProfileUpdate: () => void;
 }
@@ -26,11 +27,13 @@ export function EditProfileDialog({
   open,
   onOpenChange,
   currentDisplayName,
+  currentUsername,
   currentAvatarUrl,
   onProfileUpdate,
 }: EditProfileDialogProps) {
   const { address } = useAccount();
   const [displayName, setDisplayName] = useState(currentDisplayName);
+  const [username, setUsername] = useState(currentUsername || "");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>(
     currentAvatarUrl || ""
@@ -107,6 +110,7 @@ export function EditProfileDialog({
       // Update profile
       const response = await apiClient.put(`/api/users/${address}`, {
         display_name: displayName.trim(),
+        username: username.trim() || undefined,
         avatar_url: avatarUrl,
       });
 
@@ -126,6 +130,7 @@ export function EditProfileDialog({
 
   const handleCancel = () => {
     setDisplayName(currentDisplayName);
+    setUsername(currentUsername || "");
     setAvatarFile(null);
     setAvatarPreview(currentAvatarUrl || "");
     onOpenChange(false);
@@ -183,6 +188,30 @@ export function EditProfileDialog({
               onChange={(e) => setDisplayName(e.target.value)}
               className="h-11"
             />
+          </div>
+
+          {/* Username Input */}
+          <div className="space-y-2">
+            <label
+              htmlFor="username"
+              className="text-sm font-medium text-foreground"
+            >
+              Username
+            </label>
+            <Input
+              id="username"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) =>
+                setUsername(
+                  e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "")
+                )
+              }
+              className="h-11"
+            />
+            <p className="text-xs text-muted-foreground">
+              3-30 characters, letters and numbers only
+            </p>
           </div>
 
           {/* Action Buttons */}
