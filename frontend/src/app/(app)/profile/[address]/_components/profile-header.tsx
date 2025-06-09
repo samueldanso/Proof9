@@ -34,27 +34,19 @@ export function ProfileHeader() {
 
   const renderActionButtons = () => {
     if (isOwnProfile) {
+      // User viewing their own profile - show Edit Profile
       return (
-        <>
-          <Button variant="outline" className="flex-1">
-            Edit Profile
-          </Button>
-          <Button variant="outline" className="flex-1">
-            Settings
-          </Button>
-        </>
+        <Button variant="outline" className="w-full">
+          Edit Profile
+        </Button>
       );
     }
 
+    // User viewing another profile - show Follow
     return (
-      <>
-        <Button variant="outline" className="flex-1">
-          Follow
-        </Button>
-        <Button variant="default" className="flex-1">
-          Support
-        </Button>
-      </>
+      <Button variant="default" className="w-full">
+        Follow
+      </Button>
     );
   };
 
@@ -62,7 +54,7 @@ export function ProfileHeader() {
     <div className="mt-8 flex w-full flex-col items-center justify-center gap-6 pb-8">
       {/* Profile Avatar - Centered */}
       <Avatar className="h-28 w-28">
-        <AvatarImage src="" alt={displayName} />
+        <AvatarImage src={userData?.avatar_url || ""} alt={displayName} />
         <AvatarFallback className="bg-primary font-bold text-2xl text-primary-foreground">
           {profileAddress?.substring(2, 4).toUpperCase() || "??"}
         </AvatarFallback>
@@ -100,10 +92,8 @@ export function ProfileHeader() {
         </span>
       </div>
 
-      {/* Action Buttons - Full width */}
-      <div className="flex w-full items-center gap-2">
-        {renderActionButtons()}
-      </div>
+      {/* Action Button - Full width */}
+      <div className="w-full">{renderActionButtons()}</div>
     </div>
   );
 }

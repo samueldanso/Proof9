@@ -48,6 +48,7 @@ export function useUser(address: string) {
         followingCount: number;
         followersCount: number;
         verified: boolean;
+        avatar_url?: string | null;
       }>(`/api/users/${address}`),
     enabled: !!address,
   });
@@ -107,7 +108,10 @@ export function useRegisterTrack() {
 export function useVerifyTrack() {
   return useMutation({
     mutationFn: (data: VerificationRequest) =>
-      apiClient.post<VerificationResponse>("/api/verification/verify-music", data),
+      apiClient.post<VerificationResponse>(
+        "/api/verification/verify-music",
+        data
+      ),
     onSuccess: (response) => {
       console.log("Track verified:", response.data);
     },
@@ -120,7 +124,10 @@ export function useVerifyTrack() {
 export function useVerificationStatus(tokenId: string) {
   return useQuery({
     queryKey: ["verification", tokenId],
-    queryFn: () => apiClient.get<VerificationResponse>(`/api/verification/status/${tokenId}`),
+    queryFn: () =>
+      apiClient.get<VerificationResponse>(
+        `/api/verification/status/${tokenId}`
+      ),
     enabled: !!tokenId,
   });
 }

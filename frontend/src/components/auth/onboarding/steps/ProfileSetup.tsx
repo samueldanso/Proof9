@@ -30,6 +30,44 @@ export function ProfileSetup() {
     }
   };
 
+  const uploadAvatar = async (file: File): Promise<string | null> => {
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Remove data URL prefix to get pure base64
+          const base64 = result.split(",")[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(file);
+
+      const base64Data = await base64Promise;
+
+      const uploadResponse = await apiClient.post<{ avatarUrl: string }>(
+        "/api/upload/avatar",
+        {
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          fileData: base64Data,
+        }
+      );
+
+      if (uploadResponse.success) {
+        return uploadResponse.data.avatarUrl;
+      } else {
+        throw new Error(uploadResponse.error || "Failed to upload avatar");
+      }
+    } catch (error) {
+      console.error("Avatar upload error:", error);
+      throw error;
+    }
+  };
+
   const handleComplete = async () => {
     if (!displayName.trim() || !address) {
       toast.error("Please enter a display name");
@@ -38,10 +76,18 @@ export function ProfileSetup() {
 
     setIsLoading(true);
     try {
+      let avatarUrl: string | null = null;
+
+      // Upload avatar if user selected one
+      if (avatarFile) {
+        toast.info("Uploading avatar...");
+        avatarUrl = await uploadAvatar(avatarFile);
+      }
+
       const response = await apiClient.post("/api/users/create-profile", {
         address,
         display_name: displayName.trim(),
-        avatar_url: null, // Will implement avatar upload later
+        avatar_url: avatarUrl,
       });
 
       if (response.success) {
@@ -54,7 +100,7 @@ export function ProfileSetup() {
         toast.error(response.error || "Failed to create profile");
       }
     } catch (error) {
-      toast.error("Network error. Please check if the backend is running.");
+      toast.error("Failed to create profile. Please try again.");
     } finally {
       setIsLoading(false);
     }
