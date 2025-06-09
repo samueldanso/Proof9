@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { User, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,16 @@ export function EditProfileDialog({
   );
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync form state with props when dialog opens or props change
+  useEffect(() => {
+    if (open) {
+      setDisplayName(currentDisplayName);
+      setUsername(currentUsername || "");
+      setAvatarFile(null);
+      setAvatarPreview(currentAvatarUrl || "");
+    }
+  }, [open, currentDisplayName, currentUsername, currentAvatarUrl]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
