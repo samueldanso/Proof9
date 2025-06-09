@@ -171,8 +171,7 @@ export function useIsFollowing(followingAddress: string) {
 
   return useQuery({
     queryKey: ["is-following", address, followingAddress],
-    queryFn: () =>
-      socialQueries.follows.isFollowing(address!, followingAddress),
+    queryFn: () => socialQueries.follows.isFollowing(address!, followingAddress),
     enabled: !!address && !!followingAddress && address !== followingAddress,
   });
 }
@@ -187,8 +186,7 @@ export function useSocialActions() {
 
   return {
     likeTrack: likeTrack.mutate,
-    addComment: (trackId: string, content: string) =>
-      addComment.mutate({ trackId, content }),
+    addComment: (trackId: string, content: string) => addComment.mutate({ trackId, content }),
     follow: follow.mutate,
     isLoading: likeTrack.isPending || addComment.isPending || follow.isPending,
   };

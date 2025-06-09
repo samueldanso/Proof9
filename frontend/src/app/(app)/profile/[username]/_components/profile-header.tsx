@@ -9,9 +9,9 @@ import { useAccount } from "wagmi";
 import { EditProfileDialog } from "./edit-profile-dialog";
 
 import PencilIcon from "@/components/icons/pencil.svg";
-import { getAvatarUrl } from "@/lib/avatar";
 import { AddressDisplay } from "@/components/shared/address-display";
 import { useFollow, useIsFollowing } from "@/hooks/use-social-actions";
+import { getAvatarUrl } from "@/lib/avatar";
 
 export function ProfileHeader() {
   const params = useParams();
@@ -25,14 +25,11 @@ export function ProfileHeader() {
   const userData = userResponse?.data;
 
   // Check if this is the current user's profile (compare addresses)
-  const isOwnProfile =
-    connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
+  const isOwnProfile = connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
 
   // Follow functionality
   const followMutation = useFollow();
-  const { data: isFollowing, isLoading: isFollowLoading } = useIsFollowing(
-    userData?.address || ""
-  );
+  const { data: isFollowing, isLoading: isFollowLoading } = useIsFollowing(userData?.address || "");
 
   const handleFollow = () => {
     if (!userData?.address) return;
@@ -43,7 +40,7 @@ export function ProfileHeader() {
     userData?.displayName ||
     (userData?.address
       ? `${userData.address.substring(0, 6)}...${userData.address.substring(
-          userData.address.length - 4
+          userData.address.length - 4,
         )}`
       : "Unknown");
 
@@ -91,7 +88,7 @@ export function ProfileHeader() {
 
   return (
     <div className="mt-8 flex w-full flex-col items-center justify-center gap-6 pb-8">
-      {/* Profile Avatar - Centered */}
+      {/* Profile Avatar */}
       <img
         src={getAvatarUrl(userData?.avatar_url)}
         alt="Profile"
@@ -100,14 +97,9 @@ export function ProfileHeader() {
 
       {/* Profile Info - Centered */}
       <div className="flex flex-col items-center gap-2 text-center">
-        <p className="font-semibold text-[28px] leading-[32px]">
-          {displayName}
-        </p>
+        <p className="font-semibold text-[28px] leading-[32px]">{displayName}</p>
         {userData?.address && (
-          <AddressDisplay
-            address={userData.address}
-            className="justify-center"
-          />
+          <AddressDisplay address={userData.address} className="justify-center" />
         )}
       </div>
 
@@ -119,16 +111,12 @@ export function ProfileHeader() {
         </span>
         <p className="font-semibold text-muted-foreground/40">·</p>
         <span>
-          <span className="font-semibold text-foreground">
-            {followingCount}{" "}
-          </span>
+          <span className="font-semibold text-foreground">{followingCount} </span>
           Following
         </span>
         <p className="font-semibold text-muted-foreground/40">·</p>
         <span>
-          <span className="font-semibold text-foreground">
-            {followersCount}{" "}
-          </span>
+          <span className="font-semibold text-foreground">{followersCount} </span>
           Followers
         </span>
       </div>
