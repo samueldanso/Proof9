@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { Onboarding } from "@/components/auth/onboarding";
+import { ProfileSetupGuard } from "@/components/auth/profile-setup-guard";
 import { apiClient } from "@/lib/api/client";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -61,26 +62,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (isMobile) {
     return (
-      <div className="flex h-screen w-full flex-col overflow-hidden">
-        <AppHeader />
-        <main className="hide-scrollbar flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-2xl px-4 pt-4">{children}</div>
-        </main>
-      </div>
+      <ProfileSetupGuard>
+        <div className="flex h-screen w-full flex-col overflow-hidden">
+          <AppHeader />
+          <main className="hide-scrollbar flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-2xl px-4 pt-4">{children}</div>
+          </main>
+        </div>
+      </ProfileSetupGuard>
     );
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
-      <aside className="w-64 flex-shrink-0 bg-background">
-        <Sidebar />
-      </aside>
-      <div className="flex h-full flex-1 flex-col overflow-hidden">
-        <AppHeader />
-        <main className="hide-scrollbar flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-6xl px-6 pt-6">{children}</div>
-        </main>
+    <ProfileSetupGuard>
+      <div className="flex h-screen w-full overflow-hidden">
+        <aside className="w-64 flex-shrink-0 bg-background">
+          <Sidebar />
+        </aside>
+        <div className="flex h-full flex-1 flex-col overflow-hidden">
+          <AppHeader />
+          <main className="hide-scrollbar flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-6xl px-6 pt-6">{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
+    </ProfileSetupGuard>
   );
 }
