@@ -30,7 +30,7 @@ export function ConnectButton({
           className={`w-full cursor-pointer rounded-lg bg-transparent px-3 py-2 text-foreground transition-colors hover:bg-accent/20 ${className}`}
         >
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-green-500" />
+            <div className="h-2 w-2 rounded-full bg-[#ced925]" />
             <span className="font-medium text-sm">{displayAddress}</span>
           </div>
         </div>
@@ -45,7 +45,7 @@ export function ConnectButton({
         variant="ghost"
       >
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-green-500" />
+          <div className="h-2 w-2 rounded-full bg-[#ced925]" />
           <span>{displayAddress}</span>
         </div>
       </Button>
@@ -70,8 +70,8 @@ export function ConnectButton({
   return (
     <Button
       onClick={openConnectModal}
-      className={`h-9 border border-border bg-muted/50 px-3 py-2 font-medium text-foreground text-sm hover:bg-muted ${className}`}
-      variant="ghost"
+      className={`bg-[#ced925] text-black hover:bg-[#b8c220] ${className}`}
+      variant="default"
     >
       {label}
     </Button>

@@ -72,7 +72,7 @@ export const SearchBar = () => {
       <Input
         ref={inputRef}
         type="text"
-        placeholder="Search for sounds and creators..."
+        placeholder="Search sounds & creators..."
         value={query}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
