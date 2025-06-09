@@ -204,6 +204,64 @@ app.post('/create-profile', zValidator('json', CreateProfileSchema), async (c) =
 })
 
 /**
+ * Update user profile
+ */
+app.put(
+    '/:address',
+    zValidator('param', z.object({ address: AddressSchema })),
+    zValidator(
+        'json',
+        z.object({
+            display_name: z.string().min(1, 'Display name is required'),
+            avatar_url: z.string().nullable().optional(),
+        })
+    ),
+    async (c) => {
+        try {
+            const { address } = c.req.valid('param')
+            const updateData = c.req.valid('json')
+
+            // Update profile in Supabase
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .update({
+                    display_name: updateData.display_name,
+                    avatar_url: updateData.avatar_url || null,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('address', address)
+                .select()
+                .single()
+
+            if (error) {
+                console.error('Supabase update error:', error)
+                return c.json(
+                    {
+                        success: false,
+                        error: error.message,
+                    },
+                    500
+                )
+            }
+
+            return c.json({
+                success: true,
+                data: profile,
+            })
+        } catch (error: any) {
+            console.error('Update profile error:', error)
+            return c.json(
+                {
+                    success: false,
+                    error: error.message,
+                },
+                500
+            )
+        }
+    }
+)
+
+/**
  * Check onboarding status
  */
 app.get('/:address/onboarding-status', zValidator('param', z.object({ address: AddressSchema })), async (c) => {

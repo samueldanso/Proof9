@@ -1,15 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useUser } from "@/lib/api/hooks";
+import { EditProfileDialog } from "./edit-profile-dialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function ProfileHeader() {
   const params = useParams();
   const { address: connectedAddress } = useAccount();
+  const queryClient = useQueryClient();
   const profileAddress = params.address as string;
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Check if this is the current user's profile
   const isOwnProfile =
@@ -32,11 +37,20 @@ export function ProfileHeader() {
   const followingCount = userData?.followingCount || 0;
   const followersCount = userData?.followersCount || 0;
 
+  const handleProfileUpdate = () => {
+    // Invalidate the user query to refetch updated data
+    queryClient.invalidateQueries({ queryKey: ["user", profileAddress] });
+  };
+
   const renderActionButtons = () => {
     if (isOwnProfile) {
       // User viewing their own profile - show Edit Profile
       return (
-        <Button variant="outline" className="w-full">
+        <Button
+          variant="outline"
+          className="px-8"
+          onClick={() => setEditDialogOpen(true)}
+        >
           Edit Profile
         </Button>
       );
@@ -44,7 +58,7 @@ export function ProfileHeader() {
 
     // User viewing another profile - show Follow
     return (
-      <Button variant="default" className="w-full">
+      <Button variant="default" className="px-8">
         Follow
       </Button>
     );
@@ -92,8 +106,17 @@ export function ProfileHeader() {
         </span>
       </div>
 
-      {/* Action Button - Full width */}
-      <div className="w-full">{renderActionButtons()}</div>
+      {/* Action Button - Centered */}
+      <div className="flex w-full justify-center">{renderActionButtons()}</div>
+
+      {/* Edit Profile Dialog */}
+      <EditProfileDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        currentDisplayName={userData?.displayName || ""}
+        currentAvatarUrl={userData?.avatar_url}
+        onProfileUpdate={handleProfileUpdate}
+      />
     </div>
   );
 }
