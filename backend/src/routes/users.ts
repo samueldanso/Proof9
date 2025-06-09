@@ -86,6 +86,7 @@ app.get('/:address', zValidator('param', z.object({ address: AddressSchema })), 
             followingCount: followingCount || 0,
             followersCount: followersCount || 0,
             verified: profile.verified,
+            avatar_url: profile.avatar_url,
             joinedAt: profile.created_at.split('T')[0],
             tracks: [], // Will be populated by the tracks endpoint
         }
