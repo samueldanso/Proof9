@@ -46,7 +46,7 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex h-full w-full flex-col py-4">
+    <div className="flex h-full w-full flex-col py-2">
       {/* Logo at top - aligned with header */}
       <div className="flex h-16 items-center px-6">
         <Logo variant="sidebar" />
