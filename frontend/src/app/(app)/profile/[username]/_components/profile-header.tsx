@@ -8,6 +8,7 @@ import { useAccount } from "wagmi";
 import { useUser } from "@/lib/api/hooks";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { useQueryClient } from "@tanstack/react-query";
+import { AddressDisplay } from "@/components/shared/address-display";
 
 export function ProfileHeader() {
   const params = useParams();
@@ -79,9 +80,12 @@ export function ProfileHeader() {
         <h1 className="font-semibold text-[28px] leading-[32px]">
           {displayName}
         </h1>
-        <p className="font-medium text-[18px] text-muted-foreground leading-[24px]">
-          {userData?.address}
-        </p>
+        {userData?.address && (
+          <AddressDisplay
+            address={userData.address}
+            className="justify-center"
+          />
+        )}
       </div>
 
       {/* Stats - Centered with separator */}
