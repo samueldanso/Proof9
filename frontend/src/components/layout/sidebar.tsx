@@ -46,7 +46,7 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex h-full w-full flex-col py-2">
+    <div className="flex h-full w-full flex-col py-1.5">
       {/* Logo at top - aligned with header */}
       <div className="flex h-16 items-center px-6">
         <Logo variant="sidebar" />
@@ -57,7 +57,8 @@ export function Sidebar() {
         {isConnected && address ? (
           <div className="w-full space-y-3">
             {navLinks.map((link) => {
-              const IconComponent = pathname === link.href ? link.iconFill : link.icon;
+              const IconComponent =
+                pathname === link.href ? link.iconFill : link.icon;
               const isActive = pathname === link.href;
               return (
                 <Link
@@ -77,7 +78,9 @@ export function Sidebar() {
           </div>
         ) : (
           <div className="flex items-center justify-center px-4 text-center">
-            <p className="text-muted-foreground text-sm">Connect your wallet to access features</p>
+            <p className="text-muted-foreground text-sm">
+              Connect your wallet to access features
+            </p>
           </div>
         )}
       </nav>
