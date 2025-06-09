@@ -1,9 +1,9 @@
 import { Loader2 } from "lucide-react";
 
-export default function DiscoverLoading() {
+export default function Loading() {
   return (
     <div className="flex h-[calc(100vh-120px)] items-center justify-center">
-      <Loader2 className="size-12 animate-spin text-[#00A8FF]" />
+      <Loader2 className="size-12 animate-spin text-[#ced925]" />
     </div>
   );
 }

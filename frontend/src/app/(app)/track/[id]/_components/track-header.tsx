@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
+import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
 
 interface Track {
   id: string;

@@ -5,6 +5,7 @@ export interface Database {
       profiles: {
         Row: {
           address: string;
+          username: string | null;
           display_name: string | null;
           avatar_url: string | null;
           verified: boolean;
@@ -13,11 +14,13 @@ export interface Database {
         };
         Insert: {
           address: string;
+          username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
           verified?: boolean;
         };
         Update: {
+          username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
           verified?: boolean;

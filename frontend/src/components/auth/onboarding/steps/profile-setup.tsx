@@ -5,7 +5,7 @@ import { useAccount } from "wagmi";
 import { User, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { StepHeader } from "../StepHeader";
+import { StepHeader } from "../step-header";
 import { apiClient } from "@/lib/api/client";
 import { toast } from "sonner";
 

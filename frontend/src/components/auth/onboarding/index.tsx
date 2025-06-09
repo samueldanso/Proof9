@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { StepProvider, useStep } from "./StepContext";
-import { ProfileSetup } from "./steps/ProfileSetup";
+import { StepProvider, useStep } from "./step-context";
+import { ProfileSetup } from "./steps/profile-setup";
 
 // Single step for simplicity - just profile setup
 const steps = [ProfileSetup];

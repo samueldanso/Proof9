@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TrackActions } from "./track-actions";
-import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
+import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
 
 interface Track {
   id: string;

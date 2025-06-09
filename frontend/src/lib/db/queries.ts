@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/supabase/client";
-import type { LicenseTransaction, Profile, RevenueClaim, Track } from "./schemas";
+import type {
+  LicenseTransaction,
+  Profile,
+  RevenueClaim,
+  Track,
+} from "./schemas";
 
 // ==========================================
 // TRACK QUERIES
@@ -48,7 +53,11 @@ export const trackQueries = {
    * Get track by ID
    */
   getById: async (trackId: string) => {
-    const { data, error } = await supabase.from("tracks").select("*").eq("id", trackId).single();
+    const { data, error } = await supabase
+      .from("tracks")
+      .select("*")
+      .eq("id", trackId)
+      .single();
 
     if (error) throw error;
     return data;
@@ -72,7 +81,11 @@ export const trackQueries = {
    * Create new track
    */
   create: async (trackData: Partial<Track>) => {
-    const { data, error } = await supabase.from("tracks").insert(trackData).select().single();
+    const { data, error } = await supabase
+      .from("tracks")
+      .insert(trackData)
+      .select()
+      .single();
 
     if (error) throw error;
     return data;
@@ -191,7 +204,7 @@ export const socialQueries = {
           `
           track_id,
           tracks:track_id (*)
-        `,
+        `
         )
         .eq("user_address", userAddress);
 
@@ -310,7 +323,9 @@ export const monetizationQueries = {
     /**
      * Record license transaction
      */
-    record: async (transaction: Omit<LicenseTransaction, "id" | "created_at">) => {
+    record: async (
+      transaction: Omit<LicenseTransaction, "id" | "created_at">
+    ) => {
       const { data, error } = await supabase
         .from("license_transactions")
         .insert(transaction)
@@ -351,7 +366,7 @@ export const monetizationQueries = {
           `
           *,
           tracks:track_id (*)
-        `,
+        `
         )
         .eq("buyer_address", userAddress)
         .order("created_at", { ascending: false });
@@ -366,7 +381,11 @@ export const monetizationQueries = {
      * Record revenue claim
      */
     record: async (claim: Omit<RevenueClaim, "id" | "created_at">) => {
-      const { data, error } = await supabase.from("revenue_claims").insert(claim).select().single();
+      const { data, error } = await supabase
+        .from("revenue_claims")
+        .insert(claim)
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -418,7 +437,9 @@ export const profileQueries = {
         .from("profiles")
         .insert({
           address,
-          display_name: `${address.substring(0, 6)}...${address.substring(address.length - 4)}`,
+          display_name: `${address.substring(0, 6)}...${address.substring(
+            address.length - 4
+          )}`,
           verified: false,
         })
         .select()
@@ -433,14 +454,56 @@ export const profileQueries = {
   },
 
   /**
+   * Get profile by username or address
+   */
+  getByIdentifier: async (identifier: string): Promise<Profile | null> => {
+    // Check if identifier looks like an Ethereum address
+    const isAddress = /^0x[a-fA-F0-9]{40}$/.test(identifier);
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq(isAddress ? "address" : "username", identifier)
+      .single();
+
+    if (error && error.code === "PGRST116") {
+      return null; // Profile not found
+    }
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Check if username is available
+   */
+  checkUsernameAvailability: async (
+    username: string
+  ): Promise<{ available: boolean }> => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("username", username)
+      .single();
+
+    if (error && error.code === "PGRST116") {
+      return { available: true }; // Username not found, so it's available
+    }
+
+    if (error) throw error;
+    return { available: false }; // Username exists
+  },
+
+  /**
    * Update user profile
    */
   update: async (
     address: string,
     updates: {
+      username?: string;
       display_name?: string;
       avatar_url?: string;
-    },
+    }
   ) => {
     const { data, error } = await supabase
       .from("profiles")
@@ -473,7 +536,7 @@ export const subscriptions = {
           table: "likes",
           filter: `track_id=eq.${trackId}`,
         },
-        callback,
+        callback
       )
       .subscribe();
   },
@@ -492,7 +555,7 @@ export const subscriptions = {
           table: "comments",
           filter: `track_id=eq.${trackId}`,
         },
-        callback,
+        callback
       )
       .subscribe();
   },

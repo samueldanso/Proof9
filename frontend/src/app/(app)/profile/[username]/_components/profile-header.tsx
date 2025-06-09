@@ -9,7 +9,7 @@ import { useUser } from "@/lib/api/hooks";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { AddressDisplay } from "@/components/shared/address-display";
-import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
+import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
 
 export function ProfileHeader() {
   const params = useParams();
