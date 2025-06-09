@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { createHash } from 'crypto'
+import { uploadBinaryToIPFS, uploadJSONToIPFS } from '../../utils/functions/uploadToIpfs'
 
 // Create router
 const app = new Hono()
@@ -63,11 +64,14 @@ app.post('/audio', zValidator('json', FileUploadSchema), async (c) => {
             )
         }
 
-        // Generate file hash for verification
-        const fileHash = createHash('sha256').update(fileData).digest('hex')
+        // Convert base64 to buffer
+        const audioBuffer = Buffer.from(fileData, 'base64')
 
-        // Simulate IPFS upload
-        const ipfsHash = `Qm${fileHash.substring(0, 44)}`
+        // Generate file hash for verification
+        const fileHash = createHash('sha256').update(audioBuffer).digest('hex')
+
+        // Upload audio to IPFS using Pinata
+        const ipfsHash = await uploadBinaryToIPFS(audioBuffer, fileName, fileType)
         const ipfsUrl = `https://ipfs.io/ipfs/${ipfsHash}`
 
         return c.json({
@@ -125,11 +129,14 @@ app.post('/avatar', zValidator('json', AvatarUploadSchema), async (c) => {
             )
         }
 
-        // Generate file hash for verification
-        const fileHash = createHash('sha256').update(fileData).digest('hex')
+        // Convert base64 to buffer
+        const imageBuffer = Buffer.from(fileData, 'base64')
 
-        // Simulate IPFS upload for avatar
-        const ipfsHash = `Qm${fileHash.substring(0, 44)}`
+        // Generate file hash for verification
+        const fileHash = createHash('sha256').update(imageBuffer).digest('hex')
+
+        // Upload image to IPFS using Pinata
+        const ipfsHash = await uploadBinaryToIPFS(imageBuffer, fileName, fileType)
         const avatarUrl = `https://ipfs.io/ipfs/${ipfsHash}`
 
         return c.json({
@@ -177,8 +184,8 @@ app.post('/metadata', zValidator('json', MetadataUploadSchema), async (c) => {
         // Generate metadata hash
         const metadataHash = createHash('sha256').update(JSON.stringify(ipMetadata)).digest('hex')
 
-        // Simulate IPFS upload
-        const ipfsHash = `Qm${metadataHash.substring(0, 44)}`
+        // Upload metadata to IPFS using Pinata
+        const ipfsHash = await uploadJSONToIPFS(ipMetadata)
         const ipfsUrl = `https://ipfs.io/ipfs/${ipfsHash}`
 
         return c.json({
