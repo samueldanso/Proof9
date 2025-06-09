@@ -70,8 +70,10 @@ export function TrackList() {
     <div className="space-y-6">
       {mockTracks.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-6 text-center">
-          <h3 className="mb-3 font-bold text-xl">No tracks published yet</h3>
-          <p className="text-muted-foreground">Your uploaded tracks will appear here</p>
+          <h3 className="mb-3 font-bold text-xl">No sounds published yet</h3>
+          <p className="text-muted-foreground">
+            Your registered sounds will appear here
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-1">

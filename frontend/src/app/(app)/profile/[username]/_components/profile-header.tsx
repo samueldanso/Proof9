@@ -97,6 +97,11 @@ export function ProfileHeader() {
       {/* Stats - Centered with separator */}
       <div className="flex items-center gap-2 font-medium text-muted-foreground">
         <span>
+          <span className="font-semibold text-foreground">{trackCount} </span>
+          Sounds
+        </span>
+        <p className="font-semibold text-muted-foreground/40">·</p>
+        <span>
           <span className="font-semibold text-foreground">
             {followingCount}{" "}
           </span>
@@ -108,11 +113,6 @@ export function ProfileHeader() {
             {followersCount}{" "}
           </span>
           Followers
-        </span>
-        <p className="font-semibold text-muted-foreground/40">·</p>
-        <span>
-          <span className="font-semibold text-foreground">{trackCount} </span>
-          Tracks
         </span>
       </div>
 
