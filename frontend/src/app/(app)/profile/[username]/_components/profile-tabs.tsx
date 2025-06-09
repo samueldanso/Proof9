@@ -23,7 +23,7 @@ export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
           }`}
           onClick={() => setActiveTab("tracks")}
         >
-          Tracks
+          Sounds
         </button>
         <button
           type="button"
@@ -43,9 +43,9 @@ export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
         <TrackList />
       ) : (
         <div className="flex flex-col items-center justify-center p-6 text-center">
-          <h3 className="mb-3 font-bold text-xl">No liked tracks yet</h3>
+          <h3 className="mb-3 font-bold text-xl">No liked sounds yet</h3>
           <p className="text-muted-foreground">
-            Tracks you like will appear here
+            Sounds you like will appear here
           </p>
         </div>
       )}

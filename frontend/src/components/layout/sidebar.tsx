@@ -12,10 +12,18 @@ import { usePathname } from "next/navigation";
 import React from "react";
 import { useAccount } from "wagmi";
 import { Logo } from "./logo";
+import { useUser } from "@/lib/api/hooks";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { address, isConnected } = useAccount();
+
+  // Get user data to determine profile URL
+  const { data: userResponse } = useUser(address || "");
+  const userData = userResponse?.data;
+
+  // Use username if available, fallback to address
+  const profileIdentifier = userData?.username || address;
 
   const navLinks = [
     {
@@ -31,7 +39,7 @@ export function Sidebar() {
       iconFill: Plus,
     },
     {
-      href: `/profile/${address}`,
+      href: `/profile/${profileIdentifier}`,
       label: "Profile",
       icon: IconProfile,
       iconFill: IconProfileFill,

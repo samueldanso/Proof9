@@ -19,3 +19,11 @@ export async function uploadFileToIPFS(filePath: string, fileName: string, fileT
     const { IpfsHash } = await pinata.upload.file(file)
     return IpfsHash
 }
+
+// Upload binary data (images) to IPFS
+export async function uploadBinaryToIPFS(binaryData: Buffer, fileName: string, fileType: string): Promise<string> {
+    const blob = new Blob([binaryData], { type: fileType })
+    const file = new File([blob], fileName, { type: fileType })
+    const { IpfsHash } = await pinata.upload.file(file)
+    return IpfsHash
+}

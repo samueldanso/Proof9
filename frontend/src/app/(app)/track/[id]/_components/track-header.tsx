@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 
 interface Track {
   id: string;
@@ -55,16 +56,21 @@ export default function TrackHeader({ track }: TrackHeaderProps) {
       {/* Artist Info */}
       <div className="flex items-center gap-3">
         <Avatar className="h-12 w-12">
-          <AvatarImage src="" alt={track.artist} />
+          <AvatarImage src={getAvatarUrl(null)} alt={track.artist} />
           <AvatarFallback className="bg-primary text-primary-foreground">
-            {track.artistAddress.substring(2, 4).toUpperCase()}
+            {getUserInitials(track.artist)}
           </AvatarFallback>
         </Avatar>
         <div>
-          <Link href={`/profile/${track.artistAddress}`} className="font-semibold hover:underline">
+          <Link
+            href={`/profile/${track.artistAddress}`}
+            className="font-semibold hover:underline"
+          >
             {track.artist}
           </Link>
-          <p className="text-muted-foreground text-sm">{track.plays.toLocaleString()} plays</p>
+          <p className="text-muted-foreground text-sm">
+            {track.plays.toLocaleString()} plays
+          </p>
         </div>
       </div>
 
@@ -74,7 +80,9 @@ export default function TrackHeader({ track }: TrackHeaderProps) {
         {track.verified && (
           <div className="mt-2 flex items-center gap-2">
             <div className="h-4 w-4 rounded-full bg-green-500" />
-            <span className="font-medium text-green-600 text-sm">Verified Original</span>
+            <span className="font-medium text-green-600 text-sm">
+              Verified Original
+            </span>
           </div>
         )}
       </div>

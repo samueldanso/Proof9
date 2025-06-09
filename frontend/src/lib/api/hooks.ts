@@ -37,19 +37,21 @@ export function useTrendingTracks() {
 }
 
 // User hooks
-export function useUser(address: string) {
+export function useUser(identifier: string) {
   return useQuery({
-    queryKey: ["user", address],
+    queryKey: ["user", identifier],
     queryFn: () =>
       apiClient.get<{
         address: string;
+        username?: string | null;
         displayName: string;
         trackCount: number;
         followingCount: number;
         followersCount: number;
         verified: boolean;
-      }>(`/api/users/${address}`),
-    enabled: !!address,
+        avatar_url?: string | null;
+      }>(`/api/users/${identifier}`),
+    enabled: !!identifier,
   });
 }
 
@@ -107,7 +109,10 @@ export function useRegisterTrack() {
 export function useVerifyTrack() {
   return useMutation({
     mutationFn: (data: VerificationRequest) =>
-      apiClient.post<VerificationResponse>("/api/verification/verify-music", data),
+      apiClient.post<VerificationResponse>(
+        "/api/verification/verify-music",
+        data
+      ),
     onSuccess: (response) => {
       console.log("Track verified:", response.data);
     },
@@ -120,7 +125,10 @@ export function useVerifyTrack() {
 export function useVerificationStatus(tokenId: string) {
   return useQuery({
     queryKey: ["verification", tokenId],
-    queryFn: () => apiClient.get<VerificationResponse>(`/api/verification/status/${tokenId}`),
+    queryFn: () =>
+      apiClient.get<VerificationResponse>(
+        `/api/verification/status/${tokenId}`
+      ),
     enabled: !!tokenId,
   });
 }

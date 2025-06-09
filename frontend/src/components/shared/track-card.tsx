@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TrackActions } from "./track-actions";
+import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 
 interface Track {
   id: string;
@@ -66,9 +67,9 @@ export function TrackCard({
         {showArtist && variant === "feed" && (
           <div className="mb-3 flex items-center gap-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="" alt={track.artist} />
+              <AvatarImage src={getAvatarUrl(null)} alt={track.artist} />
               <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                {track.artistAddress.substring(2, 4).toUpperCase()}
+                {getUserInitials(track.artist)}
               </AvatarFallback>
             </Avatar>
             <div>
