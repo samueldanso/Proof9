@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { Loader } from "@/components/ui/loader";
+import { SoundPreview } from "@/components/sound/sound-preview";
 import { CREATOR_IMAGES } from "@/lib/constants";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -67,6 +68,14 @@ export default function Home() {
               <div className="mt-10 w-full max-w-xs">
                 <ConnectButton className="h-[50px] w-[250px] rounded-full" label="Get Started" />
               </div>
+            </div>
+
+            {/* Sound Preview Section */}
+            <div className="mt-16 w-full max-w-4xl">
+              <h2 className="text-2xl font-semibold text-center mb-8">
+                Try it out - Upload your sound
+              </h2>
+              <SoundPreview />
             </div>
 
             {/* Creator showcase */}
