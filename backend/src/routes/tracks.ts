@@ -1,9 +1,26 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
+import { supabase } from '../lib/supabase'
 
 // Create router
 const app = new Hono()
+
+// Schema for track creation
+const CreateTrackSchema = z.object({
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().optional(),
+    genre: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    duration: z.string().optional(),
+    artist_address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Ethereum address'),
+    ipfs_hash: z.string().optional(),
+    ipfs_url: z.string().url().optional(),
+    file_hash: z.string().optional(),
+    ip_id: z.string().optional(),
+    verified: z.boolean().default(false),
+    yakoa_token_id: z.string().optional(),
+})
 
 // Mock data for now - will integrate with Story Protocol queries later
 const mockTracks = [
@@ -48,6 +65,63 @@ const TracksQuerySchema = z.object({
     tab: z.enum(['following', 'verified', 'trending']).optional().default('following'),
     limit: z.coerce.number().min(1).max(50).optional().default(20),
     offset: z.coerce.number().min(0).optional().default(0),
+})
+
+/**
+ * Create a new track
+ */
+app.post('/', zValidator('json', CreateTrackSchema), async (c) => {
+    try {
+        const trackData = c.req.valid('json')
+
+        // Insert track into Supabase
+        const { data: track, error } = await supabase
+            .from('tracks')
+            .insert({
+                title: trackData.title,
+                description: trackData.description,
+                genre: trackData.genre,
+                tags: trackData.tags,
+                duration: trackData.duration,
+                artist_address: trackData.artist_address,
+                ipfs_hash: trackData.ipfs_hash,
+                ipfs_url: trackData.ipfs_url,
+                file_hash: trackData.file_hash,
+                ip_id: trackData.ip_id,
+                verified: trackData.verified,
+                yakoa_token_id: trackData.yakoa_token_id,
+                plays: 0,
+                likes: 0,
+                comments: 0,
+            })
+            .select()
+            .single()
+
+        if (error) {
+            console.error('Track creation error:', error)
+            return c.json(
+                {
+                    success: false,
+                    error: error.message,
+                },
+                500
+            )
+        }
+
+        return c.json({
+            success: true,
+            data: track,
+        })
+    } catch (error: any) {
+        console.error('Create track error:', error)
+        return c.json(
+            {
+                success: false,
+                error: error.message,
+            },
+            500
+        )
+    }
 })
 
 /**
