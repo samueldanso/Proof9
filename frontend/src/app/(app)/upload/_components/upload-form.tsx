@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useUploadAudio } from "@/lib/api/hooks";
 import { FileAudio, Music, Upload } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 interface UploadFormProps {
   onFileSelect: (
     file: File,
-    uploadData: { ipfsHash: string; ipfsUrl: string; fileHash: string },
+    uploadData: { ipfsHash: string; ipfsUrl: string; fileHash: string }
   ) => void;
   onNext: () => void;
 }
@@ -17,7 +18,9 @@ interface UploadFormProps {
 export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+
+  // ✅ Use React Query hook (consistent with profile pattern)
+  const uploadMutation = useUploadAudio();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -82,31 +85,17 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
   const handleUpload = async () => {
     if (!selectedFile) return;
 
-    setIsUploading(true);
-
     try {
       // Convert file to base64
       const fileData = await fileToBase64(selectedFile);
 
-      // Upload to backend
-      const response = await fetch("http://localhost:3001/api/upload/audio", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fileName: selectedFile.name,
-          fileType: selectedFile.type,
-          fileSize: selectedFile.size,
-          fileData: fileData,
-        }),
+      // ✅ Use React Query mutation (consistent with profile pattern)
+      const result = await uploadMutation.mutateAsync({
+        fileName: selectedFile.name,
+        fileType: selectedFile.type,
+        fileSize: selectedFile.size,
+        fileData: fileData,
       });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Upload failed");
-      }
 
       toast.success("File uploaded successfully!");
 
@@ -119,8 +108,6 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
     } catch (error: any) {
       console.error("Upload error:", error);
       toast.error(error.message || "Upload failed. Please try again.");
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -171,7 +158,7 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
           accept="audio/*"
           onChange={handleChange}
           className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-          disabled={isUploading}
+          disabled={uploadMutation.isPending}
         />
 
         <div className="flex flex-col items-center justify-center space-y-4 p-12">
@@ -181,7 +168,9 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
 
           <div className="space-y-2 text-center">
             <h3 className="font-semibold">Drop your audio file here</h3>
-            <p className="text-muted-foreground text-sm">or click to browse your files</p>
+            <p className="text-muted-foreground text-sm">
+              or click to browse your files
+            </p>
           </div>
 
           <div className="text-muted-foreground text-xs">
@@ -209,10 +198,10 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
 
             <Button
               onClick={handleUpload}
-              disabled={isUploading}
+              disabled={uploadMutation.isPending}
               className="bg-primary hover:bg-primary/90"
             >
-              {isUploading ? "Uploading..." : "Continue →"}
+              {uploadMutation.isPending ? "Uploading..." : "Continue →"}
             </Button>
           </div>
         </Card>

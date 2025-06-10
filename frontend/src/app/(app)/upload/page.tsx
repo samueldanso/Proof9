@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { env } from "@/env";
 import { useState } from "react";
 import LicenseForm from "./_components/license-form";
 import MetadataForm from "./_components/metadata-form";
@@ -176,26 +177,26 @@ export default function UploadPage() {
 
                   try {
                     // Step 1: Create track in database
-                    const trackResponse = await fetch(
-                      "http://localhost:3001/api/tracks",
-                      {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                          title: uploadData.metadata?.title,
-                          description: uploadData.metadata?.description,
-                          genre: uploadData.metadata?.genre,
-                          tags: uploadData.metadata?.tags,
-                          artist_address: "0xYourWalletAddress", // TODO: Get from wallet
-                          ipfs_hash: uploadData.uploadInfo?.ipfsHash,
-                          ipfs_url: uploadData.uploadInfo?.ipfsUrl,
-                          file_hash: uploadData.uploadInfo?.fileHash,
-                          verified: uploadData.yakoa?.verified || false,
-                        }),
-                      }
-                    );
+                    const apiUrl =
+                      env.NEXT_PUBLIC_API_URL ||
+                      "https://proof9-production.up.railway.app";
+                    const trackResponse = await fetch(`${apiUrl}/api/tracks`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        title: uploadData.metadata?.title,
+                        description: uploadData.metadata?.description,
+                        genre: uploadData.metadata?.genre,
+                        tags: uploadData.metadata?.tags,
+                        artist_address: "0xYourWalletAddress", // TODO: Get from wallet
+                        ipfs_hash: uploadData.uploadInfo?.ipfsHash,
+                        ipfs_url: uploadData.uploadInfo?.ipfsUrl,
+                        file_hash: uploadData.uploadInfo?.fileHash,
+                        verified: uploadData.yakoa?.verified || false,
+                      }),
+                    });
 
                     const trackResult = await trackResponse.json();
                     if (!trackResult.success) {
