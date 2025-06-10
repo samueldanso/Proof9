@@ -208,6 +208,21 @@ app.get('/status/:tokenId', zValidator('param', TokenIdSchema), async (c) => {
 
         const response = await yakoaService.getToken(tokenId)
 
+        // 🐛 DEBUG: Log full Yakoa response for debugging
+        console.log('🔍 Yakoa Status Response:', {
+            tokenId: tokenId,
+            rawResponse: JSON.stringify(response, null, 2),
+            mediaCount: response.media?.length || 0,
+            mediaStatuses:
+                response.media?.map((media) => ({
+                    mediaId: media.media_id,
+                    status: media.status,
+                    infringementStatus: media.infringement_check_status,
+                    externalCount: media.external_infringements?.length || 0,
+                    networkCount: media.in_network_infringements?.length || 0,
+                })) || [],
+        })
+
         return c.json({
             success: true,
             data: {

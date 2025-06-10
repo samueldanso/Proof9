@@ -203,10 +203,13 @@ export default function UploadProgress({
           // 🐛 DEBUG: Log the actual status for debugging
           console.log(`🔍 Yakoa Status Check ${attempts}:`, {
             tokenId: tokenId,
+            rawApiResponse: statusResult.data,
+            status: status,
             mediaStatus: status.status,
             infringementStatus: status.infringementCheckStatus,
-            fullStatus: status,
-            rawResponse: statusResult.data,
+            externalInfringements: status.externalInfringements,
+            inNetworkInfringements: status.inNetworkInfringements,
+            allStatusFields: Object.keys(status || {}),
           });
 
           // Check for completion conditions - expanded based on workshop insights
