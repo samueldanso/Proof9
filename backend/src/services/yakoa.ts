@@ -10,8 +10,14 @@ const YAKOA_NETWORK = process.env.YAKOA_NETWORK || 'docs-demo'
 const YAKOA_BASE_URL = `https://${YAKOA_SUBDOMAIN}.ip-api-sandbox.yakoa.io/${YAKOA_NETWORK}`
 
 // Types and Schemas for Yakoa API
-export type TrustedPlatformTrustReason = { platform: string }
-export type NoLicensesTrustReason = { reason: 'no_licenses' }
+export type TrustedPlatformTrustReason = {
+    type: 'trusted_platform'
+    platform_name: string
+}
+export type NoLicensesTrustReason = {
+    type: 'no_licenses'
+    reason: string
+}
 
 export type MediaItem = {
     media_id: string

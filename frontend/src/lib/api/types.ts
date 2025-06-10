@@ -57,10 +57,12 @@ export interface VerificationRequest {
     hash?: string;
     trust_reason?:
       | {
-          platform: string;
+          type: "trusted_platform";
+          platform_name: string;
         }
       | {
-          reason: "no_licenses";
+          type: "no_licenses";
+          reason: string;
         }
       | null;
   }>;

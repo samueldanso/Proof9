@@ -4,8 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useUploadAudio, useVerificationStatus, useVerifyTrack } from "@/lib/api/hooks";
-import { AlertTriangle, Brain, CheckCircle, FileAudio, RefreshCw } from "lucide-react";
+import {
+  useUploadAudio,
+  useVerificationStatus,
+  useVerifyTrack,
+} from "@/lib/api/hooks";
+import {
+  AlertTriangle,
+  Brain,
+  CheckCircle,
+  FileAudio,
+  RefreshCw,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
@@ -46,7 +56,9 @@ export default function UploadProgress({
   onBack,
 }: UploadProgressProps) {
   const [progress, setProgress] = useState(0);
-  const [stage, setStage] = useState<"uploading" | "analyzing" | "complete" | "error">("uploading");
+  const [stage, setStage] = useState<
+    "uploading" | "analyzing" | "complete" | "error"
+  >("uploading");
   const [yakoaResult, setYakoaResult] = useState<YakoaResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tokenId, setTokenId] = useState<string | null>(null);
@@ -57,7 +69,8 @@ export default function UploadProgress({
   // API hooks
   const uploadAudio = useUploadAudio();
   const verifyTrack = useVerifyTrack();
-  const { data: verificationStatus, refetch: refetchStatus } = useVerificationStatus(tokenId || "");
+  const { data: verificationStatus, refetch: refetchStatus } =
+    useVerificationStatus(tokenId || "");
 
   useEffect(() => {
     if (!file) return;
@@ -112,7 +125,10 @@ export default function UploadProgress({
             {
               media_id: uploadResult.data.ipfsHash,
               url: uploadResult.data.ipfsUrl,
-              trust_reason: { platform: "Proof9" }, // Mark as platform-trusted
+              trust_reason: {
+                type: "trusted_platform" as const,
+                platform_name: "Proof9",
+              }, // Mark as platform-trusted
             },
           ],
           transaction: {
@@ -136,7 +152,9 @@ export default function UploadProgress({
 
         setProgress(65);
 
-        const verificationResult = await verifyTrack.mutateAsync(verificationData);
+        const verificationResult = await verifyTrack.mutateAsync(
+          verificationData
+        );
 
         // verifyTrack.mutateAsync returns API response directly: { success, data, error }
         if (verificationResult.success) {
@@ -153,7 +171,8 @@ export default function UploadProgress({
         setError(err instanceof Error ? err.message : "Verification failed");
         setStage("error");
         toast.error("Verification failed", {
-          description: err instanceof Error ? err.message : "Unknown error occurred",
+          description:
+            err instanceof Error ? err.message : "Unknown error occurred",
         });
       }
     };
@@ -170,15 +189,20 @@ export default function UploadProgress({
         // 🎯 DEMO ENVIRONMENT FALLBACK
         // Since we're using Yakoa's demo environment which has limitations,
         // provide a fallback result for testing purposes
-        console.log("🔄 Yakoa demo environment timeout - providing fallback result");
-        console.log("📋 Demo limitations: shared network space, daily resets at 12:00am UTC");
+        console.log(
+          "🔄 Yakoa demo environment timeout - providing fallback result"
+        );
+        console.log(
+          "📋 Demo limitations: shared network space, daily resets at 12:00am UTC"
+        );
 
         const fallbackResult: YakoaResult = {
           verified: true,
           confidence: 85,
           originality: "Demo verification completed (timeout fallback)",
           tokenId: tokenId,
-          details: "Verification completed using demo environment fallback due to processing delay",
+          details:
+            "Verification completed using demo environment fallback due to processing delay",
         };
 
         setProgress(100);
@@ -194,7 +218,10 @@ export default function UploadProgress({
         const statusResult = await refetchStatus();
 
         // statusResult is a React Query result: { data: ApiResponse, ... }
-        if (statusResult.data?.success && statusResult.data?.data?.verificationStatus?.length > 0) {
+        if (
+          statusResult.data?.success &&
+          statusResult.data?.data?.verificationStatus?.length > 0
+        ) {
           const status = statusResult.data.data.verificationStatus[0];
 
           // 🐛 DEBUG: Log the actual status for debugging
@@ -206,79 +233,108 @@ export default function UploadProgress({
             rawResponse: statusResult.data,
           });
 
-          // Check for completion conditions
+          // Check for completion conditions - expanded based on workshop insights
           if (
             status.status === "processed" ||
             status.status === "complete" ||
+            status.status === "succeeded" ||
             status.infringementCheckStatus === "complete" ||
-            status.infringementCheckStatus === "processed"
+            status.infringementCheckStatus === "processed" ||
+            status.infringementCheckStatus === "succeeded"
           ) {
             // Verification complete
             setProgress(100);
             setStage("complete");
 
+            const hasExternalInfringements =
+              status.externalInfringements &&
+              status.externalInfringements.length > 0;
+            const hasNetworkInfringements =
+              status.inNetworkInfringements &&
+              status.inNetworkInfringements.length > 0;
             const hasInfringements =
-              (status.externalInfringements && status.externalInfringements.length > 0) ||
-              (status.inNetworkInfringements && status.inNetworkInfringements.length > 0);
+              hasExternalInfringements || hasNetworkInfringements;
 
+            // Calculate confidence based on the highest confidence infringement
             const confidence = hasInfringements
               ? Math.max(
                   ...[
                     ...(status.externalInfringements?.map(
-                      (inf: ExternalInfringement) => inf.confidence,
+                      (inf: ExternalInfringement) => inf.confidence
                     ) || []),
                     ...(status.inNetworkInfringements?.map(
-                      (inf: InNetworkInfringement) => inf.confidence,
+                      (inf: InNetworkInfringement) => inf.confidence
                     ) || []),
-                  ],
+                  ]
                 )
               : 95;
 
+            // Enhanced result with workshop insights
             const result: YakoaResult = {
               verified: !hasInfringements,
               confidence: confidence,
               originality: hasInfringements
-                ? "Potential infringement detected"
+                ? hasExternalInfringements
+                  ? "External brand IP detected"
+                  : "Network content match found"
                 : "Original content verified",
               tokenId: tokenId,
               details: hasInfringements
                 ? `Found ${
                     (status.externalInfringements?.length || 0) +
                     (status.inNetworkInfringements?.length || 0)
-                  } potential matches`
-                : "No infringement detected",
+                  } potential matches${
+                    hasExternalInfringements
+                      ? ` (${status.externalInfringements
+                          ?.map((inf) => inf.brand_name)
+                          .join(", ")})`
+                      : ""
+                  }`
+                : "No infringement detected - content appears original",
             };
 
             setYakoaResult(result);
             return;
           }
 
-          // Check for explicit error conditions
+          // Check for explicit error conditions - expanded based on workshop
           if (
             status.status === "error" ||
             status.status === "failed" ||
+            status.status === "hash_mismatch" ||
             status.infringementCheckStatus === "error" ||
             status.infringementCheckStatus === "failed"
           ) {
-            throw new Error(
-              `Verification failed on Yakoa service: ${
+            let errorMessage = "Verification failed on Yakoa service";
+
+            if (status.status === "hash_mismatch") {
+              errorMessage =
+                "Content hash mismatch - file may have been modified during upload";
+            } else {
+              errorMessage += `: ${
                 status.status || status.infringementCheckStatus
-              }`,
-            );
+              }`;
+            }
+
+            throw new Error(errorMessage);
           }
 
           // Check for media-specific errors
           if (status.status === "hash_mismatch") {
-            throw new Error("Content hash mismatch - file may have been modified");
+            throw new Error(
+              "Content hash mismatch - file may have been modified"
+            );
           }
 
           // If status is pending, processing, or other non-terminal state, continue polling
           console.log(
-            `⏳ Still processing... Status: ${status.status}, Infringement: ${status.infringementCheckStatus}`,
+            `⏳ Still processing... Status: ${status.status}, Infringement: ${status.infringementCheckStatus}`
           );
         } else {
           // No verification status data
-          console.log(`❌ No verification status data found for token: ${tokenId}`);
+          console.log(
+            `❌ No verification status data found for token: ${tokenId}`
+          );
         }
 
         // Still processing, wait and try again
@@ -379,10 +435,10 @@ export default function UploadProgress({
                 stage === "uploading"
                   ? "text-primary"
                   : progress > 40
-                    ? "text-green-600"
-                    : stage === "error"
-                      ? "text-red-600"
-                      : "text-muted-foreground"
+                  ? "text-green-600"
+                  : stage === "error"
+                  ? "text-red-600"
+                  : "text-muted-foreground"
               }`}
             >
               <div className="rounded-full bg-current/10 p-2">
@@ -396,10 +452,10 @@ export default function UploadProgress({
                 stage === "analyzing"
                   ? "text-primary"
                   : progress === 100
-                    ? "text-green-600"
-                    : stage === "error" && progress > 40
-                      ? "text-red-600"
-                      : "text-muted-foreground"
+                  ? "text-green-600"
+                  : stage === "error" && progress > 40
+                  ? "text-red-600"
+                  : "text-muted-foreground"
               }`}
             >
               <div className="rounded-full bg-current/10 p-2">
@@ -413,8 +469,8 @@ export default function UploadProgress({
                 stage === "complete"
                   ? "text-green-600"
                   : stage === "error"
-                    ? "text-red-600"
-                    : "text-muted-foreground"
+                  ? "text-red-600"
+                  : "text-muted-foreground"
               }`}
             >
               <div className="rounded-full bg-current/10 p-2">
@@ -456,7 +512,9 @@ export default function UploadProgress({
                 <AlertTriangle className="h-6 w-6 text-orange-600" />
               )}
               <h3 className="font-bold text-xl">
-                {yakoaResult.verified ? "Verification Successful" : "Review Required"}
+                {yakoaResult.verified
+                  ? "Verification Successful"
+                  : "Review Required"}
               </h3>
             </div>
 
@@ -464,22 +522,34 @@ export default function UploadProgress({
               <div className="space-y-2">
                 <span className="text-muted-foreground text-sm">Status</span>
                 <div>
-                  <Badge variant={yakoaResult.verified ? "default" : "secondary"}>
-                    {yakoaResult.verified ? "Verified Original" : "Needs Review"}
+                  <Badge
+                    variant={yakoaResult.verified ? "default" : "secondary"}
+                  >
+                    {yakoaResult.verified
+                      ? "Verified Original"
+                      : "Needs Review"}
                   </Badge>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <span className="text-muted-foreground text-sm">Confidence</span>
-                <div className={`font-semibold ${getConfidenceColor(yakoaResult.confidence)}`}>
+                <span className="text-muted-foreground text-sm">
+                  Confidence
+                </span>
+                <div
+                  className={`font-semibold ${getConfidenceColor(
+                    yakoaResult.confidence
+                  )}`}
+                >
                   {yakoaResult.confidence}%
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <span className="text-muted-foreground text-sm">Analysis Result</span>
+              <span className="text-muted-foreground text-sm">
+                Analysis Result
+              </span>
               <p className="font-medium">{yakoaResult.originality}</p>
             </div>
 
@@ -493,8 +563,9 @@ export default function UploadProgress({
             {!yakoaResult.verified && (
               <div className="rounded-lg bg-orange-50 p-4 dark:bg-orange-950/20">
                 <p className="text-orange-800 text-sm dark:text-orange-200">
-                  Your track may contain elements similar to existing works. You can still proceed,
-                  but consider reviewing your licensing terms.
+                  Your track may contain elements similar to existing works. You
+                  can still proceed, but consider reviewing your licensing
+                  terms.
                 </p>
               </div>
             )}
@@ -502,7 +573,8 @@ export default function UploadProgress({
             {yakoaResult.tokenId && (
               <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
                 <p className="text-blue-800 text-sm dark:text-blue-200">
-                  <span className="font-medium">Verification Token:</span> {yakoaResult.tokenId}
+                  <span className="font-medium">Verification Token:</span>{" "}
+                  {yakoaResult.tokenId}
                 </p>
               </div>
             )}
@@ -521,7 +593,11 @@ export default function UploadProgress({
           disabled={stage !== "complete" && stage !== "error"}
           className="flex-1 bg-primary hover:bg-primary/90"
         >
-          {stage === "complete" ? "Continue →" : stage === "error" ? "Retry" : "Processing..."}
+          {stage === "complete"
+            ? "Continue →"
+            : stage === "error"
+            ? "Retry"
+            : "Processing..."}
         </Button>
       </div>
     </div>

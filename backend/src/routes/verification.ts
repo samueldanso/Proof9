@@ -31,7 +31,19 @@ const MediaItemSchema = z.object({
         .string()
         .regex(/^[a-f0-9]{64}$/, 'Hash must be a 64-character hex string (SHA-256)')
         .optional(),
-    trust_reason: z.union([z.object({ platform: z.string() }), z.object({ reason: z.literal('no_licenses') }), z.null()]).optional(),
+    trust_reason: z
+        .union([
+            z.object({
+                type: z.literal('trusted_platform'),
+                platform_name: z.string(),
+            }),
+            z.object({
+                type: z.literal('no_licenses'),
+                reason: z.string(),
+            }),
+            z.null(),
+        ])
+        .optional(),
 })
 
 const VerifyMusicSchema = z.object({
