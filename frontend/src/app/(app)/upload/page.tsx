@@ -117,7 +117,8 @@ export default function UploadPage() {
             <div className="space-y-4">
               <h3 className="font-bold text-2xl">Ready to Register</h3>
               <p className="text-muted-foreground">
-                Your track will be registered on Story Protocol with blockchain-backed ownership
+                Your track will be registered on Story Protocol with
+                blockchain-backed ownership
               </p>
 
               {/* Summary */}
@@ -136,13 +137,19 @@ export default function UploadPage() {
                       <span>{uploadData.metadata?.title}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Verification:</span>
+                      <span className="text-muted-foreground">
+                        Verification:
+                      </span>
                       <span
                         className={
-                          uploadData.yakoa?.verified ? "text-green-500" : "text-orange-500"
+                          uploadData.yakoa?.verified
+                            ? "text-green-500"
+                            : "text-orange-500"
                         }
                       >
-                        {uploadData.yakoa?.verified ? "✅ Verified Original" : "⚠️ Needs Review"}
+                        {uploadData.yakoa?.verified
+                          ? "✅ Verified Original"
+                          : "⚠️ Needs Review"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -169,23 +176,26 @@ export default function UploadPage() {
 
                   try {
                     // Step 1: Create track in database
-                    const trackResponse = await fetch("http://localhost:3001/api/tracks", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        title: uploadData.metadata?.title,
-                        description: uploadData.metadata?.description,
-                        genre: uploadData.metadata?.genre,
-                        tags: uploadData.metadata?.tags,
-                        artist_address: "0xYourWalletAddress", // TODO: Get from wallet
-                        ipfs_hash: uploadData.uploadInfo?.ipfsHash,
-                        ipfs_url: uploadData.uploadInfo?.ipfsUrl,
-                        file_hash: uploadData.uploadInfo?.fileHash,
-                        verified: uploadData.yakoa?.verified || false,
-                      }),
-                    });
+                    const trackResponse = await fetch(
+                      "http://localhost:3001/api/tracks",
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          title: uploadData.metadata?.title,
+                          description: uploadData.metadata?.description,
+                          genre: uploadData.metadata?.genre,
+                          tags: uploadData.metadata?.tags,
+                          artist_address: "0xYourWalletAddress", // TODO: Get from wallet
+                          ipfs_hash: uploadData.uploadInfo?.ipfsHash,
+                          ipfs_url: uploadData.uploadInfo?.ipfsUrl,
+                          file_hash: uploadData.uploadInfo?.fileHash,
+                          verified: uploadData.yakoa?.verified || false,
+                        }),
+                      }
+                    );
 
                     const trackResult = await trackResponse.json();
                     if (!trackResult.success) {
@@ -194,8 +204,14 @@ export default function UploadPage() {
 
                     // Step 2: Register with Story Protocol (if needed)
                     // This would be called after Yakoa verification in step 2
-                    console.log("Track created successfully:", trackResult.data);
-                    console.log("Ready for Story Protocol registration with:", uploadData);
+                    console.log(
+                      "Track created successfully:",
+                      trackResult.data
+                    );
+                    console.log(
+                      "Ready for Story Protocol registration with:",
+                      uploadData
+                    );
 
                     // TODO: Redirect to track page or success page
                   } catch (error: any) {
@@ -208,7 +224,7 @@ export default function UploadPage() {
                 disabled={isProcessing}
                 className="flex-1 rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
-                {isProcessing ? "Registering..." : "Register on Blockchain"}
+                {isProcessing ? "Registering.." : "Register on Blockchain"}
               </button>
             </div>
           </div>
@@ -232,13 +248,18 @@ export default function UploadPage() {
       <div className="max-w-4xl space-y-6">
         {/* Progress Indicator */}
         <div className="space-y-4">
-          <Progress value={(currentStep / steps.length) * 100} className="h-2 [&>div]:bg-primary" />
+          <Progress
+            value={(currentStep / steps.length) * 100}
+            className="h-2 [&>div]:bg-primary"
+          />
           <div className="flex justify-between text-sm">
             {steps.map((step) => (
               <div
                 key={step.id}
                 className={`flex flex-col items-center space-y-1 ${
-                  currentStep >= step.id ? "text-primary" : "text-muted-foreground"
+                  currentStep >= step.id
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 }`}
               >
                 <div
