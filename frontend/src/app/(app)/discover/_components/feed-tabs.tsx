@@ -20,7 +20,7 @@ export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
           <button
             key={tab.key}
             type="button"
-            className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
+            className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
               activeTab === tab.key
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"

@@ -12,22 +12,22 @@ export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {/* Tab Headers - Rounded pill design with softer colors */}
-      <div className="flex items-center gap-2">
+      {/* Tab Headers*/}
+      <div className="flex items-center justify-center gap-2">
         <button
           type="button"
-          className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
+          className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
             activeTab === "tracks"
               ? "bg-accent text-accent-foreground"
               : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
           }`}
           onClick={() => setActiveTab("tracks")}
         >
-          Tracks
+          Sounds
         </button>
         <button
           type="button"
-          className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
+          className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
             activeTab === "likes"
               ? "bg-accent text-accent-foreground"
               : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
@@ -43,10 +43,8 @@ export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
         <TrackList />
       ) : (
         <div className="flex flex-col items-center justify-center p-6 text-center">
-          <h3 className="mb-3 font-bold text-xl">No liked tracks yet</h3>
-          <p className="text-muted-foreground">
-            Tracks you like will appear here
-          </p>
+          <h3 className="mb-3 font-bold text-xl">No liked sounds yet</h3>
+          <p className="text-muted-foreground">Sounds you like will appear here</p>
         </div>
       )}
     </div>

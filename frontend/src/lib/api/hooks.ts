@@ -37,19 +37,21 @@ export function useTrendingTracks() {
 }
 
 // User hooks
-export function useUser(address: string) {
+export function useUser(identifier: string) {
   return useQuery({
-    queryKey: ["user", address],
+    queryKey: ["user", identifier],
     queryFn: () =>
       apiClient.get<{
         address: string;
+        username?: string | null;
         displayName: string;
         trackCount: number;
         followingCount: number;
         followersCount: number;
         verified: boolean;
-      }>(`/api/users/${address}`),
-    enabled: !!address,
+        avatar_url?: string | null;
+      }>(`/api/users/${identifier}`),
+    enabled: !!identifier,
   });
 }
 
@@ -73,7 +75,16 @@ export function useUploadAudio() {
       fileType: string;
       fileSize: number;
       fileData: string;
-    }) => apiClient.post("/api/upload/audio", data),
+    }) =>
+      apiClient.post<{
+        fileName: string;
+        fileType: string;
+        fileSize: number;
+        fileHash: string;
+        ipfsHash: string;
+        ipfsUrl: string;
+        uploadedAt: string;
+      }>("/api/upload/audio", data),
   });
 }
 
@@ -107,7 +118,10 @@ export function useRegisterTrack() {
 export function useVerifyTrack() {
   return useMutation({
     mutationFn: (data: VerificationRequest) =>
-      apiClient.post<VerificationResponse>("/api/verification/verify-music", data),
+      apiClient.post<VerificationResponse>(
+        "/api/verification/verify-music",
+        data
+      ),
     onSuccess: (response) => {
       console.log("Track verified:", response.data);
     },
@@ -120,7 +134,10 @@ export function useVerifyTrack() {
 export function useVerificationStatus(tokenId: string) {
   return useQuery({
     queryKey: ["verification", tokenId],
-    queryFn: () => apiClient.get<VerificationResponse>(`/api/verification/status/${tokenId}`),
+    queryFn: () =>
+      apiClient.get<VerificationResponse>(
+        `/api/verification/status/${tokenId}`
+      ),
     enabled: !!tokenId,
   });
 }
@@ -167,5 +184,20 @@ export function useUserLikes(userAddress: string) {
     queryKey: ["user", userAddress, "likes"],
     queryFn: () => apiClient.get(`/api/social/user/${userAddress}/likes`),
     enabled: !!userAddress,
+  });
+}
+
+// Search hooks
+export function useSearchUsers(query: string) {
+  return useQuery({
+    queryKey: ["search", "users", query],
+    queryFn: async () => {
+      if (!query.trim()) return [];
+      // Use direct Supabase query for search since we don't have backend endpoint yet
+      const { profileQueries } = await import("@/lib/db/queries");
+      return profileQueries.search(query, 10);
+    },
+    enabled: !!query.trim(),
+    staleTime: 30000, // Cache for 30 seconds
   });
 }

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { env } from "@/env";
 import { useState } from "react";
 import LicenseForm from "./_components/license-form";
 import MetadataForm from "./_components/metadata-form";
@@ -10,6 +11,11 @@ import UploadProgress from "./_components/upload-progress";
 
 interface UploadData {
   file?: File;
+  uploadInfo?: {
+    ipfsHash: string;
+    ipfsUrl: string;
+    fileHash: string;
+  };
   metadata?: {
     title: string;
     description: string;
@@ -63,8 +69,8 @@ export default function UploadPage() {
       case 1:
         return (
           <UploadForm
-            onFileSelect={(file) => {
-              updateUploadData({ file });
+            onFileSelect={(file, uploadData) => {
+              updateUploadData({ file, uploadInfo: uploadData });
               nextStep();
             }}
             onNext={nextStep}
@@ -166,15 +172,60 @@ export default function UploadPage() {
               </button>
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   setIsProcessing(true);
-                  // Handle Story Protocol registration here
-                  console.log("Registering with Story Protocol:", uploadData);
+
+                  try {
+                    // Step 1: Create track in database
+                    const apiUrl =
+                      env.NEXT_PUBLIC_API_URL ||
+                      "https://proof9-production.up.railway.app";
+                    const trackResponse = await fetch(`${apiUrl}/api/tracks`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        title: uploadData.metadata?.title,
+                        description: uploadData.metadata?.description,
+                        genre: uploadData.metadata?.genre,
+                        tags: uploadData.metadata?.tags,
+                        artist_address: "0xYourWalletAddress", // TODO: Get from wallet
+                        ipfs_hash: uploadData.uploadInfo?.ipfsHash,
+                        ipfs_url: uploadData.uploadInfo?.ipfsUrl,
+                        file_hash: uploadData.uploadInfo?.fileHash,
+                        verified: uploadData.yakoa?.verified || false,
+                      }),
+                    });
+
+                    const trackResult = await trackResponse.json();
+                    if (!trackResult.success) {
+                      throw new Error("Failed to create track");
+                    }
+
+                    // Step 2: Register with Story Protocol (if needed)
+                    // This would be called after Yakoa verification in step 2
+                    console.log(
+                      "Track created successfully:",
+                      trackResult.data
+                    );
+                    console.log(
+                      "Ready for Story Protocol registration with:",
+                      uploadData
+                    );
+
+                    // TODO: Redirect to track page or success page
+                  } catch (error: any) {
+                    console.error("Registration error:", error);
+                    // TODO: Show error toast
+                  } finally {
+                    setIsProcessing(false);
+                  }
                 }}
                 disabled={isProcessing}
                 className="flex-1 rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
-                {isProcessing ? "Registering..." : "Register on Blockchain"}
+                {isProcessing ? "Registering.." : "Register on Blockchain"}
               </button>
             </div>
           </div>

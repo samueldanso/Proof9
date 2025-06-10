@@ -2,17 +2,25 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useUploadAudio } from "@/lib/api/hooks";
 import { FileAudio, Music, Upload } from "lucide-react";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 interface UploadFormProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect: (
+    file: File,
+    uploadData: { ipfsHash: string; ipfsUrl: string; fileHash: string }
+  ) => void;
   onNext: () => void;
 }
 
 export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // ✅ Use React Query hook (consistent with profile pattern)
+  const uploadMutation = useUploadAudio();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -46,23 +54,60 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
 
     // Check if it's an audio file
     if (!file.type.startsWith("audio/")) {
-      alert("Please select an audio file (MP3, WAV, FLAC, etc.)");
+      toast.error("Please select an audio file (MP3, WAV, FLAC, etc.)");
       return;
     }
 
     // Check file size (max 100MB)
     if (file.size > 100 * 1024 * 1024) {
-      alert("File size must be less than 100MB");
+      toast.error("File size must be less than 100MB");
       return;
     }
 
     setSelectedFile(file);
   };
 
-  const handleUpload = () => {
-    if (selectedFile) {
-      onFileSelect(selectedFile);
-      // onNext is called automatically by parent when file is selected
+  // Convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        // Remove data:audio/xxx;base64, prefix
+        const base64Data = base64.split(",")[1];
+        resolve(base64Data);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    try {
+      // Convert file to base64
+      const fileData = await fileToBase64(selectedFile);
+
+      // ✅ Use React Query mutation (consistent with profile pattern)
+      const result = await uploadMutation.mutateAsync({
+        fileName: selectedFile.name,
+        fileType: selectedFile.type,
+        fileSize: selectedFile.size,
+        fileData: fileData,
+      });
+
+      toast.success("File uploaded successfully!");
+
+      // Pass both file and upload data to parent
+      onFileSelect(selectedFile, {
+        ipfsHash: result.data.ipfsHash,
+        ipfsUrl: result.data.ipfsUrl,
+        fileHash: result.data.fileHash,
+      });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Upload failed. Please try again.");
     }
   };
 
@@ -113,6 +158,7 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
           accept="audio/*"
           onChange={handleChange}
           className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+          disabled={uploadMutation.isPending}
         />
 
         <div className="flex flex-col items-center justify-center space-y-4 p-12">
@@ -152,9 +198,10 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
 
             <Button
               onClick={handleUpload}
+              disabled={uploadMutation.isPending}
               className="bg-primary hover:bg-primary/90"
             >
-              Continue →
+              {uploadMutation.isPending ? "Uploading..." : "Continue →"}
             </Button>
           </div>
         </Card>
