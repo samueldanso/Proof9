@@ -3,7 +3,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { env } from "@/env";
+import { apiClient } from "@/lib/api/client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useAccount } from "wagmi";
 import LicenseForm from "./_components/license-form";
 import MetadataForm from "./_components/metadata-form";
 import UploadForm from "./_components/upload-form";
@@ -44,6 +48,8 @@ const steps = [
 ];
 
 export default function UploadPage() {
+  const { address } = useAccount();
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadData, setUploadData] = useState<UploadData>({});
   const [isProcessing, setIsProcessing] = useState(false);
@@ -173,51 +179,77 @@ export default function UploadPage() {
               <button
                 type="button"
                 onClick={async () => {
+                  if (!address) {
+                    toast.error("Please connect your wallet first");
+                    return;
+                  }
+
                   setIsProcessing(true);
 
                   try {
-                    // Step 1: Create track in database
-                    const apiUrl =
-                      env.NEXT_PUBLIC_API_URL ||
-                      "https://proof9-production.up.railway.app";
-                    const trackResponse = await fetch(`${apiUrl}/api/tracks`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        title: uploadData.metadata?.title,
-                        description: uploadData.metadata?.description,
-                        genre: uploadData.metadata?.genre,
-                        tags: uploadData.metadata?.tags,
-                        artist_address: "0xYourWalletAddress", // TODO: Get from wallet
-                        ipfs_hash: uploadData.uploadInfo?.ipfsHash,
-                        ipfs_url: uploadData.uploadInfo?.ipfsUrl,
-                        file_hash: uploadData.uploadInfo?.fileHash,
-                        verified: uploadData.yakoa?.verified || false,
-                      }),
+                    // Step 1: Create track in database using API client
+                    const trackResult = await apiClient.post<{
+                      success: boolean;
+                      data: any;
+                      error?: string;
+                    }>("/api/tracks", {
+                      title: uploadData.metadata?.title,
+                      description: uploadData.metadata?.description,
+                      genre: uploadData.metadata?.genre,
+                      tags: uploadData.metadata?.tags,
+                      artist_address: address,
+                      ipfs_hash: uploadData.uploadInfo?.ipfsHash,
+                      ipfs_url: uploadData.uploadInfo?.ipfsUrl,
+                      file_hash: uploadData.uploadInfo?.fileHash,
+                      verified: uploadData.yakoa?.verified || false,
                     });
 
-                    const trackResult = await trackResponse.json();
                     if (!trackResult.success) {
                       throw new Error("Failed to create track");
                     }
 
-                    // Step 2: Register with Story Protocol (if needed)
-                    // This would be called after Yakoa verification in step 2
-                    console.log(
-                      "Track created successfully:",
-                      trackResult.data
-                    );
-                    console.log(
-                      "Ready for Story Protocol registration with:",
-                      uploadData
-                    );
+                    // Step 2: Register with Story Protocol
+                    if (uploadData.yakoa?.verified) {
+                      const registrationResult = await apiClient.post<{
+                        success: boolean;
+                        data: any;
+                        error?: string;
+                      }>("/api/registration/register", {
+                        ipMetadata: {
+                          title: uploadData.metadata?.title,
+                          description: uploadData.metadata?.description,
+                          creators: [
+                            {
+                              name: "Creator",
+                              address: address,
+                              contributionPercent: 100,
+                            },
+                          ],
+                          image: uploadData.uploadInfo?.ipfsUrl || "",
+                        },
+                        nftMetadata: {
+                          name: uploadData.metadata?.title,
+                          description: uploadData.metadata?.description,
+                          image: uploadData.uploadInfo?.ipfsUrl || "",
+                        },
+                      });
 
-                    // TODO: Redirect to track page or success page
+                      if (registrationResult.success) {
+                        toast.success(
+                          "Track registered successfully on Story Protocol!"
+                        );
+                        console.log(
+                          "Story Protocol registration:",
+                          registrationResult.data
+                        );
+                      }
+                    }
+
+                    toast.success("Track uploaded successfully!");
+                    router.push(`/profile/${address}`);
                   } catch (error: any) {
                     console.error("Registration error:", error);
-                    // TODO: Show error toast
+                    toast.error("Failed to register track. Please try again.");
                   } finally {
                     setIsProcessing(false);
                   }

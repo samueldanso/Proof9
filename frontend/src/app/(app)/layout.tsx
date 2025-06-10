@@ -35,7 +35,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         );
         setProfileStatus({
           loading: false,
-          hasProfile: response.data?.hasProfile || false,
+          hasProfile: response.hasProfile || false,
         });
       } catch (error) {
         // If error checking profile, assume no profile exists

@@ -18,7 +18,7 @@ const envSchema = z.object({
     // Yakoa API configuration
     YAKOA_API_KEY: z.string(),
     YAKOA_SUBDOMAIN: z.string().default('docs-demo'),
-    YAKOA_NETWORK: z.string().default('story-mainnet'),
+    YAKOA_NETWORK: z.string().default('docs-demo'),
 
     // Supabase configuration
     SUPABASE_URL: z.string(),

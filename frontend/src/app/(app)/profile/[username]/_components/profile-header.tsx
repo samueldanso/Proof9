@@ -21,8 +21,7 @@ export function ProfileHeader() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Get user data from API (works with both username and address)
-  const { data: userResponse, isLoading } = useUser(profileIdentifier);
-  const userData = userResponse?.data;
+  const { data: userData, isLoading } = useUser(profileIdentifier);
 
   // Check if this is the current user's profile (compare addresses)
   const isOwnProfile = connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();

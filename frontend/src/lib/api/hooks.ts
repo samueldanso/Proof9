@@ -106,7 +106,7 @@ export function useRegisterTrack() {
     mutationFn: (data: RegistrationRequest) =>
       apiClient.post<RegistrationResponse>("/api/registration/register", data),
     onSuccess: (response) => {
-      console.log("Track registered:", response.data);
+      console.log("Track registered:", response);
     },
     onError: (error) => {
       console.error("Registration failed:", error);
@@ -118,12 +118,9 @@ export function useRegisterTrack() {
 export function useVerifyTrack() {
   return useMutation({
     mutationFn: (data: VerificationRequest) =>
-      apiClient.post<VerificationResponse>(
-        "/api/verification/verify-music",
-        data
-      ),
+      apiClient.post<VerificationResponse>("/api/verification/verify-music", data),
     onSuccess: (response) => {
-      console.log("Track verified:", response.data);
+      console.log("Track verification initiated:", response);
     },
     onError: (error) => {
       console.error("Verification failed:", error);
@@ -134,10 +131,7 @@ export function useVerifyTrack() {
 export function useVerificationStatus(tokenId: string) {
   return useQuery({
     queryKey: ["verification", tokenId],
-    queryFn: () =>
-      apiClient.get<VerificationResponse>(
-        `/api/verification/status/${tokenId}`
-      ),
+    queryFn: () => apiClient.get<VerificationResponse>(`/api/verification/status/${tokenId}`),
     enabled: !!tokenId,
   });
 }

@@ -1,3 +1,18 @@
+/**
+ * PROOF9 YAKOA VERIFICATION API
+ *
+ * This module implements Yakoa content authentication API for music verification.
+ * Follows Yakoa's exact conventions and naming patterns for seamless integration.
+ *
+ * Yakoa Documentation: https://docs.yakoa.io/reference/register-token
+ *
+ * Production Requirements:
+ * - Real Ethereum addresses for creator_id (from connected wallet)
+ * - Valid transaction hashes (32-byte hex strings)
+ * - Publicly accessible IPFS URLs for media
+ * - Proper content hashes for integrity verification
+ */
+
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
@@ -10,26 +25,32 @@ const app = new Hono()
 
 // Schema for media verification
 const MediaItemSchema = z.object({
-    media_id: z.string(),
-    url: z.string().url(),
-    hash: z.string().optional(),
+    media_id: z.string().min(1, 'Media ID is required'),
+    url: z.string().url('Must be a valid URL - IPFS URLs are recommended for content integrity'),
+    hash: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/, 'Hash must be a 64-character hex string (SHA-256)')
+        .optional(),
     trust_reason: z.union([z.object({ platform: z.string() }), z.object({ reason: z.literal('no_licenses') }), z.null()]).optional(),
 })
 
 const VerifyMusicSchema = z.object({
     tokenId: z.string().optional(),
-    contractAddress: z.string().optional(),
+    contractAddress: z
+        .string()
+        .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid contract address format')
+        .optional(),
     onChainTokenId: z.string().optional(),
-    creatorId: z.string(),
-    title: z.string(),
-    description: z.string(),
+    creatorId: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid creator address - must be a valid Ethereum address'),
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().min(1, 'Description is required'),
     metadata: z.record(z.any()).optional(),
-    mediaItems: z.array(MediaItemSchema).min(1),
+    mediaItems: z.array(MediaItemSchema).min(1, 'At least one media item is required'),
     transaction: z.object({
-        hash: z.string(),
-        blockNumber: z.number(),
-        timestamp: z.number(),
-        chain: z.string(),
+        hash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash format'),
+        blockNumber: z.number().int().positive('Block number must be positive'),
+        timestamp: z.number().int().positive('Timestamp must be positive'),
+        chain: z.string().min(1, 'Chain is required'),
     }),
     licenseParents: z
         .array(
@@ -77,13 +98,31 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
             tokenId ||
             (contractAddress && onChainTokenId
                 ? yakoaService.formatYakoaTokenId(contractAddress, onChainTokenId)
-                : `proof9-${createHash('sha256').update(JSON.stringify(mediaItems[0])).digest('hex').slice(0, 16)}`)
+                : (() => {
+                      // For production: We should have a real contract address
+                      // For now, create a deterministic ID based on content and creator
+                      const contentHash = createHash('sha256')
+                          .update(
+                              JSON.stringify({
+                                  creator: creatorId,
+                                  media: mediaItems,
+                                  timestamp: transaction.timestamp,
+                              })
+                          )
+                          .digest('hex')
+
+                      // Use a deterministic approach: creator address + content hash slice as token ID
+                      return `${creatorId}:${parseInt(contentHash.slice(0, 8), 16)}`
+                  })())
 
         // Prepare token data for Yakoa
         const yakoaToken: YakoaToken = {
             id: resolvedTokenId,
             registration_tx: {
-                hash: transaction.hash,
+                hash:
+                    transaction.hash.startsWith('0x') && transaction.hash.length === 66
+                        ? transaction.hash
+                        : `0x${createHash('sha256').update(`${creatorId}-${Date.now()}`).digest('hex')}`,
                 block_number: transaction.blockNumber,
                 timestamp: transaction.timestamp,
                 chain: transaction.chain,

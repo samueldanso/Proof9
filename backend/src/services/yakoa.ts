@@ -6,8 +6,8 @@ dotenv.config()
 // Constants
 const YAKOA_API_KEY = process.env.YAKOA_API_KEY || ''
 const YAKOA_SUBDOMAIN = process.env.YAKOA_SUBDOMAIN || 'docs-demo'
-const YAKOA_NETWORK = process.env.YAKOA_NETWORK || 'story-mainnet'
-const YAKOA_BASE_URL = `https://${YAKOA_SUBDOMAIN}.ip-api.yakoa.io/${YAKOA_NETWORK}`
+const YAKOA_NETWORK = process.env.YAKOA_NETWORK || 'docs-demo'
+const YAKOA_BASE_URL = `https://${YAKOA_SUBDOMAIN}.ip-api-sandbox.yakoa.io/${YAKOA_NETWORK}`
 
 // Types and Schemas for Yakoa API
 export type TrustedPlatformTrustReason = { platform: string }

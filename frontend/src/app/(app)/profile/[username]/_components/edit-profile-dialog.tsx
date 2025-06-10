@@ -80,11 +80,7 @@ export function EditProfileDialog({
         fileData: base64Data,
       });
 
-      if (uploadResponse.success) {
-        return uploadResponse.data.avatarUrl;
-      } else {
-        throw new Error(uploadResponse.error || "Failed to upload avatar");
-      }
+      return uploadResponse.avatarUrl;
     } catch (error) {
       console.error("Avatar upload error:", error);
       throw error;
@@ -108,7 +104,10 @@ export function EditProfileDialog({
       }
 
       // Update profile
-      const response = await apiClient.put(`/api/users/${address}`, {
+      const response = await apiClient.put<{
+        success: boolean;
+        error?: string;
+      }>(`/api/users/${address}`, {
         display_name: displayName.trim(),
         username: username.trim() || undefined,
         avatar_url: avatarUrl,
