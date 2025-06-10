@@ -124,8 +124,7 @@ export default function UploadPage() {
             <div className="space-y-4">
               <h3 className="font-bold text-2xl">Ready to Register</h3>
               <p className="text-muted-foreground">
-                Your track will be registered on Story Protocol with
-                blockchain-backed ownership
+                Your track will be registered on Story Protocol with blockchain-backed ownership
               </p>
 
               {/* Summary */}
@@ -144,19 +143,13 @@ export default function UploadPage() {
                       <span>{uploadData.metadata?.title}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        Verification:
-                      </span>
+                      <span className="text-muted-foreground">Verification:</span>
                       <span
                         className={
-                          uploadData.yakoa?.verified
-                            ? "text-green-500"
-                            : "text-orange-500"
+                          uploadData.yakoa?.verified ? "text-green-500" : "text-orange-500"
                         }
                       >
-                        {uploadData.yakoa?.verified
-                          ? "✅ Verified Original"
-                          : "⚠️ Needs Review"}
+                        {uploadData.yakoa?.verified ? "✅ Verified Original" : "⚠️ Needs Review"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -235,13 +228,8 @@ export default function UploadPage() {
                       });
 
                       if (registrationResult.success) {
-                        toast.success(
-                          "Track registered successfully on Story Protocol!"
-                        );
-                        console.log(
-                          "Story Protocol registration:",
-                          registrationResult.data
-                        );
+                        toast.success("Track registered successfully on Story Protocol!");
+                        console.log("Story Protocol registration:", registrationResult.data);
                       }
                     }
 
@@ -281,18 +269,13 @@ export default function UploadPage() {
       <div className="max-w-4xl space-y-6">
         {/* Progress Indicator */}
         <div className="space-y-4">
-          <Progress
-            value={(currentStep / steps.length) * 100}
-            className="h-2 [&>div]:bg-primary"
-          />
+          <Progress value={(currentStep / steps.length) * 100} className="h-2 [&>div]:bg-primary" />
           <div className="flex justify-between text-sm">
             {steps.map((step) => (
               <div
                 key={step.id}
                 className={`flex flex-col items-center space-y-1 ${
-                  currentStep >= step.id
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  currentStep >= step.id ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <div
