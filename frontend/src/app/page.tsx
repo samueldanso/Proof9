@@ -5,7 +5,6 @@ import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { Loader } from "@/components/ui/loader";
-import { SoundPreview } from "@/components/sound/sound-preview";
 import { CREATOR_IMAGES } from "@/lib/constants";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -70,14 +69,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Sound Preview Section */}
-            <div className="mt-16 w-full max-w-4xl">
-              <h2 className="text-2xl font-semibold text-center mb-8">
-                Try it out - Upload your sound
-              </h2>
-              <SoundPreview />
-            </div>
-
             {/* Creator showcase */}
             <div className="mt-16 mb-8 w-full">
               <div className="relative mx-auto flex h-[200px] w-full max-w-4xl flex-col gap-2 overflow-hidden">
@@ -111,6 +102,13 @@ export default function Home() {
                             className="object-cover"
                             priority={index === 0}
                           />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute bottom-2 left-2 right-2 text-white">
+                              <p className="text-sm font-bold truncate">{creator.title}</p>
+                              <p className="text-xs truncate">{creator.artist}</p>
+                              <p className="text-xs text-gray-300">{creator.year}</p>
+                            </div>
+                          </div>
                         </div>
                       ))}
                       {CREATOR_IMAGES.map((creator, index) => (
@@ -125,6 +123,13 @@ export default function Home() {
                             sizes="170px"
                             className="object-cover"
                           />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute bottom-2 left-2 right-2 text-white">
+                              <p className="text-sm font-bold truncate">{creator.title}</p>
+                              <p className="text-xs truncate">{creator.artist}</p>
+                              <p className="text-xs text-gray-300">{creator.year}</p>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </motion.div>
