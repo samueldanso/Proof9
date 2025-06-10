@@ -75,7 +75,16 @@ export function useUploadAudio() {
       fileType: string;
       fileSize: number;
       fileData: string;
-    }) => apiClient.post("/api/upload/audio", data),
+    }) =>
+      apiClient.post<{
+        fileName: string;
+        fileType: string;
+        fileSize: number;
+        fileHash: string;
+        ipfsHash: string;
+        ipfsUrl: string;
+        uploadedAt: string;
+      }>("/api/upload/audio", data),
   });
 }
 
@@ -109,7 +118,10 @@ export function useRegisterTrack() {
 export function useVerifyTrack() {
   return useMutation({
     mutationFn: (data: VerificationRequest) =>
-      apiClient.post<VerificationResponse>("/api/verification/verify-music", data),
+      apiClient.post<VerificationResponse>(
+        "/api/verification/verify-music",
+        data
+      ),
     onSuccess: (response) => {
       console.log("Track verified:", response.data);
     },
@@ -122,7 +134,10 @@ export function useVerifyTrack() {
 export function useVerificationStatus(tokenId: string) {
   return useQuery({
     queryKey: ["verification", tokenId],
-    queryFn: () => apiClient.get<VerificationResponse>(`/api/verification/status/${tokenId}`),
+    queryFn: () =>
+      apiClient.get<VerificationResponse>(
+        `/api/verification/status/${tokenId}`
+      ),
     enabled: !!tokenId,
   });
 }
