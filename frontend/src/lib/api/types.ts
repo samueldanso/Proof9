@@ -77,27 +77,23 @@ export interface VerificationRequest {
 }
 
 export interface VerificationResponse {
-  success: boolean;
-  data: {
-    tokenId: string;
-    verificationStatus: Array<{
-      mediaId: string;
-      status?: string;
-      infringementCheckStatus?: string;
-      externalInfringements?: Array<{
-        brand_id: string;
-        brand_name: string;
-        confidence: number;
-        authorized: boolean;
-      }>;
-      inNetworkInfringements?: Array<{
-        token_id: string;
-        confidence: number;
-        licensed: boolean;
-      }>;
+  tokenId: string;
+  verificationStatus: Array<{
+    mediaId: string;
+    status?: string;
+    infringementCheckStatus?: string;
+    externalInfringements?: Array<{
+      brand_id: string;
+      brand_name: string;
+      confidence: number;
+      authorized: boolean;
     }>;
-  };
-  error?: string;
+    inNetworkInfringements?: Array<{
+      token_id: string;
+      confidence: number;
+      licensed: boolean;
+    }>;
+  }>;
 }
 
 // Track Data Bridge (Backend IP Asset -> Frontend Track)

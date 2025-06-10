@@ -10,7 +10,7 @@ import { toast } from "sonner";
 interface UploadFormProps {
   onFileSelect: (
     file: File,
-    uploadData: { ipfsHash: string; ipfsUrl: string; fileHash: string },
+    uploadData: { ipfsHash: string; ipfsUrl: string; fileHash: string }
   ) => void;
   onNext: () => void;
 }
@@ -101,9 +101,9 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
 
       // Pass both file and upload data to parent
       onFileSelect(selectedFile, {
-        ipfsHash: result.ipfsHash,
-        ipfsUrl: result.ipfsUrl,
-        fileHash: result.fileHash,
+        ipfsHash: result.data.ipfsHash,
+        ipfsUrl: result.data.ipfsUrl,
+        fileHash: result.data.fileHash,
       });
     } catch (error: any) {
       console.error("Upload error:", error);
@@ -168,7 +168,9 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
 
           <div className="space-y-2 text-center">
             <h3 className="font-semibold">Drop your audio file here</h3>
-            <p className="text-muted-foreground text-sm">or click to browse your files</p>
+            <p className="text-muted-foreground text-sm">
+              or click to browse your files
+            </p>
           </div>
 
           <div className="text-muted-foreground text-xs">
