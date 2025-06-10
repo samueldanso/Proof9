@@ -50,16 +50,16 @@ const VerifyMusicSchema = z.object({
     tokenId: z.string().optional(),
     contractAddress: z
         .string()
-        .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid contract address format')
+        .regex(/^0x[a-f0-9]{40}$/, 'Invalid contract address format')
         .optional(),
     onChainTokenId: z.string().optional(),
-    creatorId: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid creator address - must be a valid Ethereum address'),
+    creatorId: z.string().regex(/^0x[a-f0-9]{40}$/, 'Invalid creator address - must be a valid Ethereum address'),
     title: z.string().min(1, 'Title is required'),
     description: z.string().min(1, 'Description is required'),
     metadata: z.record(z.any()).optional(),
     mediaItems: z.array(MediaItemSchema).min(1, 'At least one media item is required'),
     transaction: z.object({
-        hash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash format'),
+        hash: z.string().regex(/^0x[a-f0-9]{64}$/, 'Invalid transaction hash format'),
         blockNumber: z.number().int().positive('Block number must be positive'),
         timestamp: z.number().int().positive('Timestamp must be positive'),
         chain: z.string().min(1, 'Chain is required'),
@@ -111,8 +111,10 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
             (contractAddress && onChainTokenId
                 ? yakoaService.formatYakoaTokenId(contractAddress, onChainTokenId)
                 : (() => {
-                      // For production: We should have a real contract address
-                      // For now, create a deterministic ID based on content and creator
+                      // DEMO ENVIRONMENT ONLY: Yakoa's demo requires blockchain-style format
+                      // In production, this would be replaced with actual NFT contract data
+                      // or a production network that supports platform-specific IDs
+
                       const contentHash = createHash('sha256')
                           .update(
                               JSON.stringify({
@@ -123,31 +125,50 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
                           )
                           .digest('hex')
 
-                      // Use a deterministic approach: creator address + content hash slice as token ID
-                      return `${creatorId}:${parseInt(contentHash.slice(0, 8), 16)}`
+                      // Generate deterministic contract-style address for demo compatibility
+                      const demoContractAddress = `0x${contentHash.slice(0, 40)}`
+
+                      // Generate simple numeric token ID
+                      const numericTokenId = (parseInt(contentHash.slice(40, 48), 16) % 999999) + 1
+
+                      // Format per Yakoa demo environment requirements
+                      return `${demoContractAddress}:${numericTokenId}`
                   })())
 
         // Prepare token data for Yakoa
         const yakoaToken: YakoaToken = {
             id: resolvedTokenId,
             registration_tx: {
+                // DEMO ENVIRONMENT: Use provided hash or generate deterministic one
+                // In production: This would be a real blockchain transaction hash
                 hash:
                     transaction.hash.startsWith('0x') && transaction.hash.length === 66
                         ? transaction.hash
                         : `0x${createHash('sha256').update(`${creatorId}-${Date.now()}`).digest('hex')}`,
                 block_number: transaction.blockNumber,
                 timestamp: transaction.timestamp,
-                chain: transaction.chain,
+                chain: transaction.chain, // 'docs-demo' for demo environment
             },
-            creator_id: creatorId,
+            creator_id: creatorId, // Real wallet address (correctly formatted)
             metadata: {
                 title,
                 description,
                 ...(metadata || {}),
             },
-            media: mediaItems,
+            media: mediaItems, // Real IPFS URLs with proper trust_reason
             ...(licenseParents && licenseParents.length > 0 ? { license_parents: licenseParents } : {}),
         }
+
+        // 🐛 DEBUG: Log the data being sent to Yakoa for debugging
+        console.log('🚀 Yakoa Registration Data:', {
+            tokenId: resolvedTokenId,
+            creatorId: creatorId,
+            creatorIdValid: /^0x[a-f0-9]{40}$/.test(creatorId.toLowerCase()),
+            tokenIdValid: /^0x[a-f0-9]{40}:[0-9]+$/.test(resolvedTokenId.toLowerCase()),
+            mediaCount: mediaItems.length,
+            registrationTx: yakoaToken.registration_tx,
+            note: 'Using demo-compatible format for Yakoa demo environment',
+        })
 
         // Register the token with Yakoa
         const response = await yakoaService.registerToken(yakoaToken)
