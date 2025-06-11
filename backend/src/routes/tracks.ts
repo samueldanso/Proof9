@@ -24,7 +24,9 @@ const CreateTrackSchema = z.object({
 
 // Query schema for tracks
 const TracksQuerySchema = z.object({
-    tab: z.enum(['following', 'verified', 'trending']).optional().default('following'),
+    tab: z.enum(['latest', 'following', 'trending']).optional().default('latest'),
+    user_address: z.string().optional(), // For following tab functionality
+    genre: z.string().optional(), // For genre filtering
     limit: z.coerce.number().min(1).max(50).optional().default(20),
     offset: z.coerce.number().min(0).optional().default(0),
 })
@@ -36,6 +38,13 @@ app.post('/', zValidator('json', CreateTrackSchema), async (c) => {
     try {
         const trackData = c.req.valid('json')
 
+        // Get artist profile to populate artist_name
+        const { data: artistProfile } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('address', trackData.artist_address)
+            .single()
+
         // Insert track into Supabase
         const { data: track, error } = await supabase
             .from('tracks')
@@ -46,6 +55,7 @@ app.post('/', zValidator('json', CreateTrackSchema), async (c) => {
                 tags: trackData.tags,
                 duration: trackData.duration,
                 artist_address: trackData.artist_address,
+                artist_name: artistProfile?.display_name || null, // Populate from profile
                 ipfs_hash: trackData.ipfs_hash,
                 ipfs_url: trackData.ipfs_url,
                 file_hash: trackData.file_hash,
@@ -91,49 +101,132 @@ app.post('/', zValidator('json', CreateTrackSchema), async (c) => {
  */
 app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
     try {
-        const { tab, limit, offset } = c.req.valid('query')
+        const { tab, user_address, genre, limit, offset } = c.req.valid('query')
 
-        // Build query based on tab filter
-        let query = supabase
-            .from('tracks')
-            .select(
-                `
-                id,
-                title,
-                description,
-                genre,
-                duration,
-                artist_address,
-                verified,
-                plays,
-                likes_count,
-                comments_count,
-                ipfs_url,
-                created_at
+        // Build base query with artist profile info
+        let baseQuery = supabase.from('tracks').select(
             `
-            )
-            .range(offset, offset + limit - 1)
+                *,
+                profiles!tracks_artist_address_fkey (
+                    display_name,
+                    avatar_url,
+                    username
+                )
+            `
+        )
+
+        // Apply genre filter if specified
+        if (genre) {
+            baseQuery = baseQuery.eq('genre', genre)
+        }
+
+        let { data: tracksData, error } = await baseQuery.range(offset, offset + limit - 1).order('created_at', { ascending: false })
 
         // Apply filtering based on tab
-        switch (tab) {
-            case 'verified':
-                query = query.eq('verified', true)
-                break
-            case 'trending':
-                query = query.order('plays', { ascending: false })
-                break
-            case 'following':
-                // For now, return all tracks ordered by creation date
-                query = query.order('created_at', { ascending: false })
-                break
-        }
+        if (tab === 'following') {
+            // For following tab, get tracks from creators the user follows
+            if (!user_address) {
+                // If no user address provided, return empty result
+                tracksData = []
+            } else {
+                // First, get the list of creators this user follows
+                const { data: followedCreators, error: followsError } = await supabase
+                    .from('follows')
+                    .select('following_address')
+                    .eq('follower_address', user_address)
 
-        // For non-trending, default sort by creation date
-        if (tab !== 'trending') {
-            query = query.order('created_at', { ascending: false })
-        }
+                if (followsError) {
+                    console.error('Get follows error:', followsError)
+                    return c.json(
+                        {
+                            success: false,
+                            error: followsError.message,
+                        },
+                        500
+                    )
+                }
 
-        const { data: tracksData, error } = await query
+                const followedAddresses = followedCreators?.map((f) => f.following_address) || []
+
+                if (followedAddresses.length === 0) {
+                    // User doesn't follow anyone, return empty result
+                    tracksData = []
+                } else {
+                    // Get tracks from followed creators
+                    let followingQuery = supabase
+                        .from('tracks')
+                        .select(
+                            `
+                            *,
+                            profiles!tracks_artist_address_fkey (
+                                display_name,
+                                avatar_url,
+                                username
+                            )
+                        `
+                        )
+                        .in('artist_address', followedAddresses)
+
+                    // Apply genre filter if specified
+                    if (genre) {
+                        followingQuery = followingQuery.eq('genre', genre)
+                    }
+
+                    followingQuery = followingQuery.range(offset, offset + limit - 1).order('created_at', { ascending: false })
+
+                    const { data: followingData, error: followingError } = await followingQuery
+                    if (followingError) {
+                        console.error('Get following tracks error:', followingError)
+                        return c.json(
+                            {
+                                success: false,
+                                error: followingError.message,
+                            },
+                            500
+                        )
+                    }
+                    tracksData = followingData
+                }
+            }
+        } else if (tab === 'trending') {
+            // For trending tab, order by plays descending (most played first)
+            let trendingQuery = supabase.from('tracks').select(
+                `
+                    *,
+                    profiles!tracks_artist_address_fkey (
+                        display_name,
+                        avatar_url,
+                        username
+                    )
+                `
+            )
+
+            // Apply genre filter if specified
+            if (genre) {
+                trendingQuery = trendingQuery.eq('genre', genre)
+            }
+
+            // Order by a combined trending score: plays + (likes * 2) for better engagement weighting
+            // This gives likes more weight since they're more intentional than plays
+            trendingQuery = trendingQuery
+                .range(offset, offset + limit - 1)
+                .order('plays', { ascending: false })
+                .order('likes_count', { ascending: false })
+
+            const { data: trendingData, error: trendingError } = await trendingQuery
+            if (trendingError) {
+                console.error('Get trending tracks error:', trendingError)
+                return c.json(
+                    {
+                        success: false,
+                        error: trendingError.message,
+                    },
+                    500
+                )
+            }
+            tracksData = trendingData
+        }
+        // For 'latest' tab, use the default query (already sorted by created_at DESC)
 
         if (error) {
             console.error('Get tracks error:', error)
@@ -146,13 +239,17 @@ app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
             )
         }
 
-        // Transform to match frontend expected format
+        // Transform to match frontend expected format - simple approach
         const tracks = (tracksData || []).map((track) => ({
             id: track.id,
-            ipId: track.id, // Using track ID as ipId for now
+            ipId: track.id,
             title: track.title,
-            artist: `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
+            artist:
+                track.artist_name ||
+                track.profiles?.display_name ||
+                `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
             artistAddress: track.artist_address,
+            artistAvatarUrl: track.profiles?.avatar_url,
             duration: track.duration || '0:00',
             plays: track.plays || 0,
             verified: track.verified || false,
@@ -195,7 +292,20 @@ app.get('/:id', async (c) => {
     try {
         const trackId = c.req.param('id')
 
-        const { data: track, error } = await supabase.from('tracks').select('*').eq('id', trackId).single()
+        const { data: track, error } = await supabase
+            .from('tracks')
+            .select(
+                `
+                *,
+                profiles!tracks_artist_address_fkey (
+                    display_name,
+                    avatar_url,
+                    username
+                )
+            `
+            )
+            .eq('id', trackId)
+            .single()
 
         if (error || !track) {
             return c.json(
@@ -207,13 +317,17 @@ app.get('/:id', async (c) => {
             )
         }
 
-        // Transform to match frontend expected format
+        // Transform to match frontend expected format - simple approach
         const transformedTrack = {
             id: track.id,
             ipId: track.ip_id || track.id,
             title: track.title,
-            artist: `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
+            artist:
+                track.artist_name ||
+                track.profiles?.display_name ||
+                `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
             artistAddress: track.artist_address,
+            artistAvatarUrl: track.profiles?.avatar_url,
             duration: track.duration || '0:00',
             plays: track.plays || 0,
             verified: track.verified || false,
@@ -251,15 +365,12 @@ app.get('/trending/sidebar', async (c) => {
             .from('tracks')
             .select(
                 `
-                id,
-                title,
-                artist_address,
-                duration,
-                plays,
-                verified,
-                likes_count,
-                comments_count,
-                ipfs_url
+                *,
+                profiles!tracks_artist_address_fkey (
+                    display_name,
+                    avatar_url,
+                    username
+                )
             `
             )
             .order('plays', { ascending: false })
@@ -276,13 +387,17 @@ app.get('/trending/sidebar', async (c) => {
             )
         }
 
-        // Transform to match frontend expected format
+        // Transform to match frontend expected format - simple approach
         const tracks = (tracksData || []).map((track) => ({
             id: track.id,
             ipId: track.id,
             title: track.title,
-            artist: `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
+            artist:
+                track.artist_name ||
+                track.profiles?.display_name ||
+                `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
             artistAddress: track.artist_address,
+            artistAvatarUrl: track.profiles?.avatar_url,
             duration: track.duration || '0:00',
             plays: track.plays || 0,
             verified: track.verified || false,

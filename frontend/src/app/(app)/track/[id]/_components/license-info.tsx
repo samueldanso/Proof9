@@ -9,7 +9,13 @@ import {
   convertUSDToWIP,
   getLicenseSummary,
 } from "@/lib/story-protocol";
-import { CheckCircle, Download, ExternalLink, Loader2, Shield } from "lucide-react";
+import {
+  CheckCircle,
+  Download,
+  ExternalLink,
+  Loader2,
+  Shield,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
@@ -104,8 +110,8 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
         toast.success(
           `License purchased successfully! Transaction: ${result.data.transactionHash.slice(
             0,
-            10,
-          )}...`,
+            10
+          )}...`
         );
 
         // Could update local state or refetch data here
@@ -115,7 +121,9 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
     } catch (error) {
       console.error("License purchase error:", error);
       toast.error(
-        `Failed to purchase license: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to purchase license: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     } finally {
       setIsPurchasing(false);
@@ -131,7 +139,9 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
             <Shield className="h-8 w-8 text-primary" />
           </div>
           <h2 className="font-semibold text-xl">License & Rights</h2>
-          <p className="text-muted-foreground text-sm">Secure your rights to use this track</p>
+          <p className="text-muted-foreground text-sm">
+            Secure your rights to use this track
+          </p>
         </div>
 
         <Separator />
@@ -157,7 +167,9 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
         <div className="space-y-4">
           <div className="text-center">
             <div className="font-bold text-3xl">{wipAmount} WIP</div>
-            <div className="text-muted-foreground text-sm">~${track.license.price} USD</div>
+            <div className="text-muted-foreground text-sm">
+              ~${track.license.price} USD
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-center text-sm">
@@ -166,7 +178,9 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
               <div className="text-muted-foreground">Sales</div>
             </div>
             <div>
-              <div className="font-medium">{storyTerms.commercialRevShare}%</div>
+              <div className="font-medium">
+                {storyTerms.commercialRevShare}%
+              </div>
               <div className="text-muted-foreground">Revenue Share</div>
             </div>
           </div>
@@ -182,8 +196,12 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
             <div className="space-y-1 text-blue-800 text-sm dark:text-blue-200">
               <p>{getLicenseSummary(licenseFormData)}</p>
               <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                <div>Commercial Use: {storyTerms.commercialUse ? "✅" : "❌"}</div>
-                <div>Derivatives: {storyTerms.derivativesAllowed ? "✅" : "❌"}</div>
+                <div>
+                  Commercial Use: {storyTerms.commercialUse ? "✅" : "❌"}
+                </div>
+                <div>
+                  Derivatives: {storyTerms.derivativesAllowed ? "✅" : "❌"}
+                </div>
                 <div>Transferable: {storyTerms.transferable ? "✅" : "❌"}</div>
                 <div>Attribution Required: ✅</div>
               </div>
@@ -250,8 +268,8 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
                     {!isConnected
                       ? "Connect Wallet"
                       : !track.verified
-                        ? "Verification Required"
-                        : `Buy License - ${wipAmount} WIP`}
+                      ? "Verification Required"
+                      : `Buy License - ${wipAmount} WIP`}
                   </>
                 )}
               </Button>
