@@ -23,6 +23,13 @@ interface Track {
   isLiked?: boolean;
   likes: number;
   comments: number;
+  license?: {
+    type: string;
+    price: string;
+    available: boolean;
+    terms: string;
+    downloads: number;
+  };
 }
 
 interface TrackCardProps {
@@ -129,7 +136,9 @@ export function TrackCard({
 
           {/* Track Info */}
           <div className="space-y-1">
-            <h3 className="font-semibold text-lg leading-tight">{track.title}</h3>
+            <h3 className="font-semibold text-lg leading-tight">
+              {track.title}
+            </h3>
             <div className="flex items-center gap-4 text-muted-foreground text-sm">
               <span>{track.duration}</span>
               <span>{track.plays.toLocaleString()} plays</span>
@@ -145,6 +154,7 @@ export function TrackCard({
             onLike={onLike}
             onComment={onComment}
             onShare={onShare}
+            licensePrice={track.license?.price.replace("$", "")}
           />
         </div>
       </div>
