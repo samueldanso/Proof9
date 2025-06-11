@@ -15,13 +15,13 @@ export function TrackList() {
   const userData = userResponse?.data;
 
   // Get user's track IDs
-  const { data: userTracksResponse, isLoading: isLoadingUserTracks } = useUserTracks(
-    userData?.address || "",
-  );
+  const { data: userTracksResponse, isLoading: isLoadingUserTracks } =
+    useUserTracks(userData?.address || "");
   const userTrackIds = userTracksResponse?.data?.tracks || [];
 
   // Get all tracks to filter by user's tracks
-  const { data: allTracksResponse, isLoading: isLoadingAllTracks } = useTracks("following");
+  const { data: allTracksResponse, isLoading: isLoadingAllTracks } =
+    useTracks("following");
   const allTracks = allTracksResponse?.data?.tracks || [];
 
   // Filter tracks to only show user's tracks and transform them
@@ -55,9 +55,9 @@ export function TrackList() {
     return (
       <div className="flex flex-col items-center justify-center p-6 text-center">
         <div className="animate-pulse space-y-4">
-          <div className="h-32 w-full rounded bg-muted" />
-          <div className="h-32 w-full rounded bg-muted" />
-          <div className="h-32 w-full rounded bg-muted" />
+          <div className="h-32 w-full bg-muted rounded"></div>
+          <div className="h-32 w-full bg-muted rounded"></div>
+          <div className="h-32 w-full bg-muted rounded"></div>
         </div>
       </div>
     );
@@ -68,7 +68,9 @@ export function TrackList() {
       {userTracks.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-6 text-center">
           <h3 className="mb-3 font-bold text-xl">No sounds published yet</h3>
-          <p className="text-muted-foreground">Your registered sounds will appear here</p>
+          <p className="text-muted-foreground">
+            Your registered sounds will appear here
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-1">
