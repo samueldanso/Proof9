@@ -126,7 +126,7 @@ Proof9 integrates Yakoa for basic music content verification:
 
 ## Roadmap
 
--   [ ]
+-   [] Implement creator verified badges
 
 ## Contributing
 
