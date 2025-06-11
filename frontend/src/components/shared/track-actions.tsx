@@ -4,8 +4,8 @@ import IconBubble from "@/components/icons/bubble.svg";
 import IconHeart from "@/components/icons/hearth.svg";
 import IconHeartFill from "@/components/icons/hearthFill.svg";
 import IconShare from "@/components/icons/share.svg";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -66,11 +66,11 @@ export function TrackActions({
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-1 px-2 py-1 h-auto"
+          className="flex h-auto items-center gap-1 px-2 py-1"
           onClick={handleLike}
         >
           {isLiked ? (
-            <IconHeartFill className="h-4 w-4 text-red-500" />
+            <IconHeartFill className="h-4 w-4 text-white" />
           ) : (
             <IconHeart className="h-4 w-4" />
           )}
@@ -81,7 +81,7 @@ export function TrackActions({
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-1 px-2 py-1 h-auto"
+          className="flex h-auto items-center gap-1 px-2 py-1"
           onClick={handleComment}
         >
           <IconBubble className="h-4 w-4" />
@@ -92,7 +92,7 @@ export function TrackActions({
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-1 px-2 py-1 h-auto"
+          className="flex h-auto items-center gap-1 px-2 py-1"
           onClick={handleShare}
         >
           <IconShare className="h-4 w-4" />
@@ -104,13 +104,11 @@ export function TrackActions({
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-1 px-3 py-1 h-auto"
+          className="flex h-auto items-center gap-1 px-3 py-1"
           onClick={handleBuyLicense}
         >
           <ShoppingCart className="h-3 w-3" />
-          <span className="text-sm">
-            {licensePrice ? `$${licensePrice}` : "License"}
-          </span>
+          <span className="text-sm">{licensePrice ? `$${licensePrice}` : "License"}</span>
         </Button>
       )}
     </div>

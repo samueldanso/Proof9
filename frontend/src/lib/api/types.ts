@@ -9,12 +9,13 @@ export interface ApiResponse<T = any> {
 }
 
 // Transform database Track to LegacyTrack for component compatibility
-export function transformDbTrackToLegacy(dbTrack: DbTrack): Track {
+export function transformDbTrackToLegacy(dbTrack: DbTrack & { artistAvatarUrl?: string }): Track {
   return {
     id: dbTrack.id,
     title: dbTrack.title,
     artist: dbTrack.artist_name || "Unknown Artist",
     artistAddress: dbTrack.artist_address,
+    artistAvatarUrl: dbTrack.artistAvatarUrl || undefined,
     duration: dbTrack.duration || "0:00",
     plays: dbTrack.plays,
     verified: dbTrack.verified,

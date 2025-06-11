@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getCoverPlaceholder, getCoverUrl } from "@/lib/cover";
 import { Pause, Play } from "lucide-react";
-import { useState } from "react";
 
 interface Track {
   id: string;
@@ -38,23 +38,25 @@ interface TrackMediaProps {
 }
 
 export default function TrackMedia({ track, isPlaying, onPlay }: TrackMediaProps) {
-  const [imageError, setImageError] = useState(false);
-
   return (
     <Card className="overflow-hidden p-0">
       <div className="relative aspect-square w-full bg-neutral-200 dark:bg-neutral-800">
-        {track.imageUrl && !imageError ? (
-          <img
-            src={track.imageUrl}
-            alt={track.title}
-            className="h-full w-full object-cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-8xl text-neutral-400">🎵</div>
-          </div>
-        )}
+        <img
+          src={getCoverUrl(track.imageUrl, track.genre)}
+          alt={track.title}
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            // If image fails to load, show placeholder
+            e.currentTarget.style.display = "none";
+            const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+            if (placeholder) {
+              placeholder.style.display = "flex";
+            }
+          }}
+        />
+        <div className="flex h-full items-center justify-center" style={{ display: "none" }}>
+          <div className="text-8xl text-neutral-400">{getCoverPlaceholder(track.title)}</div>
+        </div>
 
         {/* Play Button Overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/20">

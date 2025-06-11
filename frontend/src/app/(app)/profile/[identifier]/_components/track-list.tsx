@@ -1,10 +1,10 @@
 "use client";
 
 import { TrackCard } from "@/components/shared/track-card";
+import { useAddComment, useLikeTrack } from "@/hooks/use-social-actions";
 import { useUser, useUserTracks } from "@/lib/api/hooks";
 import { useTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
-import { useLikeTrack, useAddComment } from "@/hooks/use-social-actions";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -17,13 +17,13 @@ export function TrackList() {
   const userData = userResponse?.data;
 
   // Get user's track IDs
-  const { data: userTracksResponse, isLoading: isLoadingUserTracks } =
-    useUserTracks(userData?.address || "");
+  const { data: userTracksResponse, isLoading: isLoadingUserTracks } = useUserTracks(
+    userData?.address || "",
+  );
   const userTrackIds = userTracksResponse?.data?.tracks || [];
 
   // Get all tracks to filter by user's tracks
-  const { data: allTracksResponse, isLoading: isLoadingAllTracks } =
-    useTracks("following");
+  const { data: allTracksResponse, isLoading: isLoadingAllTracks } = useTracks("following");
   const allTracks = allTracksResponse?.data?.tracks || [];
 
   // Filter tracks to only show user's tracks and transform them
@@ -61,7 +61,7 @@ export function TrackList() {
             toast.error("Failed to add comment");
             console.error("Comment error:", error);
           },
-        }
+        },
       );
     }
   };
@@ -75,12 +75,24 @@ export function TrackList() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 w-full bg-muted rounded"></div>
-          <div className="h-32 w-full bg-muted rounded"></div>
-          <div className="h-32 w-full bg-muted rounded"></div>
-        </div>
+      <div className="space-y-1">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="animate-pulse p-4">
+            <div className="flex items-center gap-4">
+              <div className="h-4 w-6 rounded bg-muted" />
+              <div className="h-12 w-12 rounded-md bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-3/4 rounded bg-muted" />
+                <div className="h-3 w-1/2 rounded bg-muted" />
+              </div>
+              <div className="flex gap-2">
+                <div className="h-8 w-8 rounded bg-muted" />
+                <div className="h-8 w-8 rounded bg-muted" />
+                <div className="h-8 w-8 rounded bg-muted" />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -90,13 +102,11 @@ export function TrackList() {
       {userTracks.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-6 text-center">
           <h3 className="mb-3 font-bold text-xl">No sounds published yet</h3>
-          <p className="text-muted-foreground">
-            Your registered sounds will appear here
-          </p>
+          <p className="text-muted-foreground">Your registered sounds will appear here</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-1">
-          {userTracks.map((track) => (
+        <div className="space-y-1">
+          {userTracks.map((track, index) => (
             <TrackCard
               key={track.id}
               track={track}
@@ -105,7 +115,8 @@ export function TrackList() {
               onComment={handleComment}
               onShare={handleShare}
               showArtist={false}
-              variant="profile"
+              variant="list"
+              index={index}
             />
           ))}
         </div>

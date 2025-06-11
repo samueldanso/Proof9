@@ -15,6 +15,7 @@ export interface LegacyTrack {
   title: string;
   artist: string;
   artistAddress: string;
+  artistAvatarUrl?: string;
   duration: string;
   plays: number;
   verified: boolean;

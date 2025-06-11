@@ -23,7 +23,7 @@ const ROYALTY_POLICY_LAP = "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E";
  * Following Story Protocol documentation for token conversion
  */
 export function convertUSDToWIP(usdAmount: string): bigint {
-  const usd = parseFloat(usdAmount) || 0;
+  const usd = Number.parseFloat(usdAmount) || 0;
   // For demo: 1 USD = 1 WIP token (in production, use price oracle)
   return parseEther(usd.toString());
 }
@@ -50,9 +50,7 @@ export function getLicenseRevShare(licenseType: string): number {
  * Following exact Story Protocol LicenseTerms structure from documentation
  * https://docs.story.foundation/developers/tutorials/register-stability-images
  */
-export function convertLicenseFormToStoryTerms(
-  licenseData: LicenseFormData
-): LicenseTerms {
+export function convertLicenseFormToStoryTerms(licenseData: LicenseFormData): LicenseTerms {
   const { type, price } = licenseData;
 
   // Following Story Protocol's commercialRemixTerms example exactly
@@ -85,11 +83,9 @@ export function convertLicenseFormToStoryTerms(
  */
 export function getLicenseSummary(licenseData: LicenseFormData): string {
   const terms = convertLicenseFormToStoryTerms(licenseData);
-  const wipAmount = Number(terms.defaultMintingFee) / Math.pow(10, 18);
+  const wipAmount = Number(terms.defaultMintingFee) / 10 ** 18;
 
   return `${
     licenseData.type.charAt(0).toUpperCase() + licenseData.type.slice(1)
-  } License: ${wipAmount} WIP tokens, ${
-    terms.commercialRevShare
-  }% revenue share`;
+  } License: ${wipAmount} WIP tokens, ${terms.commercialRevShare}% revenue share`;
 }

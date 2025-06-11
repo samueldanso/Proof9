@@ -7,8 +7,8 @@ interface FeedTabsProps {
 
 export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
   const tabs = [
+    { key: "latest", label: "Latest" },
     { key: "following", label: "Following" },
-    { key: "verified", label: "Verified" },
     { key: "trending", label: "Trending" },
   ];
 

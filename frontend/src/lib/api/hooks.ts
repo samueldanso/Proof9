@@ -16,17 +16,25 @@ interface ApiResponse<T = any> {
 }
 
 // Track hooks
-export function useTracks(tab = "following") {
+export function useTracks(tab = "latest", userAddress?: string, genre?: string) {
   return useQuery({
-    queryKey: ["tracks", tab],
-    queryFn: () =>
-      apiClient.get<
+    queryKey: ["tracks", tab, userAddress, genre],
+    queryFn: () => {
+      const params = new URLSearchParams({ tab });
+      if (userAddress && tab === "following") {
+        params.append("user_address", userAddress);
+      }
+      if (genre) {
+        params.append("genre", genre);
+      }
+      return apiClient.get<
         ApiResponse<{
           tracks: Track[];
           total: number;
           hasMore: boolean;
         }>
-      >(`/api/tracks?tab=${tab}`),
+      >(`/api/tracks?${params.toString()}`);
+    },
   });
 }
 

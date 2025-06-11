@@ -2,30 +2,28 @@
 
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
+import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
 import { useTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
-import {
-  useLikeTrack,
-  useAddComment,
-  useUserLikes,
-} from "@/hooks/use-social-actions";
 import { useSearchParams } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
 import FeedTabs from "./_components/feed-tabs";
+import GenreFilter from "./_components/genre-filter";
 import TrendingBanner from "./_components/trending-banner";
 
 export default function DiscoverPage() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<string>(
-    tabParam === "verified" ||
-      tabParam === "trending" ||
-      tabParam === "following"
+    tabParam === "latest" || tabParam === "following" || tabParam === "trending"
       ? tabParam
-      : "following"
+      : "latest",
   );
+
+  // Genre filter state
+  const [activeGenre, setActiveGenre] = useState<string | null>(null);
 
   // Music player state
   const [currentTrack, setCurrentTrack] = useState<any>(null);
@@ -34,8 +32,12 @@ export default function DiscoverPage() {
   // User authentication
   const { address } = useAccount();
 
-  // Load tracks based on active tab
-  const { data: tracksResponse, isLoading, error } = useTracks(activeTab);
+  // Load tracks based on active tab and genre filter
+  const {
+    data: tracksResponse,
+    isLoading,
+    error,
+  } = useTracks(activeTab, address || undefined, activeGenre || undefined);
   const dbTracks = tracksResponse?.data?.tracks || [];
 
   // Load user's liked tracks to determine isLiked status
@@ -61,6 +63,10 @@ export default function DiscoverPage() {
     const url = new URL(window.location.href);
     url.searchParams.set("tab", tab);
     window.history.pushState({}, "", url);
+  };
+
+  const handleGenreChange = (genre: string | null) => {
+    setActiveGenre(genre);
   };
 
   const handlePlay = (track: any) => {
@@ -110,29 +116,38 @@ export default function DiscoverPage() {
   }
 
   return (
-    <div className="w-full space-y-8">
-      {/* Header */}
-      <div className="mx-auto max-w-2xl space-y-2 text-center">
-        <h1 className="font-bold text-3xl">Discover</h1>
-        <p className="text-muted-foreground">
+    <div className="w-full space-y-6">
+      {/* Header - More compact */}
+      <div className="mx-auto max-w-4xl space-y-1 text-center">
+        <h1 className="font-bold text-2xl">Discover</h1>
+        <p className="text-muted-foreground text-sm">
           Explore verified music and find your next favorite sound
         </p>
       </div>
 
       {/* Trending Banner */}
-      <TrendingBanner />
+      <div className="mx-auto max-w-4xl px-4">
+        <TrendingBanner onExploreClick={() => handleTabChange("trending")} />
+      </div>
 
       {/* Feed Tabs */}
       <FeedTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Track Feed */}
-      <div className="mx-auto max-w-2xl space-y-6">
+      {/* Genre Filter */}
+      <div className="mx-auto max-w-7xl px-4">
+        <GenreFilter activeGenre={activeGenre} onGenreChange={handleGenreChange} />
+      </div>
+
+      {/* Track Feed - Grid Layout */}
+      <div className="mx-auto max-w-7xl px-4">
         {isLoading ? (
-          // Loading state
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
+          // Loading state - Grid skeleton
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-32 w-full rounded bg-muted" />
+                <div className="mb-3 aspect-square w-full rounded-lg bg-muted" />
+                <div className="mb-2 h-4 rounded bg-muted" />
+                <div className="h-3 w-2/3 rounded bg-muted" />
               </div>
             ))}
           </div>
@@ -141,27 +156,31 @@ export default function DiscoverPage() {
           <div className="flex flex-col items-center justify-center p-8 text-center">
             <h3 className="mb-3 font-bold text-xl">No tracks found</h3>
             <p className="text-muted-foreground">
-              {activeTab === "verified"
-                ? "No verified tracks available yet"
-                : activeTab === "trending"
-                ? "No trending tracks available yet"
-                : "No tracks available yet"}
+              {activeTab === "latest"
+                ? "No new tracks uploaded yet"
+                : activeTab === "following"
+                  ? "No tracks from creators you follow yet"
+                  : activeTab === "trending"
+                    ? "No trending tracks available yet"
+                    : "No tracks available yet"}
             </p>
           </div>
         ) : (
-          // Track list
-          tracks.map((track) => (
-            <TrackCard
-              key={track.id}
-              track={track}
-              onPlay={handlePlay}
-              onLike={handleLike}
-              onComment={handleComment}
-              onShare={handleShare}
-              isPlaying={currentTrack?.id === track.id && isPlaying}
-              variant="feed"
-            />
-          ))
+          // Track grid - 4 columns on large screens, responsive
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {tracks.map((track) => (
+              <TrackCard
+                key={track.id}
+                track={track}
+                onPlay={handlePlay}
+                onLike={handleLike}
+                onComment={handleComment}
+                onShare={handleShare}
+                isPlaying={currentTrack?.id === track.id && isPlaying}
+                variant="feed"
+              />
+            ))}
+          </div>
         )}
       </div>
 
@@ -173,6 +192,9 @@ export default function DiscoverPage() {
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onClose={handlePlayerClose}
+          onLike={handleLike}
+          onComment={handleComment}
+          onShare={handleShare}
         />
       )}
     </div>
