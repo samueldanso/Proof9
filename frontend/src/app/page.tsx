@@ -53,15 +53,36 @@ export default function Home() {
             <div className="flex flex-col items-center text-center">
               {/* Headline */}
               <h1 className="max-w-4xl pt-20 font-bold text-4xl text-foreground tracking-tight md:text-5xl lg:text-6xl">
-                Protect, license, and monetize your sound — all in one place
+                Prove your music is yours. <br />
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Get paid when it's used.
+                </span>
               </h1>
 
               {/* Subheadline */}
-              <p className="mt-10 max-w-2xl text-lg text-muted-foreground">
-                Proof9 is a sound rights platform where music creators protect their IP, license it
-                for use, monetize their work, and connect with fans —
-                <span className="font-bold text-foreground"> built on Story Protocol.</span>
+              <p className="mt-10 max-w-2xl text-lg text-muted-foreground leading-relaxed">
+                The first platform that uses{" "}
+                <span className="font-semibold text-foreground">AI verification</span> and{" "}
+                <span className="font-semibold text-foreground">blockchain ownership</span> to help
+                music creators protect their work, license it easily, and earn automatically when
+                it's used.
               </p>
+
+              {/* Trust indicators */}
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-muted-foreground text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-[#ced925]" />
+                  <span>AI-Powered Verification</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-[#ced925]/70" />
+                  <span>Blockchain Ownership</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-[#ced925]/40" />
+                  <span>Automated Royalties</span>
+                </div>
+              </div>
 
               {/* CTA Button */}
               <div className="mt-10 w-full max-w-xs">
@@ -102,11 +123,11 @@ export default function Home() {
                             className="object-cover"
                             priority={index === 0}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="absolute bottom-2 left-2 right-2 text-white">
-                              <p className="text-sm font-bold truncate">{creator.title}</p>
-                              <p className="text-xs truncate">{creator.artist}</p>
-                              <p className="text-xs text-gray-300">{creator.year}</p>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                            <div className="absolute right-2 bottom-2 left-2 text-white">
+                              <p className="truncate font-bold text-sm">{creator.title}</p>
+                              <p className="truncate text-xs">{creator.artist}</p>
+                              <p className="text-gray-300 text-xs">{creator.year}</p>
                             </div>
                           </div>
                         </div>
@@ -123,11 +144,11 @@ export default function Home() {
                             sizes="170px"
                             className="object-cover"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="absolute bottom-2 left-2 right-2 text-white">
-                              <p className="text-sm font-bold truncate">{creator.title}</p>
-                              <p className="text-xs truncate">{creator.artist}</p>
-                              <p className="text-xs text-gray-300">{creator.year}</p>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                            <div className="absolute right-2 bottom-2 left-2 text-white">
+                              <p className="truncate font-bold text-sm">{creator.title}</p>
+                              <p className="truncate text-xs">{creator.artist}</p>
+                              <p className="text-gray-300 text-xs">{creator.year}</p>
                             </div>
                           </div>
                         </div>

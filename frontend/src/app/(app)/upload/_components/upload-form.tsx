@@ -161,9 +161,9 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
           disabled={uploadMutation.isPending}
         />
 
-        <div className="flex flex-col items-center justify-center space-y-4 p-12">
+        <div className="flex flex-col items-center justify-center space-y-4 p-8">
           <div className="rounded-full bg-primary/10 p-4">
-            <Upload className="h-8 w-8 text-primary" />
+            <FileAudio className="h-8 w-8 text-primary" />
           </div>
 
           <div className="space-y-2 text-center">
@@ -185,12 +185,26 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
               <FileAudio className="h-6 w-6 text-primary" />
             </div>
 
-            <div className="flex-1 space-y-1">
+            <div className="flex-1 space-y-2">
               <h4 className="font-medium">{selectedFile.name}</h4>
               <div className="flex items-center space-x-4 text-muted-foreground text-sm">
                 <span>{formatFileSize(selectedFile.size)}</span>
                 <span>•</span>
                 <span>{selectedFile.type}</span>
+              </div>
+
+              {/* Audio Preview */}
+              <div className="mt-2">
+                <audio
+                  controls
+                  className="h-8 w-full"
+                  style={{ maxWidth: "300px" }}
+                  preload="metadata"
+                >
+                  <source src={URL.createObjectURL(selectedFile)} type={selectedFile.type} />
+                  <track kind="captions" label="Music Preview" default />
+                  Your browser does not support the audio element.
+                </audio>
               </div>
             </div>
 

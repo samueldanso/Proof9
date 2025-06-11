@@ -15,25 +15,38 @@ interface ApiResponse<T = any> {
   error?: string;
 }
 
+// API Track type (includes fields from backend that aren't in the legacy Track type)
+interface ApiTrack extends Track {
+  artistUsername?: string; // Additional field from API
+}
+
 // Track hooks
-export function useTracks(tab = "following") {
+export function useTracks(tab = "latest", userAddress?: string, genre?: string) {
   return useQuery({
-    queryKey: ["tracks", tab],
-    queryFn: () =>
-      apiClient.get<
+    queryKey: ["tracks", tab, userAddress, genre],
+    queryFn: () => {
+      const params = new URLSearchParams({ tab });
+      if (userAddress && tab === "following") {
+        params.append("user_address", userAddress);
+      }
+      if (genre) {
+        params.append("genre", genre);
+      }
+      return apiClient.get<
         ApiResponse<{
-          tracks: Track[];
+          tracks: ApiTrack[];
           total: number;
           hasMore: boolean;
         }>
-      >(`/api/tracks?tab=${tab}`),
+      >(`/api/tracks?${params.toString()}`);
+    },
   });
 }
 
 export function useTrack(trackId: string) {
   return useQuery({
     queryKey: ["track", trackId],
-    queryFn: () => apiClient.get<ApiResponse<Track>>(`/api/tracks/${trackId}`),
+    queryFn: () => apiClient.get<ApiResponse<ApiTrack>>(`/api/tracks/${trackId}`),
     enabled: !!trackId,
   });
 }
@@ -41,7 +54,7 @@ export function useTrack(trackId: string) {
 export function useTrendingTracks() {
   return useQuery({
     queryKey: ["tracks", "trending", "sidebar"],
-    queryFn: () => apiClient.get<ApiResponse<Track[]>>("/api/tracks/trending/sidebar"),
+    queryFn: () => apiClient.get<ApiResponse<ApiTrack[]>>("/api/tracks/trending/sidebar"),
   });
 }
 

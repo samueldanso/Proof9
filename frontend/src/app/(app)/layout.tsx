@@ -79,7 +79,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <ProfileSetupGuard>
       <div className="flex h-screen w-full overflow-hidden">
-        <aside className="w-64 flex-shrink-0 bg-background">
+        <aside className="w-64 flex-shrink-0 bg-muted/30">
           <Sidebar />
         </aside>
         <div className="flex h-full flex-1 flex-col overflow-hidden">

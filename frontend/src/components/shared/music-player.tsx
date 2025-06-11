@@ -1,9 +1,24 @@
 "use client";
 
+import IconBubble from "@/components/icons/bubble.svg";
+import IconHeart from "@/components/icons/hearth.svg";
+import IconHeartFill from "@/components/icons/hearthFill.svg";
+import IconShare from "@/components/icons/share.svg";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Pause, Play, SkipBack, SkipForward, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useAudioPlayer } from "@/hooks/use-audio-player";
+import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
+import { getCoverPlaceholder, getCoverUrl } from "@/lib/cover";
+import {
+  Loader2,
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Volume2,
+} from "lucide-react";
+import { useState } from "react";
 
 interface Track {
   id: string;
@@ -13,145 +28,246 @@ interface Track {
   duration: string;
   imageUrl?: string;
   audioUrl?: string;
+  isLiked?: boolean;
+  genre?: string;
+  artistAvatarUrl?: string;
 }
 
 interface MusicPlayerProps {
-  track: Track | null;
+  track: Track;
   isPlaying: boolean;
   onPlay: () => void;
   onPause: () => void;
-  onNext?: () => void;
-  onPrevious?: () => void;
   onClose: () => void;
+  onLike?: (trackId: string) => void;
+  onComment?: (trackId: string) => void;
+  onShare?: (trackId: string) => void;
 }
 
 export function MusicPlayer({
   track,
-  isPlaying,
+  isPlaying: externalIsPlaying,
   onPlay,
   onPause,
-  onNext,
-  onPrevious,
   onClose,
+  onLike,
+  onComment,
+  onShare,
 }: MusicPlayerProps) {
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [progress, setProgress] = useState([0]);
+  const [volume, setVolume] = useState(75);
 
-  // Mock progress update - in real app this would come from audio element
-  useEffect(() => {
-    if (!isPlaying || !track) return;
+  // Use real audio player
+  console.log("MusicPlayer - Track audioUrl:", track.audioUrl);
 
-    const interval = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1;
-        const newProgress = duration > 0 ? (newTime / duration) * 100 : 0;
-        setProgress([newProgress]);
-        return newTime < duration ? newTime : duration;
-      });
-    }, 1000);
+  const {
+    isPlaying: audioIsPlaying,
+    isLoading,
+    duration,
+    currentTime,
+    error,
+    play,
+    pause,
+    seek,
+    setVolume: setAudioVolume,
+    formatTime,
+    progress,
+  } = useAudioPlayer({
+    src: track.audioUrl,
+    volume: volume / 100,
+    onEnd: () => {
+      onPause();
+    },
+    onError: (error) => {
+      console.error("Audio playback error:", error);
+      console.error("Failed audioUrl:", track.audioUrl);
+    },
+  });
 
-    return () => clearInterval(interval);
-  }, [isPlaying, duration, track]);
+  console.log("MusicPlayer - Error:", error);
+  console.log("MusicPlayer - IsLoading:", isLoading);
+  console.log("MusicPlayer - Duration:", duration);
 
-  // Set mock duration when track changes
-  useEffect(() => {
-    if (track) {
-      // Convert duration string (e.g., "3:24") to seconds
-      const [minutes, seconds] = track.duration.split(":").map(Number);
-      setDuration(minutes * 60 + seconds);
-      setCurrentTime(0);
-      setProgress([0]);
+  // Sync external play/pause state with audio
+  const handlePlayPause = () => {
+    if (audioIsPlaying) {
+      pause();
+      onPause();
+    } else {
+      play();
+      onPlay();
     }
-  }, [track]);
-
-  const formatTime = (timeInSeconds: number) => {
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const handleProgressChange = (value: number[]) => {
-    const newTime = (value[0] / 100) * duration;
-    setCurrentTime(newTime);
-    setProgress(value);
+  // Handle seeking
+  const handleSeek = (value: number[]) => {
+    const seekTime = (value[0] / 100) * duration;
+    seek(seekTime);
   };
 
-  if (!track) return null;
+  // Handle volume change
+  const handleVolumeChange = (value: number[]) => {
+    const newVolume = value[0];
+    setVolume(newVolume);
+    setAudioVolume(newVolume / 100);
+  };
 
   return (
-    <div className="fixed right-0 bottom-0 left-0 z-50 border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex max-w-6xl items-center gap-4">
-        {/* Track Info */}
+    <div className="fixed right-0 bottom-0 left-0 z-50 border-border border-t bg-background p-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+        {/* Left: Track Info */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-800">
-            {track.imageUrl ? (
-              <img src={track.imageUrl} alt={track.title} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full items-center justify-center text-xl">🎵</div>
-            )}
+          {/* Track Cover */}
+          <div className="size-14 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
+            <img
+              src={getCoverUrl(track.imageUrl, track.genre)}
+              alt={track.title}
+              className="size-full object-cover"
+              onError={(e) => {
+                // If image fails to load, show placeholder
+                e.currentTarget.style.display = "none";
+                const placeholder = e.currentTarget
+                  .nextElementSibling as HTMLElement;
+                if (placeholder) {
+                  placeholder.style.display = "flex";
+                }
+              }}
+            />
+            <div
+              className="flex size-full items-center justify-center bg-gradient-to-br from-[#ced925]/20 to-[#b8c220]/20"
+              style={{ display: "none" }}
+            >
+              <span className="font-medium text-xs">
+                {getCoverPlaceholder(track.title)}
+              </span>
+            </div>
           </div>
+
+          {/* Track Details */}
           <div className="min-w-0 flex-1">
-            <h4 className="truncate font-medium text-sm">{track.title}</h4>
-            <p className="truncate text-muted-foreground text-xs">{track.artist}</p>
+            <div className="truncate font-medium text-sm">{track.title}</div>
+            <div className="mt-1 flex items-center gap-2">
+              <Avatar className="size-4">
+                <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} />
+                <AvatarFallback className="text-xs">
+                  {getUserInitials(track.artist)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="truncate text-muted-foreground text-xs">
+                {track.artist}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-col items-center gap-2">
+        {/* Center: Playback Controls */}
+        <div className="flex max-w-md flex-1 flex-col items-center gap-2">
+          {/* Controls */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="size-8 p-0">
+              <SkipBack className="size-4" />
+            </Button>
+
+            <Button
+              variant="default"
+              size="sm"
+              className="size-10 rounded-full bg-[#ced925] p-0 text-black hover:bg-[#b8c220]"
+              onClick={handlePlayPause}
+              disabled={!!(isLoading || error)}
+            >
+              {isLoading ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : audioIsPlaying ? (
+                <Pause className="size-5" />
+              ) : (
+                <Play className="ml-0.5 size-5" />
+              )}
+            </Button>
+
+            <Button variant="ghost" size="sm" className="size-8 p-0">
+              <SkipForward className="size-4" />
+            </Button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="flex w-full items-center gap-2">
+            <span className="min-w-[35px] text-muted-foreground text-xs">
+              {formatTime(currentTime)}
+            </span>
+            <Slider
+              value={[progress]}
+              onValueChange={handleSeek}
+              max={100}
+              step={0.1}
+              className="flex-1"
+              disabled={!!(isLoading || error || duration === 0)}
+            />
+            <span className="min-w-[35px] text-muted-foreground text-xs">
+              {duration > 0 ? formatTime(duration) : track.duration || "0:00"}
+            </span>
+          </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="text-center text-red-500 text-xs">{error}</div>
+          )}
+        </div>
+
+        {/* Right: Social Actions & Volume */}
+        <div className="flex flex-1 items-center justify-end gap-3">
+          {/* Social Actions */}
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0"
-              onClick={onPrevious}
-              disabled={!onPrevious}
+              className="size-8 p-0"
+              onClick={() => onLike?.(track.id)}
             >
-              <SkipBack className="h-4 w-4" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-10 w-10 rounded-full bg-primary p-0 text-primary-foreground hover:bg-primary/90"
-              onClick={isPlaying ? onPause : onPlay}
-            >
-              {isPlaying ? (
-                <Pause className="h-5 w-5 fill-current" />
+              {track.isLiked ? (
+                <IconHeartFill className="size-4 text-red-500" />
               ) : (
-                <Play className="h-5 w-5 fill-current" />
+                <IconHeart className="size-4" />
               )}
             </Button>
 
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0"
-              onClick={onNext}
-              disabled={!onNext}
+              className="size-8 p-0"
+              onClick={() => onComment?.(track.id)}
             >
-              <SkipForward className="h-4 w-4" />
+              <IconBubble className="size-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="size-8 p-0"
+              onClick={() => onShare?.(track.id)}
+            >
+              <IconShare className="size-4" />
             </Button>
           </div>
 
-          {/* Progress Bar */}
-          <div className="flex w-80 items-center gap-2 text-muted-foreground text-xs">
-            <span className="w-10 text-right">{formatTime(currentTime)}</span>
+          {/* Volume Control */}
+          <div className="flex min-w-[120px] items-center gap-2">
+            <Volume2 className="size-4 text-muted-foreground" />
             <Slider
-              value={progress}
-              onValueChange={handleProgressChange}
+              value={[volume]}
+              onValueChange={handleVolumeChange}
               max={100}
-              step={0.1}
-              className="flex-1"
+              step={1}
+              className="w-20"
             />
-            <span className="w-10">{formatTime(duration)}</span>
           </div>
-        </div>
 
-        {/* Close Button */}
-        <div className="flex justify-end">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onClose}>
-            <X className="h-4 w-4" />
+          {/* Close Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="ml-2 size-8 p-0"
+          >
+            ✕
           </Button>
         </div>
       </div>

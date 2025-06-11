@@ -19,18 +19,95 @@ export function useLikeTrack() {
       if (!address) throw new Error("User not connected");
       return socialQueries.likes.toggle(address, trackId);
     },
+    onMutate: async (trackId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["tracks"] });
+      await queryClient.cancelQueries({ queryKey: ["track", trackId] });
+      await queryClient.cancelQueries({ queryKey: ["user-likes", address] });
+
+      // Snapshot the previous values for all tracks queries
+      const previousTracksQueries = queryClient.getQueriesData({
+        queryKey: ["tracks"],
+      });
+      const previousTrack = queryClient.getQueryData(["track", trackId]);
+      const previousUserLikes = queryClient.getQueryData(["user-likes", address]);
+
+      // Get current like status
+      const userLikes = (previousUserLikes as any[]) || [];
+      const isCurrentlyLiked = userLikes.some((like) => like.track_id === trackId);
+
+      // Optimistically update all tracks queries
+      queryClient.setQueriesData({ queryKey: ["tracks"] }, (old: any) => {
+        if (!old?.data?.tracks) return old;
+
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            tracks: old.data.tracks.map((track: any) =>
+              track.id === trackId
+                ? {
+                    ...track,
+                    likes: isCurrentlyLiked ? track.likes - 1 : track.likes + 1,
+                    isLiked: !isCurrentlyLiked,
+                  }
+                : track,
+            ),
+          },
+        };
+      });
+
+      // Optimistically update single track
+      queryClient.setQueryData(["track", trackId], (old: any) => {
+        if (!old?.data) return old;
+
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            likes: isCurrentlyLiked ? old.data.likes - 1 : old.data.likes + 1,
+            isLiked: !isCurrentlyLiked,
+          },
+        };
+      });
+
+      // Optimistically update user likes
+      queryClient.setQueryData(["user-likes", address], (old: any) => {
+        const oldLikes = old || [];
+        if (isCurrentlyLiked) {
+          return oldLikes.filter((like: any) => like.track_id !== trackId);
+        } else {
+          return [...oldLikes, { track_id: trackId, user_address: address }];
+        }
+      });
+
+      return { previousTracksQueries, previousTrack, previousUserLikes };
+    },
+    onError: (err, trackId, context) => {
+      // Rollback optimistic updates on error
+      if (context?.previousTracksQueries) {
+        context.previousTracksQueries.forEach(([queryKey, queryData]) => {
+          queryClient.setQueryData(queryKey, queryData);
+        });
+      }
+      if (context?.previousTrack) {
+        queryClient.setQueryData(["track", trackId], context.previousTrack);
+      }
+      if (context?.previousUserLikes) {
+        queryClient.setQueryData(["user-likes", address], context.previousUserLikes);
+      }
+
+      toast.error("Failed to update like");
+      console.error("Like error:", err);
+    },
     onSuccess: (data, trackId) => {
-      // Invalidate queries
+      // Invalidate to ensure data is fresh
       queryClient.invalidateQueries({ queryKey: ["track-likes", trackId] });
       queryClient.invalidateQueries({ queryKey: ["user-likes", address] });
-      queryClient.invalidateQueries({ queryKey: ["tracks"] }); // Refresh discover page
-      queryClient.invalidateQueries({ queryKey: ["track", trackId] }); // Refresh track detail
+      queryClient.invalidateQueries({ queryKey: ["tracks"] });
+      queryClient.invalidateQueries({ queryKey: ["track", trackId] });
 
       toast.success(data.isLiked ? "Track liked!" : "Track unliked!");
-    },
-    onError: (error) => {
-      toast.error("Failed to update like");
-      console.error("Like error:", error);
     },
   });
 }
@@ -53,15 +130,59 @@ export function useAddComment() {
       if (!address) throw new Error("User not connected");
       return socialQueries.comments.add(address, trackId, content);
     },
+    onMutate: async ({ trackId }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["tracks"] });
+      await queryClient.cancelQueries({ queryKey: ["track", trackId] });
+
+      // Snapshot the previous value
+      const previousTrack = queryClient.getQueryData(["track", trackId]);
+
+      // Optimistically update all tracks queries
+      queryClient.setQueriesData({ queryKey: ["tracks"] }, (old: any) => {
+        if (!old?.data?.tracks) return old;
+
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            tracks: old.data.tracks.map((track: any) =>
+              track.id === trackId ? { ...track, comments: track.comments + 1 } : track,
+            ),
+          },
+        };
+      });
+
+      // Optimistically update single track
+      queryClient.setQueryData(["track", trackId], (old: any) => {
+        if (!old?.data) return old;
+
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            comments: old.data.comments + 1,
+          },
+        };
+      });
+
+      return { previousTrack };
+    },
+    onError: (err, { trackId }, context) => {
+      // Rollback optimistic updates on error - just invalidate all tracks
+      queryClient.invalidateQueries({ queryKey: ["tracks"] });
+      if (context?.previousTrack) {
+        queryClient.setQueryData(["track", trackId], context.previousTrack);
+      }
+
+      toast.error("Failed to add comment");
+      console.error("Comment error:", err);
+    },
     onSuccess: (data, { trackId }) => {
       queryClient.invalidateQueries({ queryKey: ["track-comments", trackId] });
-      queryClient.invalidateQueries({ queryKey: ["tracks"] }); // Refresh discover page
-      queryClient.invalidateQueries({ queryKey: ["track", trackId] }); // Refresh track detail
+      queryClient.invalidateQueries({ queryKey: ["tracks"] });
+      queryClient.invalidateQueries({ queryKey: ["track", trackId] });
       toast.success("Comment added!");
-    },
-    onError: (error) => {
-      toast.error("Failed to add comment");
-      console.error("Comment error:", error);
     },
   });
 }
@@ -175,8 +296,7 @@ export function useIsFollowing(followingAddress: string) {
 
   return useQuery({
     queryKey: ["is-following", address, followingAddress],
-    queryFn: () =>
-      socialQueries.follows.isFollowing(address!, followingAddress),
+    queryFn: () => socialQueries.follows.isFollowing(address!, followingAddress),
     enabled: !!address && !!followingAddress && address !== followingAddress,
   });
 }
@@ -191,8 +311,7 @@ export function useSocialActions() {
 
   return {
     likeTrack: likeTrack.mutate,
-    addComment: (trackId: string, content: string) =>
-      addComment.mutate({ trackId, content }),
+    addComment: (trackId: string, content: string) => addComment.mutate({ trackId, content }),
     follow: follow.mutate,
     isLoading: likeTrack.isPending || addComment.isPending || follow.isPending,
   };

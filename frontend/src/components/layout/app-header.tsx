@@ -5,10 +5,53 @@ import { SearchBar } from "@/components/shared/search-bar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUser } from "@/lib/api/hooks";
+import { getAvatarUrl } from "@/lib/avatar";
+import { useAccountModal, useConnectModal } from "@tomo-inc/tomo-evm-kit";
 import { Menu, Search, X } from "lucide-react";
 import { useState } from "react";
+import { useAccount } from "wagmi";
 import { Logo } from "./logo";
 import { Sidebar } from "./sidebar";
+
+// User Profile Avatar Component
+function UserProfileAvatar() {
+  const { address, isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
+  const { openAccountModal } = useAccountModal();
+
+  // Get user profile data
+  const { data: userResponse } = useUser(address || "");
+  const userData = userResponse?.data;
+
+  // For disconnected users - show connect button
+  if (!isConnected || !address) {
+    return (
+      <Button
+        onClick={openConnectModal}
+        className="bg-[#ced925] text-black hover:bg-[#b8c220]"
+        variant="default"
+      >
+        Connect Wallet
+      </Button>
+    );
+  }
+
+  // For connected users - show profile avatar
+  return (
+    <button
+      onClick={openAccountModal}
+      className="flex items-center gap-2 rounded-full p-1 transition-opacity hover:opacity-80"
+      type="button"
+    >
+      <img
+        src={getAvatarUrl(userData?.avatar_url)}
+        alt="Profile"
+        className="h-8 w-8 rounded-full bg-muted object-cover"
+      />
+    </button>
+  );
+}
 
 export function AppHeader() {
   const isMobile = useIsMobile();
@@ -19,10 +62,14 @@ export function AppHeader() {
       <header className="flex h-16 w-full items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         {!isSearchExpanded ? (
           <>
-            {/* Connected Address on Mobile */}
-            <ConnectButton variant="default" />
+            {/* User Profile Avatar on Mobile */}
+            <UserProfileAvatar />
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(true)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSearchExpanded(true)}
+              >
                 <Search className="h-5 w-5" />
               </Button>
               <Sheet>
@@ -44,7 +91,11 @@ export function AppHeader() {
             <div className="flex-1">
               <SearchBar />
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(false)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSearchExpanded(false)}
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -63,9 +114,9 @@ export function AppHeader() {
         <SearchBar />
       </div>
 
-      {/* Wallet Connection */}
+      {/* User Profile Avatar */}
       <div className="flex items-center">
-        <ConnectButton variant="default" />
+        <UserProfileAvatar />
       </div>
     </header>
   );
