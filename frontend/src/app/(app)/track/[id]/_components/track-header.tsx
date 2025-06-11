@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -55,9 +56,9 @@ export default function TrackHeader({ track }: TrackHeaderProps) {
       {/* Artist Info */}
       <div className="flex items-center gap-3">
         <Avatar className="h-12 w-12">
-          <AvatarImage src="" alt={track.artist} />
+          <AvatarImage src={getAvatarUrl(null)} alt={track.artist} />
           <AvatarFallback className="bg-primary text-primary-foreground">
-            {track.artistAddress.substring(2, 4).toUpperCase()}
+            {getUserInitials(track.artist)}
           </AvatarFallback>
         </Avatar>
         <div>

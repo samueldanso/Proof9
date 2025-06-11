@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
 import { Pause, Play } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,13 @@ interface Track {
   isLiked?: boolean;
   likes: number;
   comments: number;
+  license?: {
+    type: string;
+    price: string;
+    available: boolean;
+    terms: string;
+    downloads: number;
+  };
 }
 
 interface TrackCardProps {
@@ -66,9 +74,9 @@ export function TrackCard({
         {showArtist && variant === "feed" && (
           <div className="mb-3 flex items-center gap-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="" alt={track.artist} />
+              <AvatarImage src={getAvatarUrl(null)} alt={track.artist} />
               <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                {track.artistAddress.substring(2, 4).toUpperCase()}
+                {getUserInitials(track.artist)}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -146,6 +154,7 @@ export function TrackCard({
             onLike={onLike}
             onComment={onComment}
             onShare={onShare}
+            licensePrice={track.license?.price.replace("$", "")}
           />
         </div>
       </div>

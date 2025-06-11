@@ -7,6 +7,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  convertLicenseFormToStoryTerms,
+  getLicenseSummary,
+} from "@/lib/story-protocol";
 import { DollarSign, Globe, Info, Scale } from "lucide-react";
 import { useState } from "react";
 
@@ -337,6 +341,41 @@ export default function LicenseForm({
                 </p>
               </div>
             </div>
+
+            {/* Story Protocol Terms Preview */}
+            {formData.price && (
+              <div className="rounded-lg border bg-blue-50 p-3 dark:bg-blue-950">
+                <div className="mb-2 flex items-center gap-2">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-blue-900 text-sm dark:text-blue-100">
+                    Story Protocol Terms
+                  </span>
+                </div>
+                <div className="space-y-1 text-blue-800 text-sm dark:text-blue-200">
+                  <p>{getLicenseSummary(formData)}</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    {(() => {
+                      const terms = convertLicenseFormToStoryTerms(formData);
+                      return (
+                        <>
+                          <div>
+                            Commercial Use: {terms.commercialUse ? "✅" : "❌"}
+                          </div>
+                          <div>
+                            Derivatives:{" "}
+                            {terms.derivativesAllowed ? "✅" : "❌"}
+                          </div>
+                          <div>
+                            Transferable: {terms.transferable ? "✅" : "❌"}
+                          </div>
+                          <div>Attribution Required: ✅</div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {includeRoyalties && (
               <div className="rounded-lg bg-primary/10 p-3">

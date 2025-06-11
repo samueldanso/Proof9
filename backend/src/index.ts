@@ -51,7 +51,6 @@ app.get('/', (c) => {
 
 // Startup logging
 console.log(`🎵 Proof9 API Server starting on port ${env.PORT}`)
-console.log(`🎯 Focused on core music creator features`)
 
 export default {
     port: env.PORT,

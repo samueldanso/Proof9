@@ -4,14 +4,6 @@ import { account } from '../config'
 
 /**
  * Verify music content with Yakoa before registering with Story Protocol
- *
- * @param title Music title
- * @param description Music description
- * @param creatorId Creator ID (typically wallet address)
- * @param mediaUrl URL to the music file
- * @param imageUrl URL to the image/cover art
- * @param metadata Additional metadata about the music
- * @returns Verification result with tokenId and status
  */
 export async function verifyMusicContent(
     title: string,
@@ -31,14 +23,10 @@ export async function verifyMusicContent(
     }>
 }> {
     try {
-        // Create a unique media ID based on the URL
         const mediaId = createHash('sha256').update(mediaUrl).digest('hex').slice(0, 16)
         const imageId = createHash('sha256').update(imageUrl).digest('hex').slice(0, 16)
-
-        // Create a unique token ID for this music asset
         const tokenId = `proof9-music-${mediaId}`
 
-        // Create media items for verification
         const mediaItems: MediaItem[] = [
             {
                 media_id: `audio-${mediaId}`,
@@ -50,18 +38,14 @@ export async function verifyMusicContent(
             },
         ]
 
-        // Current timestamp in seconds
         const timestamp = Math.floor(Date.now() / 1000)
-
-        // Mock transaction for off-chain assets (will be replaced with real tx for on-chain assets)
         const transaction = {
             hash: `0x${createHash('sha256').update(`${tokenId}-${timestamp}`).digest('hex')}`,
-            block_number: 0, // Using block_number to match Yakoa's expected format
+            block_number: 0,
             timestamp,
-            chain: 'proof9', // Custom identifier for off-chain assets
+            chain: 'proof9',
         }
 
-        // Register token with Yakoa
         const response = await yakoaService.registerToken({
             id: tokenId,
             registration_tx: transaction,
@@ -74,15 +58,14 @@ export async function verifyMusicContent(
             media: mediaItems,
         })
 
-        // Format the response
         return {
             tokenId: response.id,
             verificationStatus: response.media.map((media) => ({
                 mediaId: media.media_id,
-                status: media.status,
-                infringementCheckStatus: media.infringement_check_status,
-                externalInfringements: media.external_infringements,
-                inNetworkInfringements: media.in_network_infringements,
+                status: media.status || 'unknown',
+                infringementCheckStatus: media.infringement_check_status || 'unknown',
+                externalInfringements: media.external_infringements || [],
+                inNetworkInfringements: media.in_network_infringements || [],
             })),
         }
     } catch (error: any) {
@@ -93,9 +76,6 @@ export async function verifyMusicContent(
 
 /**
  * Check verification status of a previously submitted music content
- *
- * @param tokenId The token ID from the initial verification
- * @returns Current verification status
  */
 export async function checkMusicVerificationStatus(tokenId: string): Promise<{
     tokenId: string
@@ -114,10 +94,10 @@ export async function checkMusicVerificationStatus(tokenId: string): Promise<{
             tokenId: response.id,
             verificationStatus: response.media.map((media) => ({
                 mediaId: media.media_id,
-                status: media.status,
-                infringementCheckStatus: media.infringement_check_status,
-                externalInfringements: media.external_infringements,
-                inNetworkInfringements: media.in_network_infringements,
+                status: media.status || 'unknown',
+                infringementCheckStatus: media.infringement_check_status || 'unknown',
+                externalInfringements: media.external_infringements || [],
+                inNetworkInfringements: media.in_network_infringements || [],
             })),
         }
     } catch (error: any) {

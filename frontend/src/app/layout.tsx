@@ -23,11 +23,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${plusJakartaSans.variable} font-sans`}
-    >
+    <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} font-sans`}>
       <body className="min-h-screen bg-background antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <Web3Provider>{children}</Web3Provider>

@@ -1,3 +1,10 @@
+/**
+ * PROOF9 YAKOA VERIFICATION API
+ *
+ * This module implements Yakoa content authentication for music verification.
+ * Follows Yakoa's API conventions for seamless integration with their service.
+ */
+
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
@@ -5,31 +12,47 @@ import { createHash } from 'crypto'
 
 import yakoaService, { MediaItem, YakoaToken, TrustedPlatformTrustReason, NoLicensesTrustReason } from '../services/yakoa'
 
-// Create router
 const app = new Hono()
 
-// Schema for media verification
 const MediaItemSchema = z.object({
-    media_id: z.string(),
-    url: z.string().url(),
-    hash: z.string().optional(),
-    trust_reason: z.union([z.object({ platform: z.string() }), z.object({ reason: z.literal('no_licenses') }), z.null()]).optional(),
+    media_id: z.string().min(1, 'Media ID is required'),
+    url: z.string().url('Must be a valid URL - IPFS URLs are recommended'),
+    hash: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/, 'Hash must be a 64-character hex string (SHA-256)')
+        .optional(),
+    trust_reason: z
+        .union([
+            z.object({
+                type: z.literal('trusted_platform'),
+                platform_name: z.string(),
+            }),
+            z.object({
+                type: z.literal('no_licenses'),
+                reason: z.string(),
+            }),
+            z.null(),
+        ])
+        .optional(),
 })
 
 const VerifyMusicSchema = z.object({
     tokenId: z.string().optional(),
-    contractAddress: z.string().optional(),
+    contractAddress: z
+        .string()
+        .regex(/^0x[a-f0-9]{40}$/, 'Invalid contract address format')
+        .optional(),
     onChainTokenId: z.string().optional(),
-    creatorId: z.string(),
-    title: z.string(),
-    description: z.string(),
+    creatorId: z.string().regex(/^0x[a-f0-9]{40}$/, 'Invalid creator address - must be a valid Ethereum address'),
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().min(1, 'Description is required'),
     metadata: z.record(z.any()).optional(),
-    mediaItems: z.array(MediaItemSchema).min(1),
+    mediaItems: z.array(MediaItemSchema).min(1, 'At least one media item is required'),
     transaction: z.object({
-        hash: z.string(),
-        blockNumber: z.number(),
-        timestamp: z.number(),
-        chain: z.string(),
+        hash: z.string().regex(/^0x[a-f0-9]{64}$/, 'Invalid transaction hash format'),
+        blockNumber: z.number().int().positive('Block number must be positive'),
+        timestamp: z.number().int().positive('Timestamp must be positive'),
+        chain: z.string().min(1, 'Chain is required'),
     }),
     licenseParents: z
         .array(
@@ -72,14 +95,27 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
             licenseParents,
         } = c.req.valid('json')
 
-        // Generate a token ID if not provided
         const resolvedTokenId =
             tokenId ||
             (contractAddress && onChainTokenId
                 ? yakoaService.formatYakoaTokenId(contractAddress, onChainTokenId)
-                : `proof9-${createHash('sha256').update(JSON.stringify(mediaItems[0])).digest('hex').slice(0, 16)}`)
+                : (() => {
+                      const contentHash = createHash('sha256')
+                          .update(
+                              JSON.stringify({
+                                  creator: creatorId,
+                                  media: mediaItems,
+                                  timestamp: transaction.timestamp,
+                              })
+                          )
+                          .digest('hex')
 
-        // Prepare token data for Yakoa
+                      const contractAddress = `0x${contentHash.slice(0, 40)}`
+                      const tokenId = (parseInt(contentHash.slice(40, 48), 16) % 999999) + 1
+
+                      return `${contractAddress}:${tokenId}`
+                  })())
+
         const yakoaToken: YakoaToken = {
             id: resolvedTokenId,
             registration_tx: {
@@ -98,7 +134,6 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
             ...(licenseParents && licenseParents.length > 0 ? { license_parents: licenseParents } : {}),
         }
 
-        // Register the token with Yakoa
         const response = await yakoaService.registerToken(yakoaToken)
 
         return c.json({
@@ -107,11 +142,16 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
                 tokenId: response.id,
                 verificationStatus: response.media.map((media) => ({
                     mediaId: media.media_id,
-                    status: media.status,
-                    infringementCheckStatus: media.infringement_check_status,
-                    externalInfringements: media.external_infringements,
-                    inNetworkInfringements: media.in_network_infringements,
+                    fetchStatus: media.fetch_status,
+                    url: media.url,
+                    trustReason: media.trust_reason,
                 })),
+                infringementsResult: {
+                    status: response.infringements?.status,
+                    result: response.infringements?.result,
+                    externalInfringements: response.infringements?.external_infringements || [],
+                    inNetworkInfringements: response.infringements?.in_network_infringements || [],
+                },
             },
         })
     } catch (error: any) {
@@ -142,11 +182,16 @@ app.get('/status/:tokenId', zValidator('param', TokenIdSchema), async (c) => {
                 tokenId: response.id,
                 verificationStatus: response.media.map((media) => ({
                     mediaId: media.media_id,
-                    status: media.status,
-                    infringementCheckStatus: media.infringement_check_status,
-                    externalInfringements: media.external_infringements,
-                    inNetworkInfringements: media.in_network_infringements,
+                    fetchStatus: media.fetch_status,
+                    url: media.url,
+                    trustReason: media.trust_reason,
                 })),
+                infringementsResult: {
+                    status: response.infringements?.status,
+                    result: response.infringements?.result,
+                    externalInfringements: response.infringements?.external_infringements || [],
+                    inNetworkInfringements: response.infringements?.in_network_infringements || [],
+                },
             },
         })
     } catch (error: any) {
