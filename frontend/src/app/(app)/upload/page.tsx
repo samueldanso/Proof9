@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 import LicenseForm from "./_components/license-form";
 import MetadataForm from "./_components/metadata-form";
 import UploadForm from "./_components/upload-form";
@@ -69,6 +70,7 @@ const steps = [
 export default function UploadPage() {
   const { address } = useAccount();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadData, setUploadData] = useState<UploadData>({});
   const [isProcessing, setIsProcessing] = useState(false);
@@ -176,6 +178,10 @@ export default function UploadPage() {
         throw new Error("Failed to create track");
       }
 
+      // Invalidate discovery feed queries to show new track
+      queryClient.invalidateQueries({ queryKey: ["tracks"] });
+      queryClient.invalidateQueries({ queryKey: ["user", address, "tracks"] });
+
       // Step 2: Register with Story Protocol
       if (uploadData.yakoa?.verified) {
         console.log("🚀 Starting Story Protocol registration...");
@@ -183,6 +189,20 @@ export default function UploadPage() {
         // Generate proper hashes for Story Protocol (as per tutorial)
         const imageHash = `0x${uploadData.uploadInfo?.fileHash || ""}`; // Use existing file hash
         const mediaHash = `0x${uploadData.uploadInfo?.fileHash || ""}`; // Use existing file hash
+
+        // Convert license form data to Story Protocol terms
+        const { convertLicenseFormToStoryTerms, getLicenseSummary } =
+          await import("@/lib/story-protocol");
+        const storyLicenseTerms = uploadData.license
+          ? convertLicenseFormToStoryTerms(uploadData.license)
+          : null;
+
+        console.log(
+          "🎵 License Terms:",
+          storyLicenseTerms
+            ? getLicenseSummary(uploadData.license!)
+            : "No license terms"
+        );
 
         const registrationResult = await apiClient.post<{
           success: boolean;
@@ -228,6 +248,18 @@ export default function UploadPage() {
                 value: uploadData.license?.type || "Unknown",
               },
               {
+                key: "License Price",
+                value: uploadData.license?.price
+                  ? `${uploadData.license.price} USD`
+                  : "Unknown",
+              },
+              {
+                key: "Revenue Share",
+                value: storyLicenseTerms
+                  ? `${storyLicenseTerms.commercialRevShare}%`
+                  : "Unknown",
+              },
+              {
                 key: "Platform",
                 value: "Proof9",
               },
@@ -237,21 +269,37 @@ export default function UploadPage() {
               })) || []),
             ],
           },
+          // Add real Story Protocol license terms
+          commercialRemixTerms: storyLicenseTerms
+            ? {
+                defaultMintingFee:
+                  Number(storyLicenseTerms.defaultMintingFee) /
+                  Math.pow(10, 18), // Convert back to number for API
+                commercialRevShare: storyLicenseTerms.commercialRevShare,
+              }
+            : undefined,
         });
 
         console.log("📋 Story Protocol result:", registrationResult);
 
         if (registrationResult.success) {
           toast.success("Track registered successfully on Story Protocol!");
-          console.log("✅ Story Protocol registration:", registrationResult.data);
+          console.log(
+            "✅ Story Protocol registration:",
+            registrationResult.data
+          );
         } else {
           console.error("❌ Story Protocol error:", registrationResult.error);
-          toast.error(`Story Protocol registration failed: ${registrationResult.error}`);
+          toast.error(
+            `Story Protocol registration failed: ${registrationResult.error}`
+          );
         }
       } else {
-        console.log("⚠️ Skipping Story Protocol registration - content not verified");
+        console.log(
+          "⚠️ Skipping Story Protocol registration - content not verified"
+        );
         toast.info(
-          "Track uploaded successfully (Story Protocol registration skipped for unverified content)",
+          "Track uploaded successfully (Story Protocol registration skipped for unverified content)"
         );
       }
 
@@ -279,13 +327,18 @@ export default function UploadPage() {
       <div className="max-w-4xl space-y-6">
         {/* Progress Indicator */}
         <div className="space-y-4">
-          <Progress value={(currentStep / steps.length) * 100} className="h-2 [&>div]:bg-primary" />
+          <Progress
+            value={(currentStep / steps.length) * 100}
+            className="h-2 [&>div]:bg-primary"
+          />
           <div className="flex justify-between text-sm">
             {steps.map((step) => (
               <div
                 key={step.id}
                 className={`flex flex-col items-center space-y-1 ${
-                  currentStep >= step.id ? "text-primary" : "text-muted-foreground"
+                  currentStep >= step.id
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 }`}
               >
                 <div

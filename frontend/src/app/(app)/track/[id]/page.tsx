@@ -93,7 +93,8 @@ export default function TrackPage() {
               <div>
                 <h2 className="font-semibold text-lg">About this track</h2>
                 <p className="mt-2 text-muted-foreground">
-                  {track.description || "No description provided for this track."}
+                  {track.description ||
+                    "No description provided for this track."}
                 </p>
               </div>
 
@@ -102,19 +103,27 @@ export default function TrackPage() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Genre:</span>
-                  <p className="text-muted-foreground">{track.genre || "Unknown"}</p>
+                  <p className="text-muted-foreground">
+                    {track.genre || "Unknown"}
+                  </p>
                 </div>
                 <div>
                   <span className="font-medium">Duration:</span>
-                  <p className="text-muted-foreground">{track.duration || "Unknown"}</p>
+                  <p className="text-muted-foreground">
+                    {track.duration || "Unknown"}
+                  </p>
                 </div>
                 <div>
                   <span className="font-medium">Plays:</span>
-                  <p className="text-muted-foreground">{track.plays?.toLocaleString() || 0}</p>
+                  <p className="text-muted-foreground">
+                    {track.plays?.toLocaleString() || 0}
+                  </p>
                 </div>
                 <div>
                   <span className="font-medium">Created:</span>
-                  <p className="text-muted-foreground">{track?.createdAt || "Unknown"}</p>
+                  <p className="text-muted-foreground">
+                    {track?.createdAt || "Unknown"}
+                  </p>
                 </div>
               </div>
 
@@ -136,7 +145,7 @@ export default function TrackPage() {
 
         {/* Right Side - Licensing Info */}
         <div className="space-y-6">
-          <LicenseInfo track={track} />
+          <LicenseInfo track={track} ipAssetId={dbTrack?.ip_id || undefined} />
 
           {/* Additional licensing details */}
           <Card className="p-6">
@@ -144,8 +153,14 @@ export default function TrackPage() {
             <div className="space-y-4">
               <div>
                 <span className="font-medium">Verification Status:</span>
-                <p className={`${track.verified ? "text-green-600" : "text-yellow-600"}`}>
-                  {track.verified ? "✓ Verified Original" : "⏳ Pending Verification"}
+                <p
+                  className={`${
+                    track.verified ? "text-green-600" : "text-yellow-600"
+                  }`}
+                >
+                  {track.verified
+                    ? "✓ Verified Original"
+                    : "⏳ Pending Verification"}
                 </p>
               </div>
 
@@ -162,12 +177,18 @@ export default function TrackPage() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xl">License Available</span>
-                  <span className="text-muted-foreground text-sm">Story Protocol</span>
+                  <span className="font-semibold text-xl">
+                    License Available
+                  </span>
+                  <span className="text-muted-foreground text-sm">
+                    Story Protocol
+                  </span>
                 </div>
 
                 <Button className="w-full" size="lg" disabled={!track.verified}>
-                  {track.verified ? "Purchase License" : "Verification Required"}
+                  {track.verified
+                    ? "Purchase License"
+                    : "Verification Required"}
                 </Button>
 
                 <Button variant="outline" className="w-full" size="lg">
