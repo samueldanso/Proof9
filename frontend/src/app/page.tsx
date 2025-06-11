@@ -102,6 +102,13 @@ export default function Home() {
                             className="object-cover"
                             priority={index === 0}
                           />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute bottom-2 left-2 right-2 text-white">
+                              <p className="text-sm font-bold truncate">{creator.title}</p>
+                              <p className="text-xs truncate">{creator.artist}</p>
+                              <p className="text-xs text-gray-300">{creator.year}</p>
+                            </div>
+                          </div>
                         </div>
                       ))}
                       {CREATOR_IMAGES.map((creator, index) => (
@@ -116,6 +123,13 @@ export default function Home() {
                             sizes="170px"
                             className="object-cover"
                           />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute bottom-2 left-2 right-2 text-white">
+                              <p className="text-sm font-bold truncate">{creator.title}</p>
+                              <p className="text-xs truncate">{creator.artist}</p>
+                              <p className="text-xs text-gray-300">{creator.year}</p>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </motion.div>

@@ -36,8 +36,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
-        port: "",
+        hostname: "imgs.search.brave.com",
         pathname: "/**",
       },
     ],
