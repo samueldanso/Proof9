@@ -17,7 +17,7 @@ export function ProfileHeader() {
   const params = useParams();
   const { address: connectedAddress } = useAccount();
   const queryClient = useQueryClient();
-  const profileIdentifier = params.username as string;
+  const profileIdentifier = params.identifier as string;
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Get user data from API (works with both username and address)

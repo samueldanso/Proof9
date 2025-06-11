@@ -20,7 +20,7 @@ export interface LegacyTrack {
   verified: boolean;
   imageUrl?: string;
   audioUrl?: string;
-  isLiked?: boolean;
+  isLiked: boolean;
   likes: number;
   comments: number;
   description?: string;
