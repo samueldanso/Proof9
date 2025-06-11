@@ -2,7 +2,11 @@
 
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
-import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
+import {
+  useAddComment,
+  useLikeTrack,
+  useUserLikes,
+} from "@/hooks/use-social-actions";
 import { useTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useSearchParams } from "next/navigation";
@@ -19,7 +23,7 @@ export default function DiscoverPage() {
   const [activeTab, setActiveTab] = useState<string>(
     tabParam === "latest" || tabParam === "following" || tabParam === "trending"
       ? tabParam
-      : "latest",
+      : "latest"
   );
 
   // Genre filter state
@@ -70,6 +74,9 @@ export default function DiscoverPage() {
   };
 
   const handlePlay = (track: any) => {
+    console.log("handlePlay - Track:", track.title);
+    console.log("handlePlay - AudioUrl:", track.audioUrl);
+
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
@@ -117,16 +124,8 @@ export default function DiscoverPage() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Header - More compact */}
-      <div className="mx-auto max-w-4xl space-y-1 text-center">
-        <h1 className="font-bold text-2xl">Discover</h1>
-        <p className="text-muted-foreground text-sm">
-          Explore verified music and find your next favorite sound
-        </p>
-      </div>
-
-      {/* Trending Banner */}
-      <div className="mx-auto max-w-4xl px-4">
+      {/* Trending Banner - Full width aligned with tabs */}
+      <div className="mx-auto max-w-7xl px-4">
         <TrendingBanner onExploreClick={() => handleTabChange("trending")} />
       </div>
 
@@ -135,7 +134,10 @@ export default function DiscoverPage() {
 
       {/* Genre Filter */}
       <div className="mx-auto max-w-7xl px-4">
-        <GenreFilter activeGenre={activeGenre} onGenreChange={handleGenreChange} />
+        <GenreFilter
+          activeGenre={activeGenre}
+          onGenreChange={handleGenreChange}
+        />
       </div>
 
       {/* Track Feed - Grid Layout */}
@@ -159,10 +161,10 @@ export default function DiscoverPage() {
               {activeTab === "latest"
                 ? "No new tracks uploaded yet"
                 : activeTab === "following"
-                  ? "No tracks from creators you follow yet"
-                  : activeTab === "trending"
-                    ? "No trending tracks available yet"
-                    : "No tracks available yet"}
+                ? "No tracks from creators you follow yet"
+                : activeTab === "trending"
+                ? "No trending tracks available yet"
+                : "No tracks available yet"}
             </p>
           </div>
         ) : (

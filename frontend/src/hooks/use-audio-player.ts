@@ -8,7 +8,12 @@ interface UseAudioPlayerProps {
   onError?: (error: any) => void;
 }
 
-export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioPlayerProps = {}) {
+export function useAudioPlayer({
+  src,
+  volume = 0.75,
+  onEnd,
+  onError,
+}: UseAudioPlayerProps = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -20,7 +25,12 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
   // Initialize audio when src changes
   useEffect(() => {
-    if (!src) return;
+    console.log("useAudioPlayer - src changed:", src);
+
+    if (!src) {
+      console.log("useAudioPlayer - No src provided");
+      return;
+    }
 
     // Clean up previous sound
     if (soundRef.current) {
@@ -77,13 +87,15 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
       },
       onloaderror: (id, error) => {
         console.error("Audio load error:", error);
-        setError("Failed to load audio");
+        console.error("Audio URL that failed:", src);
+        setError("Failed to load audio file");
         setIsLoading(false);
         onError?.(error);
       },
       onplayerror: (id, error) => {
         console.error("Audio play error:", error);
-        setError("Failed to play audio");
+        console.error("Audio URL that failed:", src);
+        setError("Failed to play audio file");
         setIsPlaying(false);
         onError?.(error);
       },
@@ -137,7 +149,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
         setCurrentTime(seekTime);
       }
     },
-    [duration],
+    [duration]
   );
 
   const setVolume = useCallback((vol: number) => {

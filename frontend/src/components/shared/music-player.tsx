@@ -10,7 +10,14 @@ import { Slider } from "@/components/ui/slider";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
 import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
 import { getCoverPlaceholder, getCoverUrl } from "@/lib/cover";
-import { Loader2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import {
+  Loader2,
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Volume2,
+} from "lucide-react";
 import { useState } from "react";
 
 interface Track {
@@ -50,6 +57,8 @@ export function MusicPlayer({
   const [volume, setVolume] = useState(75);
 
   // Use real audio player
+  console.log("MusicPlayer - Track audioUrl:", track.audioUrl);
+
   const {
     isPlaying: audioIsPlaying,
     isLoading,
@@ -70,8 +79,13 @@ export function MusicPlayer({
     },
     onError: (error) => {
       console.error("Audio playback error:", error);
+      console.error("Failed audioUrl:", track.audioUrl);
     },
   });
+
+  console.log("MusicPlayer - Error:", error);
+  console.log("MusicPlayer - IsLoading:", isLoading);
+  console.log("MusicPlayer - Duration:", duration);
 
   // Sync external play/pause state with audio
   const handlePlayPause = () => {
@@ -111,7 +125,8 @@ export function MusicPlayer({
               onError={(e) => {
                 // If image fails to load, show placeholder
                 e.currentTarget.style.display = "none";
-                const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                const placeholder = e.currentTarget
+                  .nextElementSibling as HTMLElement;
                 if (placeholder) {
                   placeholder.style.display = "flex";
                 }
@@ -121,7 +136,9 @@ export function MusicPlayer({
               className="flex size-full items-center justify-center bg-gradient-to-br from-[#ced925]/20 to-[#b8c220]/20"
               style={{ display: "none" }}
             >
-              <span className="font-medium text-xs">{getCoverPlaceholder(track.title)}</span>
+              <span className="font-medium text-xs">
+                {getCoverPlaceholder(track.title)}
+              </span>
             </div>
           </div>
 
@@ -131,9 +148,13 @@ export function MusicPlayer({
             <div className="mt-1 flex items-center gap-2">
               <Avatar className="size-4">
                 <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} />
-                <AvatarFallback className="text-xs">{getUserInitials(track.artist)}</AvatarFallback>
+                <AvatarFallback className="text-xs">
+                  {getUserInitials(track.artist)}
+                </AvatarFallback>
               </Avatar>
-              <span className="truncate text-muted-foreground text-xs">{track.artist}</span>
+              <span className="truncate text-muted-foreground text-xs">
+                {track.artist}
+              </span>
             </div>
           </div>
         </div>
@@ -186,7 +207,9 @@ export function MusicPlayer({
           </div>
 
           {/* Error Display */}
-          {error && <div className="text-center text-red-500 text-xs">{error}</div>}
+          {error && (
+            <div className="text-center text-red-500 text-xs">{error}</div>
+          )}
         </div>
 
         {/* Right: Social Actions & Volume */}
@@ -238,7 +261,12 @@ export function MusicPlayer({
           </div>
 
           {/* Close Button */}
-          <Button variant="ghost" size="sm" onClick={onClose} className="ml-2 size-8 p-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="ml-2 size-8 p-0"
+          >
             ✕
           </Button>
         </div>

@@ -233,6 +233,7 @@ app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
                     profile?.display_name ||
                     `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
                 artistAddress: track.artist_address,
+                artistUsername: profile?.username, // Add username for navigation
                 artistAvatarUrl: profile?.avatar_url,
                 duration: track.duration || '0:00',
                 plays: track.plays || 0,
@@ -306,6 +307,7 @@ app.get('/:id', async (c) => {
                 profile?.display_name ||
                 `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
             artistAddress: track.artist_address,
+            artistUsername: profile?.username, // Add username for navigation
             artistAvatarUrl: profile?.avatar_url,
             duration: track.duration || '0:00',
             plays: track.plays || 0,
@@ -377,6 +379,7 @@ app.get('/trending/sidebar', async (c) => {
                     profile?.display_name ||
                     `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
                 artistAddress: track.artist_address,
+                artistUsername: profile?.username, // Add username for navigation
                 artistAvatarUrl: profile?.avatar_url,
                 duration: track.duration || '0:00',
                 plays: track.plays || 0,

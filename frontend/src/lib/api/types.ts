@@ -8,19 +8,51 @@ export interface ApiResponse<T = any> {
   error?: string;
 }
 
+// Format audio URL to ensure proper IPFS gateway access
+function formatAudioUrl(ipfsUrl: string): string {
+  console.log("formatAudioUrl - Original URL:", ipfsUrl);
+
+  // If it's already a full HTTP URL, return as is
+  if (ipfsUrl.startsWith("http://") || ipfsUrl.startsWith("https://")) {
+    console.log("formatAudioUrl - Already HTTP(S), returning as is");
+    return ipfsUrl;
+  }
+
+  // If it's an IPFS hash only (QmXXX...), prepend gateway
+  if (ipfsUrl.startsWith("Qm") || ipfsUrl.startsWith("ba")) {
+    const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${ipfsUrl}`;
+    console.log("formatAudioUrl - IPFS hash, using gateway:", gatewayUrl);
+    return gatewayUrl;
+  }
+
+  // If it's ipfs:// protocol, convert to gateway
+  if (ipfsUrl.startsWith("ipfs://")) {
+    const hash = ipfsUrl.replace("ipfs://", "");
+    const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${hash}`;
+    console.log("formatAudioUrl - IPFS protocol, using gateway:", gatewayUrl);
+    return gatewayUrl;
+  }
+
+  console.log("formatAudioUrl - Unknown format, returning as is");
+  return ipfsUrl;
+}
+
 // Transform database Track to LegacyTrack for component compatibility
-export function transformDbTrackToLegacy(dbTrack: DbTrack & { artistAvatarUrl?: string }): Track {
+export function transformDbTrackToLegacy(
+  dbTrack: DbTrack & { artistAvatarUrl?: string; artistUsername?: string }
+): Track {
   return {
     id: dbTrack.id,
     title: dbTrack.title,
     artist: dbTrack.artist_name || "Unknown Artist",
     artistAddress: dbTrack.artist_address,
+    artistUsername: dbTrack.artistUsername || undefined,
     artistAvatarUrl: dbTrack.artistAvatarUrl || undefined,
     duration: dbTrack.duration || "0:00",
     plays: dbTrack.plays,
     verified: dbTrack.verified,
     imageUrl: dbTrack.image_url || undefined,
-    audioUrl: dbTrack.ipfs_url || undefined,
+    audioUrl: dbTrack.ipfs_url ? formatAudioUrl(dbTrack.ipfs_url) : undefined,
     isLiked: false as boolean, // This would need to be determined by checking likes table
     likes: dbTrack.likes_count,
     comments: dbTrack.comments_count,

@@ -23,13 +23,16 @@ export function TrackList() {
   const userTrackIds = userTracksResponse?.data?.tracks || [];
 
   // Get all tracks to filter by user's tracks
-  const { data: allTracksResponse, isLoading: isLoadingAllTracks } = useTracks("following");
+  const { data: allTracksResponse, isLoading: isLoadingAllTracks } = useTracks("latest");
   const allTracks = allTracksResponse?.data?.tracks || [];
 
   // Filter tracks to only show user's tracks and transform them
   const userTracks = allTracks
     .filter((track) => userTrackIds.includes(track.id))
-    .map(transformDbTrackToLegacy);
+    .map((track) => ({
+      ...transformDbTrackToLegacy(track as any),
+      artistUsername: (track as any).artistUsername, // Pass through the username
+    }));
 
   const isLoading = isLoadingUserTracks || isLoadingAllTracks;
 

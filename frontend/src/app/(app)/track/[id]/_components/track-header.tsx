@@ -12,6 +12,7 @@ interface Track {
   title: string;
   artist: string;
   artistAddress: string;
+  artistUsername?: string; // Add this field
   artistAvatarUrl?: string;
   duration: string;
   plays: number;
@@ -63,7 +64,10 @@ export default function TrackHeader({ track }: TrackHeaderProps) {
           </AvatarFallback>
         </Avatar>
         <div>
-          <Link href={`/profile/${track.artistAddress}`} className="font-semibold hover:underline">
+          <Link
+            href={`/profile/${track.artistUsername || track.artistAddress}`}
+            className="font-semibold hover:underline"
+          >
             {track.artist}
           </Link>
           <p className="text-muted-foreground text-sm">{track.plays.toLocaleString()} plays</p>
