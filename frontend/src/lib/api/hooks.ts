@@ -8,23 +8,32 @@ import type {
   VerificationResponse,
 } from "./types";
 
+// Backend API Response wrapper type
+interface ApiResponse<T = any> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
+
 // Track hooks
 export function useTracks(tab = "following") {
   return useQuery({
     queryKey: ["tracks", tab],
     queryFn: () =>
-      apiClient.get<{
-        tracks: Track[];
-        total: number;
-        hasMore: boolean;
-      }>(`/api/tracks?tab=${tab}`),
+      apiClient.get<
+        ApiResponse<{
+          tracks: Track[];
+          total: number;
+          hasMore: boolean;
+        }>
+      >(`/api/tracks?tab=${tab}`),
   });
 }
 
 export function useTrack(trackId: string) {
   return useQuery({
     queryKey: ["track", trackId],
-    queryFn: () => apiClient.get<Track>(`/api/tracks/${trackId}`),
+    queryFn: () => apiClient.get<ApiResponse<Track>>(`/api/tracks/${trackId}`),
     enabled: !!trackId,
   });
 }
@@ -32,7 +41,7 @@ export function useTrack(trackId: string) {
 export function useTrendingTracks() {
   return useQuery({
     queryKey: ["tracks", "trending", "sidebar"],
-    queryFn: () => apiClient.get<Track[]>("/api/tracks/trending/sidebar"),
+    queryFn: () => apiClient.get<ApiResponse<Track[]>>("/api/tracks/trending/sidebar"),
   });
 }
 
@@ -41,16 +50,18 @@ export function useUser(identifier: string) {
   return useQuery({
     queryKey: ["user", identifier],
     queryFn: () =>
-      apiClient.get<{
-        address: string;
-        username?: string | null;
-        displayName: string;
-        trackCount: number;
-        followingCount: number;
-        followersCount: number;
-        verified: boolean;
-        avatar_url?: string | null;
-      }>(`/api/users/${identifier}`),
+      apiClient.get<
+        ApiResponse<{
+          address: string;
+          username?: string | null;
+          displayName: string;
+          trackCount: number;
+          followingCount: number;
+          followersCount: number;
+          verified: boolean;
+          avatar_url?: string | null;
+        }>
+      >(`/api/users/${identifier}`),
     enabled: !!identifier,
   });
 }
@@ -59,10 +70,12 @@ export function useUserTracks(address: string) {
   return useQuery({
     queryKey: ["user", address, "tracks"],
     queryFn: () =>
-      apiClient.get<{
-        tracks: string[];
-        count: number;
-      }>(`/api/users/${address}/tracks`),
+      apiClient.get<
+        ApiResponse<{
+          tracks: string[];
+          count: number;
+        }>
+      >(`/api/users/${address}/tracks`),
     enabled: !!address,
   });
 }
@@ -76,15 +89,17 @@ export function useUploadAudio() {
       fileSize: number;
       fileData: string;
     }) =>
-      apiClient.post<{
-        fileName: string;
-        fileType: string;
-        fileSize: number;
-        fileHash: string;
-        ipfsHash: string;
-        ipfsUrl: string;
-        uploadedAt: string;
-      }>("/api/upload/audio", data),
+      apiClient.post<
+        ApiResponse<{
+          fileName: string;
+          fileType: string;
+          fileSize: number;
+          fileHash: string;
+          ipfsHash: string;
+          ipfsUrl: string;
+          uploadedAt: string;
+        }>
+      >("/api/upload/audio", data),
   });
 }
 
@@ -96,7 +111,7 @@ export function useUploadMetadata() {
       genre: string;
       tags: string[];
       duration?: string;
-    }) => apiClient.post("/api/upload/metadata", data),
+    }) => apiClient.post<ApiResponse<any>>("/api/upload/metadata", data),
   });
 }
 
@@ -104,9 +119,9 @@ export function useUploadMetadata() {
 export function useRegisterTrack() {
   return useMutation({
     mutationFn: (data: RegistrationRequest) =>
-      apiClient.post<RegistrationResponse>("/api/registration/register", data),
+      apiClient.post<ApiResponse<RegistrationResponse>>("/api/registration/register", data),
     onSuccess: (response) => {
-      console.log("Track registered:", response.data);
+      console.log("Track registered:", response);
     },
     onError: (error) => {
       console.error("Registration failed:", error);
@@ -118,12 +133,9 @@ export function useRegisterTrack() {
 export function useVerifyTrack() {
   return useMutation({
     mutationFn: (data: VerificationRequest) =>
-      apiClient.post<VerificationResponse>(
-        "/api/verification/verify-music",
-        data
-      ),
+      apiClient.post<ApiResponse<VerificationResponse>>("/api/verification/verify-music", data),
     onSuccess: (response) => {
-      console.log("Track verified:", response.data);
+      console.log("Track verification initiated:", response);
     },
     onError: (error) => {
       console.error("Verification failed:", error);
@@ -135,9 +147,7 @@ export function useVerificationStatus(tokenId: string) {
   return useQuery({
     queryKey: ["verification", tokenId],
     queryFn: () =>
-      apiClient.get<VerificationResponse>(
-        `/api/verification/status/${tokenId}`
-      ),
+      apiClient.get<ApiResponse<VerificationResponse>>(`/api/verification/status/${tokenId}`),
     enabled: !!tokenId,
   });
 }
@@ -149,7 +159,7 @@ export function useMintLicense() {
       licensorIpId: string;
       licenseTermsId: string;
       amount?: number;
-    }) => apiClient.post("/api/licenses/mint", data),
+    }) => apiClient.post<ApiResponse<any>>("/api/licenses/mint", data),
   });
 }
 
@@ -157,7 +167,7 @@ export function useMintLicense() {
 export function useLikeTrack() {
   return useMutation({
     mutationFn: (data: { userAddress: string; trackId: string }) =>
-      apiClient.post("/api/social/like", data),
+      apiClient.post<ApiResponse<any>>("/api/social/like", data),
   });
 }
 
@@ -167,14 +177,14 @@ export function useAddComment() {
       userAddress: string;
       trackId: string;
       content: string;
-    }) => apiClient.post("/api/social/comment", data),
+    }) => apiClient.post<ApiResponse<any>>("/api/social/comment", data),
   });
 }
 
 export function useTrackComments(trackId: string) {
   return useQuery({
     queryKey: ["comments", trackId],
-    queryFn: () => apiClient.get(`/api/social/comments/${trackId}`),
+    queryFn: () => apiClient.get<ApiResponse<any>>(`/api/social/comments/${trackId}`),
     enabled: !!trackId,
   });
 }
@@ -182,7 +192,7 @@ export function useTrackComments(trackId: string) {
 export function useUserLikes(userAddress: string) {
   return useQuery({
     queryKey: ["user", userAddress, "likes"],
-    queryFn: () => apiClient.get(`/api/social/user/${userAddress}/likes`),
+    queryFn: () => apiClient.get<ApiResponse<any>>(`/api/social/user/${userAddress}/likes`),
     enabled: !!userAddress,
   });
 }

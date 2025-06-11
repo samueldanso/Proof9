@@ -54,11 +54,7 @@ export function ProfileSetup() {
         fileData: base64Data,
       });
 
-      if (uploadResponse.success) {
-        return uploadResponse.data.avatarUrl;
-      } else {
-        throw new Error(uploadResponse.error || "Failed to upload avatar");
-      }
+      return uploadResponse.avatarUrl;
     } catch (error) {
       console.error("Avatar upload error:", error);
       throw error;
@@ -81,7 +77,10 @@ export function ProfileSetup() {
         avatarUrl = await uploadAvatar(avatarFile);
       }
 
-      const response = await apiClient.post("/api/users/create-profile", {
+      const response = await apiClient.post<{
+        success: boolean;
+        error?: string;
+      }>("/api/users/create-profile", {
         address,
         display_name: displayName.trim(),
         avatar_url: avatarUrl,

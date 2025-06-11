@@ -7,10 +7,7 @@ export class ApiClient {
     this.baseUrl = env.NEXT_PUBLIC_API_URL;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {},
-  ): Promise<{ success: boolean; data: T; error?: string }> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
     const response = await fetch(url, {
@@ -30,15 +27,12 @@ export class ApiClient {
   }
 
   // GET request
-  async get<T>(endpoint: string): Promise<{ success: boolean; data: T; error?: string }> {
+  async get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: "GET" });
   }
 
   // POST request
-  async post<T>(
-    endpoint: string,
-    data?: any,
-  ): Promise<{ success: boolean; data: T; error?: string }> {
+  async post<T>(endpoint: string, data?: any): Promise<T> {
     return this.request<T>(endpoint, {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
@@ -46,10 +40,7 @@ export class ApiClient {
   }
 
   // PUT request
-  async put<T>(
-    endpoint: string,
-    data?: any,
-  ): Promise<{ success: boolean; data: T; error?: string }> {
+  async put<T>(endpoint: string, data?: any): Promise<T> {
     return this.request<T>(endpoint, {
       method: "PUT",
       body: data ? JSON.stringify(data) : undefined,

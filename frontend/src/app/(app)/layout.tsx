@@ -30,12 +30,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const response = await apiClient.get<{ hasProfile: boolean }>(
-          `/api/users/${address}/onboarding-status`,
-        );
+        const response = await apiClient.get<{
+          success: boolean;
+          data: { hasProfile: boolean };
+          error?: string;
+        }>(`/api/users/${address}/onboarding-status`);
+
         setProfileStatus({
           loading: false,
-          hasProfile: response.data?.hasProfile || false,
+          hasProfile: response?.data?.hasProfile || false,
         });
       } catch (error) {
         // If error checking profile, assume no profile exists
