@@ -82,8 +82,17 @@ export interface VerificationResponse {
   tokenId: string;
   verificationStatus: Array<{
     mediaId: string;
+    fetchStatus?: string;
+    url?: string;
+    trustReason?: {
+      type: string;
+      platform_name?: string;
+      reason?: string;
+    };
+  }>;
+  infringementsResult?: {
     status?: string;
-    infringementCheckStatus?: string;
+    result?: string;
     externalInfringements?: Array<{
       brand_id: string;
       brand_name: string;
@@ -95,7 +104,7 @@ export interface VerificationResponse {
       confidence: number;
       licensed: boolean;
     }>;
-  }>;
+  };
 }
 
 // Track Data Bridge (Backend IP Asset -> Frontend Track)

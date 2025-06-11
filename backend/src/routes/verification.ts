@@ -179,11 +179,16 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
                 tokenId: response.id,
                 verificationStatus: response.media.map((media) => ({
                     mediaId: media.media_id,
-                    status: media.status,
-                    infringementCheckStatus: media.infringement_check_status,
-                    externalInfringements: media.external_infringements,
-                    inNetworkInfringements: media.in_network_infringements,
+                    fetchStatus: media.fetch_status,
+                    url: media.url,
+                    trustReason: media.trust_reason,
                 })),
+                infringementsResult: {
+                    status: response.infringements?.status,
+                    result: response.infringements?.result,
+                    externalInfringements: response.infringements?.external_infringements || [],
+                    inNetworkInfringements: response.infringements?.in_network_infringements || [],
+                },
             },
         })
     } catch (error: any) {
@@ -229,11 +234,16 @@ app.get('/status/:tokenId', zValidator('param', TokenIdSchema), async (c) => {
                 tokenId: response.id,
                 verificationStatus: response.media.map((media) => ({
                     mediaId: media.media_id,
-                    status: media.status,
-                    infringementCheckStatus: media.infringement_check_status,
-                    externalInfringements: media.external_infringements,
-                    inNetworkInfringements: media.in_network_infringements,
+                    fetchStatus: media.fetch_status,
+                    url: media.url,
+                    trustReason: media.trust_reason,
                 })),
+                infringementsResult: {
+                    status: response.infringements?.status,
+                    result: response.infringements?.result,
+                    externalInfringements: response.infringements?.external_infringements || [],
+                    inNetworkInfringements: response.infringements?.in_network_infringements || [],
+                },
             },
         })
     } catch (error: any) {
