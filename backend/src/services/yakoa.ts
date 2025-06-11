@@ -3,13 +3,10 @@ import { z } from 'zod'
 
 dotenv.config()
 
-// Constants
 const YAKOA_API_KEY = process.env.YAKOA_API_KEY || ''
 const YAKOA_SUBDOMAIN = process.env.YAKOA_SUBDOMAIN || 'docs-demo'
 const YAKOA_NETWORK = process.env.YAKOA_NETWORK || 'docs-demo'
 const YAKOA_BASE_URL = `https://${YAKOA_SUBDOMAIN}.ip-api-sandbox.yakoa.io/${YAKOA_NETWORK}`
-
-// Types and Schemas for Yakoa API
 export type TrustedPlatformTrustReason = {
     type: 'trusted_platform'
     platform_name: string
@@ -65,7 +62,6 @@ export type YakoaTokenResponse = {
         trust_reason?: TrustedPlatformTrustReason | NoLicensesTrustReason | null
         fetch_status?: string
         uri_id?: string | null
-        // Legacy fields that may still be present
         status?: string
         infringement_check_status?: string
         external_infringements?: Array<{
@@ -80,7 +76,6 @@ export type YakoaTokenResponse = {
             licensed: boolean
         }>
     }>
-    // Top-level infringements object (actual Yakoa structure)
     infringements?: {
         status: string
         result: string
@@ -115,14 +110,11 @@ export type YakoaAuthorization = {
     }
 }
 
-// Helper function to check if API key is available
 const validateApiKey = (): void => {
     if (!YAKOA_API_KEY) {
         throw new Error('YAKOA_API_KEY is required in .env file')
     }
 }
-
-// Base fetch function with error handling
 async function yakoaFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     validateApiKey()
 
@@ -148,9 +140,6 @@ async function yakoaFetch<T>(endpoint: string, options: RequestInit = {}): Promi
 
 /**
  * Register a token with Yakoa for content authentication
- *
- * @param token Token data to register
- * @returns The registered token response
  */
 export async function registerToken(token: YakoaToken): Promise<YakoaTokenResponse> {
     return yakoaFetch<YakoaTokenResponse>('/token', {
@@ -161,9 +150,6 @@ export async function registerToken(token: YakoaToken): Promise<YakoaTokenRespon
 
 /**
  * Get a token's authentication status and infringement check results
- *
- * @param tokenId The token ID to check
- * @returns The token data with authentication status
  */
 export async function getToken(tokenId: string): Promise<YakoaTokenResponse> {
     return yakoaFetch<YakoaTokenResponse>(`/token/${encodeURIComponent(tokenId)}`)
@@ -171,10 +157,6 @@ export async function getToken(tokenId: string): Promise<YakoaTokenResponse> {
 
 /**
  * Create or update a brand authorization for a token
- *
- * @param tokenId The token ID to authorize
- * @param authorization The authorization data
- * @returns The created or updated authorization
  */
 export async function createTokenAuthorization(tokenId: string, authorization: YakoaAuthorization): Promise<any> {
     return yakoaFetch<any>(`/token/${encodeURIComponent(tokenId)}/authorization`, {
@@ -185,10 +167,6 @@ export async function createTokenAuthorization(tokenId: string, authorization: Y
 
 /**
  * Generate a token ID in the format expected by Yakoa (contract_address:token_id)
- *
- * @param contractAddress The NFT contract address
- * @param tokenId The token ID
- * @returns Formatted token ID string
  */
 export function formatYakoaTokenId(contractAddress: string, tokenId: string): string {
     return `${contractAddress.toLowerCase()}:${tokenId}`
@@ -196,12 +174,6 @@ export function formatYakoaTokenId(contractAddress: string, tokenId: string): st
 
 /**
  * Helper function to create media item for Yakoa token registration
- *
- * @param mediaId Unique identifier for the media
- * @param url Publicly accessible URL to the media
- * @param hash Optional hash for content verification
- * @param trustReason Optional trust reason
- * @returns MediaItem object
  */
 export function createMediaItem(
     mediaId: string,

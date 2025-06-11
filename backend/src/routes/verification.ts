@@ -1,16 +1,8 @@
 /**
  * PROOF9 YAKOA VERIFICATION API
  *
- * This module implements Yakoa content authentication API for music verification.
- * Follows Yakoa's exact conventions and naming patterns for seamless integration.
- *
- * Yakoa Documentation: https://docs.yakoa.io/reference/register-token
- *
- * Production Requirements:
- * - Real Ethereum addresses for creator_id (from connected wallet)
- * - Valid transaction hashes (32-byte hex strings)
- * - Publicly accessible IPFS URLs for media
- * - Proper content hashes for integrity verification
+ * This module implements Yakoa content authentication for music verification.
+ * Follows Yakoa's API conventions for seamless integration with their service.
  */
 
 import { Hono } from 'hono'
@@ -20,13 +12,11 @@ import { createHash } from 'crypto'
 
 import yakoaService, { MediaItem, YakoaToken, TrustedPlatformTrustReason, NoLicensesTrustReason } from '../services/yakoa'
 
-// Create router
 const app = new Hono()
 
-// Schema for media verification
 const MediaItemSchema = z.object({
     media_id: z.string().min(1, 'Media ID is required'),
-    url: z.string().url('Must be a valid URL - IPFS URLs are recommended for content integrity'),
+    url: z.string().url('Must be a valid URL - IPFS URLs are recommended'),
     hash: z
         .string()
         .regex(/^[a-f0-9]{64}$/, 'Hash must be a 64-character hex string (SHA-256)')
@@ -105,16 +95,11 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
             licenseParents,
         } = c.req.valid('json')
 
-        // Generate a token ID if not provided
         const resolvedTokenId =
             tokenId ||
             (contractAddress && onChainTokenId
                 ? yakoaService.formatYakoaTokenId(contractAddress, onChainTokenId)
                 : (() => {
-                      // DEMO ENVIRONMENT ONLY: Yakoa's demo requires blockchain-style format
-                      // In production, this would be replaced with actual NFT contract data
-                      // or a production network that supports platform-specific IDs
-
                       const contentHash = createHash('sha256')
                           .update(
                               JSON.stringify({
@@ -125,52 +110,30 @@ app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {
                           )
                           .digest('hex')
 
-                      // Generate deterministic contract-style address for demo compatibility
-                      const demoContractAddress = `0x${contentHash.slice(0, 40)}`
+                      const contractAddress = `0x${contentHash.slice(0, 40)}`
+                      const tokenId = (parseInt(contentHash.slice(40, 48), 16) % 999999) + 1
 
-                      // Generate simple numeric token ID
-                      const numericTokenId = (parseInt(contentHash.slice(40, 48), 16) % 999999) + 1
-
-                      // Format per Yakoa demo environment requirements
-                      return `${demoContractAddress}:${numericTokenId}`
+                      return `${contractAddress}:${tokenId}`
                   })())
 
-        // Prepare token data for Yakoa
         const yakoaToken: YakoaToken = {
             id: resolvedTokenId,
             registration_tx: {
-                // DEMO ENVIRONMENT: Use provided hash or generate deterministic one
-                // In production: This would be a real blockchain transaction hash
-                hash:
-                    transaction.hash.startsWith('0x') && transaction.hash.length === 66
-                        ? transaction.hash
-                        : `0x${createHash('sha256').update(`${creatorId}-${Date.now()}`).digest('hex')}`,
+                hash: transaction.hash,
                 block_number: transaction.blockNumber,
                 timestamp: transaction.timestamp,
-                chain: transaction.chain, // 'docs-demo' for demo environment
+                chain: transaction.chain,
             },
-            creator_id: creatorId, // Real wallet address (correctly formatted)
+            creator_id: creatorId,
             metadata: {
                 title,
                 description,
                 ...(metadata || {}),
             },
-            media: mediaItems, // Real IPFS URLs with proper trust_reason
+            media: mediaItems,
             ...(licenseParents && licenseParents.length > 0 ? { license_parents: licenseParents } : {}),
         }
 
-        // 🐛 DEBUG: Log the data being sent to Yakoa for debugging
-        console.log('🚀 Yakoa Registration Data:', {
-            tokenId: resolvedTokenId,
-            creatorId: creatorId,
-            creatorIdValid: /^0x[a-f0-9]{40}$/.test(creatorId.toLowerCase()),
-            tokenIdValid: /^0x[a-f0-9]{40}:[0-9]+$/.test(resolvedTokenId.toLowerCase()),
-            mediaCount: mediaItems.length,
-            registrationTx: yakoaToken.registration_tx,
-            note: 'Using demo-compatible format for Yakoa demo environment',
-        })
-
-        // Register the token with Yakoa
         const response = await yakoaService.registerToken(yakoaToken)
 
         return c.json({
@@ -212,21 +175,6 @@ app.get('/status/:tokenId', zValidator('param', TokenIdSchema), async (c) => {
         const { tokenId } = c.req.valid('param')
 
         const response = await yakoaService.getToken(tokenId)
-
-        // 🐛 DEBUG: Log full Yakoa response for debugging
-        console.log('🔍 Yakoa Status Response:', {
-            tokenId: tokenId,
-            rawResponse: JSON.stringify(response, null, 2),
-            mediaCount: response.media?.length || 0,
-            mediaStatuses:
-                response.media?.map((media) => ({
-                    mediaId: media.media_id,
-                    status: media.status,
-                    infringementStatus: media.infringement_check_status,
-                    externalCount: media.external_infringements?.length || 0,
-                    networkCount: media.in_network_infringements?.length || 0,
-                })) || [],
-        })
 
         return c.json({
             success: true,

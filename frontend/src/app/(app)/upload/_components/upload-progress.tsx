@@ -26,6 +26,21 @@ interface YakoaResult {
   originality: string;
   tokenId?: string;
   details?: string;
+  infringementDetails?: {
+    status: string;
+    result: string;
+    externalInfringements: Array<{
+      brand_id: string;
+      brand_name: string;
+      confidence: number;
+      authorized: boolean;
+    }>;
+    inNetworkInfringements: Array<{
+      token_id: string;
+      confidence: number;
+      licensed: boolean;
+    }>;
+  };
 }
 
 interface UploadProgressProps {
@@ -75,18 +90,14 @@ export default function UploadProgress({
   useEffect(() => {
     if (!file) return;
 
-    const performRealVerification = async () => {
+    const performVerification = async () => {
       try {
         setError(null);
         setStage("uploading");
-
-        // Stage 1: Upload to IPFS (Real backend call)
         setProgress(10);
 
-        // Convert file to base64 for upload
         const fileBuffer = await file.arrayBuffer();
         const base64Data = Buffer.from(fileBuffer).toString("base64");
-
         setProgress(25);
 
         const uploadResult = await uploadAudio.mutateAsync({
@@ -97,71 +108,42 @@ export default function UploadProgress({
         });
 
         setProgress(40);
-
-        // Stage 2: Yakoa verification (Real API call)
         setStage("analyzing");
         setProgress(50);
 
-        // Guard clause: Ensure we have a connected address
         if (!connectedAddress) {
           throw new Error("Wallet not connected - cannot verify content");
         }
 
-        // Ensure address is lowercase to match Yakoa requirements
         const formattedCreatorId = connectedAddress.toLowerCase();
-
-        // Generate a unique transaction hash for verification
-        const dummyTxHash =
-          "0x" +
-          Array(64)
-            .fill(0)
-            .map(() => Math.floor(Math.random() * 16).toString(16))
-            .join("");
 
         const verificationData = {
           creatorId: formattedCreatorId,
-          title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+          title: file.name.replace(/\.[^/.]+$/, ""),
           description: `Audio file uploaded via Proof9: ${file.name}`,
           mediaItems: [
             {
               media_id: uploadResult.data.ipfsHash,
               url: uploadResult.data.ipfsUrl,
-              trust_reason: {
-                type: "trusted_platform" as const,
-                platform_name: "Proof9",
-              }, // Mark as platform-trusted (bypasses comprehensive checks)
+              trust_reason: null,
             },
           ],
           transaction: {
-            hash: dummyTxHash,
-            blockNumber: Math.floor(Math.random() * 1000000) + 18000000,
+            hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+            blockNumber: 1,
             timestamp: Math.floor(Date.now() / 1000),
             chain: "docs-demo",
           },
         };
 
-        // 🐛 DEBUG: Log verification data for debugging
-        console.log("🚀 Sending Yakoa verification request:", {
-          creatorId: formattedCreatorId,
-          mediaUrl: uploadResult.data.ipfsUrl,
-          fileSize: file.size,
-          fileName: file.name,
-          trustReason: "platform-trusted",
-          note: "Using Yakoa demo environment - shared network space with daily resets",
-        });
-
         setProgress(65);
-
         const verificationResult = await verifyTrack.mutateAsync(
           verificationData
         );
 
-        // verifyTrack.mutateAsync returns API response directly: { success, data, error }
         if (verificationResult.success) {
           setTokenId(verificationResult.data.tokenId);
           setProgress(80);
-
-          // Poll for verification status
           await pollVerificationStatus(verificationResult.data.tokenId);
         } else {
           throw new Error(verificationResult.error || "Verification failed");
@@ -177,26 +159,18 @@ export default function UploadProgress({
       }
     };
 
-    performRealVerification();
+    performVerification();
   }, [file]);
 
   const pollVerificationStatus = async (tokenId: string) => {
     setStage("analyzing");
-    setProgress(85); // Start near completion
+    setProgress(85);
 
-    const maxAttempts = 10; // Reduced from 30 - 10 attempts * 1 second = 10 seconds max
+    const maxAttempts = 10;
     let attempts = 0;
 
     const checkStatus = async (): Promise<void> => {
       if (attempts >= maxAttempts) {
-        // 🎯 DEMO ENVIRONMENT FALLBACK (reduced timeout)
-        console.log(
-          "🔄 Yakoa demo environment timeout - providing fallback result"
-        );
-        console.log(
-          "📋 Demo limitations: shared network space, daily resets at 12:00am UTC"
-        );
-
         const fallbackResult: YakoaResult = {
           verified: true,
           confidence: 85,
@@ -213,12 +187,11 @@ export default function UploadProgress({
       }
 
       attempts++;
-      setProgress(85 + (attempts / maxAttempts) * 10); // Progress from 85% to 95% quickly
+      // Keep progress at 85% while polling - don't fake incremental progress
 
       try {
         const statusResult = await refetchStatus();
 
-        // statusResult is a React Query result: { data: ApiResponse, ... }
         if (
           statusResult.data?.success &&
           statusResult.data?.data?.verificationStatus?.length > 0
@@ -227,28 +200,11 @@ export default function UploadProgress({
           const infringementsResult =
             statusResult.data.data.infringementsResult;
 
-          // 🐛 DEBUG: Log the actual status for debugging
-          console.log(`🔍 Yakoa Status Check ${attempts}:`, {
-            tokenId: tokenId,
-            rawApiResponse: statusResult.data,
-            mediaStatus: mediaStatus,
-            fetchStatus: mediaStatus.fetchStatus,
-            infringementsResult: infringementsResult,
-            infringementStatus: infringementsResult?.status,
-            infringementResult: infringementsResult?.result,
-            externalInfringements: infringementsResult?.externalInfringements,
-            inNetworkInfringements: infringementsResult?.inNetworkInfringements,
-            allMediaFields: Object.keys(mediaStatus || {}),
-            allInfringementFields: Object.keys(infringementsResult || {}),
-          });
-
-          // Check for completion conditions using actual Yakoa response structure
           if (
             mediaStatus.fetchStatus === "succeeded" &&
             (infringementsResult?.status === "succeeded" ||
               infringementsResult?.status === "completed")
           ) {
-            // Verification complete
             setProgress(100);
             setStage("complete");
 
@@ -260,11 +216,8 @@ export default function UploadProgress({
               infringementsResult.inNetworkInfringements.length > 0;
             const hasInfringements =
               hasExternalInfringements || hasNetworkInfringements;
-
-            // Handle "not_checked" result (trusted platform)
             const wasNotChecked = infringementsResult?.result === "not_checked";
 
-            // Calculate confidence based on the highest confidence infringement
             const confidence = hasInfringements
               ? Math.max(
                   ...[
@@ -287,9 +240,8 @@ export default function UploadProgress({
                 )
               : wasNotChecked
               ? 95
-              : 90; // Higher confidence for trusted platform
+              : 90;
 
-            // Enhanced result with actual Yakoa response
             const result: YakoaResult = {
               verified: !hasInfringements,
               confidence: confidence,
@@ -315,13 +267,20 @@ export default function UploadProgress({
                       : ""
                   }`
                 : "No infringement detected - content appears original",
+              infringementDetails: {
+                status: infringementsResult?.status || "unknown",
+                result: infringementsResult?.result || "unknown",
+                externalInfringements:
+                  infringementsResult?.externalInfringements || [],
+                inNetworkInfringements:
+                  infringementsResult?.inNetworkInfringements || [],
+              },
             };
 
             setYakoaResult(result);
             return;
           }
 
-          // Check for explicit error conditions
           if (
             mediaStatus.fetchStatus === "failed" ||
             mediaStatus.fetchStatus === "hash_mismatch" ||
@@ -340,19 +299,8 @@ export default function UploadProgress({
 
             throw new Error(errorMessage);
           }
-
-          // If still processing, continue polling
-          console.log(
-            `⏳ Still processing... Fetch Status: ${mediaStatus.fetchStatus}, Infringement Status: ${infringementsResult?.status}`
-          );
-        } else {
-          // No verification status data
-          console.log(
-            `❌ No verification status data found for token: ${tokenId}`
-          );
         }
 
-        // Still processing, wait and try again
         setTimeout(checkStatus, 1000);
       } catch (err) {
         console.error("Status check error:", err);
@@ -360,14 +308,12 @@ export default function UploadProgress({
       }
     };
 
-    // Start polling
     setTimeout(checkStatus, 1000);
   };
 
   const handleContinue = () => {
     if (yakoaResult) {
       onVerificationComplete(yakoaResult);
-      // onNext is called automatically by parent
     }
   };
 
@@ -377,11 +323,6 @@ export default function UploadProgress({
     setError(null);
     setYakoaResult(null);
     setTokenId(null);
-
-    // Re-trigger verification
-    if (file) {
-      // The useEffect will trigger again due to state changes
-    }
   };
 
   const getStageText = () => {
@@ -389,7 +330,7 @@ export default function UploadProgress({
       case "uploading":
         return "Uploading to IPFS & registering...";
       case "analyzing":
-        return "AI analyzing for originality...";
+        return "AI analyzing for originality - this may take 10-30 seconds...";
       case "complete":
         return "Verification complete!";
       case "error":
@@ -518,83 +459,249 @@ export default function UploadProgress({
 
       {/* Results */}
       {yakoaResult && stage === "complete" && (
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              {yakoaResult.verified ? (
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              ) : (
-                <AlertTriangle className="h-6 w-6 text-orange-600" />
-              )}
-              <h3 className="font-bold text-xl">
-                {yakoaResult.verified
-                  ? "Verification Successful"
-                  : "Review Required"}
-              </h3>
-            </div>
+        <div className="space-y-4">
+          {/* Main Status Card */}
+          <Card className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                {yakoaResult.verified ? (
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                ) : (
+                  <AlertTriangle className="h-6 w-6 text-orange-600" />
+                )}
+                <h3 className="font-bold text-xl">
+                  {yakoaResult.verified
+                    ? "Verification Successful"
+                    : "Review Required"}
+                </h3>
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <span className="text-muted-foreground text-sm">Status</span>
-                <div>
-                  <Badge
-                    variant={yakoaResult.verified ? "default" : "secondary"}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <span className="text-muted-foreground text-sm">Status</span>
+                  <div>
+                    <Badge
+                      variant={yakoaResult.verified ? "default" : "secondary"}
+                    >
+                      {yakoaResult.verified ? "✓ Verified" : "⚠ Review"}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-muted-foreground text-sm">
+                    Confidence
+                  </span>
+                  <div
+                    className={`font-semibold ${getConfidenceColor(
+                      yakoaResult.confidence
+                    )}`}
                   >
-                    {yakoaResult.verified
-                      ? "Verified Original"
-                      : "Needs Review"}
-                  </Badge>
+                    {yakoaResult.confidence}%
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-muted-foreground text-sm">
+                    Proof9 Score
+                  </span>
+                  <div
+                    className={`font-semibold ${
+                      yakoaResult.verified
+                        ? "text-green-600"
+                        : "text-orange-600"
+                    }`}
+                  >
+                    {yakoaResult.verified ? "PASS" : "REVIEW"}
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <span className="text-muted-foreground text-sm">
-                  Confidence
+                  Analysis Result
                 </span>
-                <div
-                  className={`font-semibold ${getConfidenceColor(
-                    yakoaResult.confidence
-                  )}`}
-                >
-                  {yakoaResult.confidence}%
+                <p className="font-medium">{yakoaResult.originality}</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Detailed Infringement Results */}
+          {yakoaResult.infringementDetails && (
+            <Card className="p-6">
+              <h4 className="mb-4 font-semibold text-lg">
+                🔍 Yakoa Analysis Details
+              </h4>
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {/* External Infringements */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <h5 className="font-medium">External Brand Matches</h5>
+                    <Badge
+                      variant={
+                        yakoaResult.infringementDetails.externalInfringements
+                          .length > 0
+                          ? "destructive"
+                          : "secondary"
+                      }
+                    >
+                      {
+                        yakoaResult.infringementDetails.externalInfringements
+                          .length
+                      }
+                    </Badge>
+                  </div>
+
+                  {yakoaResult.infringementDetails.externalInfringements
+                    .length > 0 ? (
+                    <div className="space-y-2">
+                      {yakoaResult.infringementDetails.externalInfringements.map(
+                        (infringement: any) => (
+                          <div
+                            key={`external-${infringement.brand_id}-${infringement.confidence}`}
+                            className="rounded-lg border bg-red-50 p-3 dark:bg-red-950/20"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-red-800 dark:text-red-200">
+                                {infringement.brand_name}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {infringement.confidence}% match
+                                </Badge>
+                                {infringement.authorized && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    ✓ Authorized
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border bg-green-50 p-3 dark:bg-green-950/20">
+                      <span className="text-green-800 text-sm dark:text-green-200">
+                        ✓ No external brand infringements detected
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* In-Network Infringements */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <h5 className="font-medium">Network Content Matches</h5>
+                    <Badge
+                      variant={
+                        yakoaResult.infringementDetails.inNetworkInfringements
+                          .length > 0
+                          ? "destructive"
+                          : "secondary"
+                      }
+                    >
+                      {
+                        yakoaResult.infringementDetails.inNetworkInfringements
+                          .length
+                      }
+                    </Badge>
+                  </div>
+
+                  {yakoaResult.infringementDetails.inNetworkInfringements
+                    .length > 0 ? (
+                    <div className="space-y-2">
+                      {yakoaResult.infringementDetails.inNetworkInfringements.map(
+                        (infringement: any) => (
+                          <div
+                            key={`network-${infringement.token_id}-${infringement.confidence}`}
+                            className="rounded-lg border bg-orange-50 p-3 dark:bg-orange-950/20"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-orange-800 dark:text-orange-200">
+                                Token: {infringement.token_id.slice(0, 12)}...
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {infringement.confidence}% match
+                                </Badge>
+                                {infringement.licensed && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    ✓ Licensed
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border bg-green-50 p-3 dark:bg-green-950/20">
+                      <span className="text-green-800 text-sm dark:text-green-200">
+                        ✓ No network content matches found
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <span className="text-muted-foreground text-sm">
-                Analysis Result
-              </span>
-              <p className="font-medium">{yakoaResult.originality}</p>
-            </div>
-
-            {yakoaResult.details && (
-              <div className="space-y-2">
-                <span className="text-muted-foreground text-sm">Details</span>
-                <p className="text-sm">{yakoaResult.details}</p>
+              {/* Analysis Status */}
+              <div className="mt-4 rounded-lg border bg-blue-50 p-3 dark:bg-blue-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-800 text-sm dark:text-blue-200">
+                    <span className="font-medium">Analysis Status:</span>{" "}
+                    {yakoaResult.infringementDetails.status}
+                  </span>
+                  {yakoaResult.infringementDetails.result && (
+                    <Badge variant="secondary" className="text-xs">
+                      {yakoaResult.infringementDetails.result}
+                    </Badge>
+                  )}
+                </div>
               </div>
-            )}
+            </Card>
+          )}
 
-            {!yakoaResult.verified && (
-              <div className="rounded-lg bg-orange-50 p-4 dark:bg-orange-950/20">
-                <p className="text-orange-800 text-sm dark:text-orange-200">
-                  Your track may contain elements similar to existing works. You
-                  can still proceed, but consider reviewing your licensing
-                  terms.
-                </p>
+          {/* Warning for Review Cases */}
+          {!yakoaResult.verified && (
+            <Card className="border-orange-200 bg-orange-50 p-6 dark:border-orange-800 dark:bg-orange-950/20">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-1 h-5 w-5 text-orange-600" />
+                <div>
+                  <h4 className="font-medium text-orange-800 dark:text-orange-200">
+                    Judge Review Required
+                  </h4>
+                  <p className="mt-1 text-orange-700 text-sm dark:text-orange-300">
+                    This content has potential IP matches. Judges should review
+                    the analysis details above before approval.
+                  </p>
+                </div>
               </div>
-            )}
+            </Card>
+          )}
 
-            {yakoaResult.tokenId && (
-              <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
-                <p className="text-blue-800 text-sm dark:text-blue-200">
-                  <span className="font-medium">Verification Token:</span>{" "}
+          {/* Token ID */}
+          {yakoaResult.tokenId && (
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground text-sm">
+                  Yakoa Verification Token
+                </span>
+                <code className="rounded bg-muted px-2 py-1 text-xs">
                   {yakoaResult.tokenId}
-                </p>
+                </code>
               </div>
-            )}
-          </div>
-        </Card>
+            </Card>
+          )}
+        </div>
       )}
 
       {/* Action Buttons */}
