@@ -22,44 +22,6 @@ const CreateTrackSchema = z.object({
     yakoa_token_id: z.string().optional(),
 })
 
-// Mock data for now - will integrate with Story Protocol queries later
-const mockTracks = [
-    {
-        id: '1',
-        ipId: '0x1234567890123456789012345678901234567890',
-        title: 'Summer Vibes',
-        artist: '0xE89f...2455',
-        artistAddress: '0xE89fEf221bdEd027C4c9F07D256b9Dc1422A2455',
-        duration: '3:24',
-        plays: 1250,
-        verified: true,
-        likes: 89,
-        comments: 12,
-        isLiked: false,
-        imageUrl: '',
-        description: 'A chill summer track perfect for relaxing by the beach.',
-        genre: 'Electronic',
-        createdAt: '2024-01-15',
-    },
-    {
-        id: '2',
-        ipId: '0x2345678901234567890123456789012345678901',
-        title: 'Midnight Dreams',
-        artist: '0xA1B2...3456',
-        artistAddress: '0xA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0',
-        duration: '4:12',
-        plays: 892,
-        verified: true,
-        likes: 64,
-        comments: 8,
-        isLiked: true,
-        imageUrl: '',
-        description: 'Atmospheric electronic soundscape.',
-        genre: 'Ambient',
-        createdAt: '2024-01-10',
-    },
-]
-
 // Query schema for tracks
 const TracksQuerySchema = z.object({
     tab: z.enum(['following', 'verified', 'trending']).optional().default('following'),
@@ -91,8 +53,8 @@ app.post('/', zValidator('json', CreateTrackSchema), async (c) => {
                 verified: trackData.verified,
                 yakoa_token_id: trackData.yakoa_token_id,
                 plays: 0,
-                likes: 0,
-                comments: 0,
+                likes_count: 0,
+                comments_count: 0,
             })
             .select()
             .single()
@@ -131,30 +93,87 @@ app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
     try {
         const { tab, limit, offset } = c.req.valid('query')
 
-        let filteredTracks = [...mockTracks]
+        // Build query based on tab filter
+        let query = supabase
+            .from('tracks')
+            .select(
+                `
+                id,
+                title,
+                description,
+                genre,
+                duration,
+                artist_address,
+                verified,
+                plays,
+                likes_count,
+                comments_count,
+                ipfs_url,
+                created_at
+            `
+            )
+            .range(offset, offset + limit - 1)
 
         // Apply filtering based on tab
         switch (tab) {
             case 'verified':
-                filteredTracks = filteredTracks.filter((track) => track.verified)
+                query = query.eq('verified', true)
                 break
             case 'trending':
-                filteredTracks = filteredTracks.sort((a, b) => b.plays - a.plays)
+                query = query.order('plays', { ascending: false })
                 break
             case 'following':
-                // For now, return all tracks
+                // For now, return all tracks ordered by creation date
+                query = query.order('created_at', { ascending: false })
                 break
         }
 
-        // Apply pagination
-        const paginatedTracks = filteredTracks.slice(offset, offset + limit)
+        // For non-trending, default sort by creation date
+        if (tab !== 'trending') {
+            query = query.order('created_at', { ascending: false })
+        }
+
+        const { data: tracksData, error } = await query
+
+        if (error) {
+            console.error('Get tracks error:', error)
+            return c.json(
+                {
+                    success: false,
+                    error: error.message,
+                },
+                500
+            )
+        }
+
+        // Transform to match frontend expected format
+        const tracks = (tracksData || []).map((track) => ({
+            id: track.id,
+            ipId: track.id, // Using track ID as ipId for now
+            title: track.title,
+            artist: `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
+            artistAddress: track.artist_address,
+            duration: track.duration || '0:00',
+            plays: track.plays || 0,
+            verified: track.verified || false,
+            likes: track.likes_count || 0,
+            comments: track.comments_count || 0,
+            isLiked: false, // TODO: Check if current user liked this track
+            imageUrl: track.ipfs_url || '',
+            description: track.description,
+            genre: track.genre,
+            createdAt: track.created_at?.split('T')[0] || '',
+        }))
+
+        // Get total count for pagination
+        const { count: totalCount } = await supabase.from('tracks').select('*', { count: 'exact', head: true })
 
         return c.json({
             success: true,
             data: {
-                tracks: paginatedTracks,
-                total: filteredTracks.length,
-                hasMore: offset + limit < filteredTracks.length,
+                tracks,
+                total: totalCount || 0,
+                hasMore: offset + limit < (totalCount || 0),
             },
         })
     } catch (error: any) {
@@ -175,9 +194,10 @@ app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
 app.get('/:id', async (c) => {
     try {
         const trackId = c.req.param('id')
-        const track = mockTracks.find((t) => t.id === trackId)
 
-        if (!track) {
+        const { data: track, error } = await supabase.from('tracks').select('*').eq('id', trackId).single()
+
+        if (error || !track) {
             return c.json(
                 {
                     success: false,
@@ -187,9 +207,28 @@ app.get('/:id', async (c) => {
             )
         }
 
+        // Transform to match frontend expected format
+        const transformedTrack = {
+            id: track.id,
+            ipId: track.ip_id || track.id,
+            title: track.title,
+            artist: `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
+            artistAddress: track.artist_address,
+            duration: track.duration || '0:00',
+            plays: track.plays || 0,
+            verified: track.verified || false,
+            likes: track.likes_count || 0,
+            comments: track.comments_count || 0,
+            isLiked: false, // TODO: Check if current user liked this track
+            imageUrl: track.ipfs_url || '',
+            description: track.description,
+            genre: track.genre,
+            createdAt: track.created_at?.split('T')[0] || '',
+        }
+
         return c.json({
             success: true,
-            data: track,
+            data: transformedTrack,
         })
     } catch (error: any) {
         console.error('Get track error:', error)
@@ -208,11 +247,54 @@ app.get('/:id', async (c) => {
  */
 app.get('/trending/sidebar', async (c) => {
     try {
-        const trendingTracks = [...mockTracks].sort((a, b) => b.plays - a.plays).slice(0, 5)
+        const { data: tracksData, error } = await supabase
+            .from('tracks')
+            .select(
+                `
+                id,
+                title,
+                artist_address,
+                duration,
+                plays,
+                verified,
+                likes_count,
+                comments_count,
+                ipfs_url
+            `
+            )
+            .order('plays', { ascending: false })
+            .limit(5)
+
+        if (error) {
+            console.error('Get trending tracks error:', error)
+            return c.json(
+                {
+                    success: false,
+                    error: error.message,
+                },
+                500
+            )
+        }
+
+        // Transform to match frontend expected format
+        const tracks = (tracksData || []).map((track) => ({
+            id: track.id,
+            ipId: track.id,
+            title: track.title,
+            artist: `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
+            artistAddress: track.artist_address,
+            duration: track.duration || '0:00',
+            plays: track.plays || 0,
+            verified: track.verified || false,
+            likes: track.likes_count || 0,
+            comments: track.comments_count || 0,
+            isLiked: false,
+            imageUrl: track.ipfs_url || '',
+        }))
 
         return c.json({
             success: true,
-            data: trendingTracks,
+            data: tracks,
         })
     } catch (error: any) {
         console.error('Get trending tracks error:', error)

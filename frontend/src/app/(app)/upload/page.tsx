@@ -243,22 +243,15 @@ export default function UploadPage() {
 
         if (registrationResult.success) {
           toast.success("Track registered successfully on Story Protocol!");
-          console.log(
-            "✅ Story Protocol registration:",
-            registrationResult.data
-          );
+          console.log("✅ Story Protocol registration:", registrationResult.data);
         } else {
           console.error("❌ Story Protocol error:", registrationResult.error);
-          toast.error(
-            `Story Protocol registration failed: ${registrationResult.error}`
-          );
+          toast.error(`Story Protocol registration failed: ${registrationResult.error}`);
         }
       } else {
-        console.log(
-          "⚠️ Skipping Story Protocol registration - content not verified"
-        );
+        console.log("⚠️ Skipping Story Protocol registration - content not verified");
         toast.info(
-          "Track uploaded successfully (Story Protocol registration skipped for unverified content)"
+          "Track uploaded successfully (Story Protocol registration skipped for unverified content)",
         );
       }
 
@@ -286,18 +279,13 @@ export default function UploadPage() {
       <div className="max-w-4xl space-y-6">
         {/* Progress Indicator */}
         <div className="space-y-4">
-          <Progress
-            value={(currentStep / steps.length) * 100}
-            className="h-2 [&>div]:bg-primary"
-          />
+          <Progress value={(currentStep / steps.length) * 100} className="h-2 [&>div]:bg-primary" />
           <div className="flex justify-between text-sm">
             {steps.map((step) => (
               <div
                 key={step.id}
                 className={`flex flex-col items-center space-y-1 ${
-                  currentStep >= step.id
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  currentStep >= step.id ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <div
