@@ -69,11 +69,11 @@ export function TrackCard({
 
   return (
     <Card className="group cursor-pointer overflow-hidden border-0 bg-transparent p-0 transition-all hover:bg-accent/50">
-      <div className="p-4" onClick={handleCardClick}>
+      <div className="p-3" onClick={handleCardClick}>
         {/* Track Header with Artist Info */}
         {showArtist && variant === "feed" && (
-          <div className="mb-3 flex items-center gap-3">
-            <Avatar className="h-8 w-8">
+          <div className="mb-2 flex items-center gap-2">
+            <Avatar className="h-6 w-6">
               <AvatarImage src={getAvatarUrl(null)} alt={track.artist} />
               <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                 {getUserInitials(track.artist)}
@@ -92,9 +92,9 @@ export function TrackCard({
         )}
 
         {/* Track Content */}
-        <div className="space-y-3">
-          {/* Album Art with Play Button */}
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-800">
+        <div className="space-y-2">
+          {/* Album Art with Play Button - Made more rectangular */}
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-800">
             {track.imageUrl && !imageError ? (
               <img
                 src={track.imageUrl}
@@ -104,42 +104,42 @@ export function TrackCard({
               />
             ) : (
               <div className="flex h-full items-center justify-center">
-                <div className="text-6xl text-neutral-400">🎵</div>
+                <div className="text-4xl text-neutral-400">🎵</div>
               </div>
             )}
 
-            {/* Play Button Overlay */}
+            {/* Play Button Overlay - Made smaller */}
             <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/20">
               <Button
-                size="lg"
+                size="sm"
                 variant="ghost"
-                className="h-16 w-16 rounded-full bg-white/90 text-black opacity-0 transition-all hover:bg-white group-hover:opacity-100"
+                className="h-12 w-12 rounded-full bg-white/90 text-black opacity-0 transition-all hover:bg-white group-hover:opacity-100"
                 onClick={handlePlayClick}
               >
                 {isPlaying ? (
-                  <Pause className="h-6 w-6 fill-current" />
+                  <Pause className="h-4 w-4 fill-current" />
                 ) : (
-                  <Play className="h-6 w-6 fill-current" />
+                  <Play className="h-4 w-4 fill-current" />
                 )}
               </Button>
             </div>
 
-            {/* Verification Badge */}
+            {/* Verification Badge - Made smaller */}
             {track.verified && (
-              <div className="absolute top-2 right-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500">
-                  <div className="h-2 w-2 rounded-full bg-white" />
+              <div className="absolute top-1.5 right-1.5">
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
+                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
                 </div>
               </div>
             )}
           </div>
 
-          {/* Track Info */}
-          <div className="space-y-1">
-            <h3 className="font-semibold text-lg leading-tight">
+          {/* Track Info - Reduced spacing */}
+          <div className="space-y-0.5">
+            <h3 className="font-semibold text-base leading-tight line-clamp-1">
               {track.title}
             </h3>
-            <div className="flex items-center gap-4 text-muted-foreground text-sm">
+            <div className="flex items-center gap-3 text-muted-foreground text-xs">
               <span>{track.duration}</span>
               <span>{track.plays.toLocaleString()} plays</span>
             </div>

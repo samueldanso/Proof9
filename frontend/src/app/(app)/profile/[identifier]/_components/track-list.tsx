@@ -4,7 +4,9 @@ import { TrackCard } from "@/components/shared/track-card";
 import { useUser, useUserTracks } from "@/lib/api/hooks";
 import { useTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
+import { useLikeTrack, useAddComment } from "@/hooks/use-social-actions";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
 export function TrackList() {
   const params = useParams();
@@ -31,24 +33,44 @@ export function TrackList() {
 
   const isLoading = isLoadingUserTracks || isLoadingAllTracks;
 
+  // Social actions hooks
+  const likeTrackMutation = useLikeTrack();
+  const addCommentMutation = useAddComment();
+
   const handlePlay = (track: any) => {
     console.log("Playing track:", track);
     // Handle play logic - this would integrate with the music player
   };
 
   const handleLike = (trackId: string) => {
-    console.log("Liking track:", trackId);
-    // Handle like logic
+    likeTrackMutation.mutate(trackId, {
+      onError: (error) => {
+        toast.error("Failed to like track");
+        console.error("Like error:", error);
+      },
+    });
   };
 
   const handleComment = (trackId: string) => {
-    console.log("Commenting on track:", trackId);
-    // Handle comment logic
+    const comment = prompt("Add a comment:");
+    if (comment) {
+      addCommentMutation.mutate(
+        { trackId, content: comment },
+        {
+          onError: (error) => {
+            toast.error("Failed to add comment");
+            console.error("Comment error:", error);
+          },
+        }
+      );
+    }
   };
 
   const handleShare = (trackId: string) => {
-    console.log("Sharing track:", trackId);
-    // Handle share logic
+    const url = `${window.location.origin}/track/${trackId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success("Track link copied to clipboard!");
+    });
   };
 
   if (isLoading) {

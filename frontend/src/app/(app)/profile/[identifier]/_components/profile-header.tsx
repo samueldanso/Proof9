@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+
 import { useUser } from "@/lib/api/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
@@ -25,11 +26,14 @@ export function ProfileHeader() {
   const userData = userResponse?.data;
 
   // Check if this is the current user's profile (compare addresses)
-  const isOwnProfile = connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
+  const isOwnProfile =
+    connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
 
   // Follow functionality
   const followMutation = useFollow();
-  const { data: isFollowing, isLoading: isFollowLoading } = useIsFollowing(userData?.address || "");
+  const { data: isFollowing, isLoading: isFollowLoading } = useIsFollowing(
+    userData?.address || ""
+  );
 
   const handleFollow = () => {
     if (!userData?.address) return;
@@ -40,7 +44,7 @@ export function ProfileHeader() {
     userData?.displayName ||
     (userData?.address
       ? `${userData.address.substring(0, 6)}...${userData.address.substring(
-          userData.address.length - 4,
+          userData.address.length - 4
         )}`
       : "Unknown");
 
@@ -97,7 +101,9 @@ export function ProfileHeader() {
 
       {/* Profile Info - Centered */}
       <div className="flex flex-col items-center gap-2 text-center">
-        <p className="font-semibold text-[28px] leading-[32px]">{displayName}</p>
+        <p className="font-semibold text-[28px] leading-[32px]">
+          {displayName}
+        </p>
         {userData?.address && (
           <div className="flex justify-center">
             <AddressDisplay address={userData.address} />
@@ -108,15 +114,21 @@ export function ProfileHeader() {
       {/* Stats - Centered with separator */}
       <div className="flex items-center gap-8 font-medium text-muted-foreground">
         <div className="flex flex-col items-center">
-          <span className="font-semibold text-foreground text-xl">{trackCount}</span>
+          <span className="font-semibold text-foreground text-xl">
+            {trackCount}
+          </span>
           <span className="text-sm">Sounds</span>
         </div>
         <div className="flex flex-col items-center">
-          <span className="font-semibold text-foreground text-xl">{followingCount}</span>
+          <span className="font-semibold text-foreground text-xl">
+            {followingCount}
+          </span>
           <span className="text-sm">Following</span>
         </div>
         <div className="flex flex-col items-center">
-          <span className="font-semibold text-foreground text-xl">{followersCount}</span>
+          <span className="font-semibold text-foreground text-xl">
+            {followersCount}
+          </span>
           <span className="text-sm">Followers</span>
         </div>
       </div>

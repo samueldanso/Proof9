@@ -23,6 +23,8 @@ export function useLikeTrack() {
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ["track-likes", trackId] });
       queryClient.invalidateQueries({ queryKey: ["user-likes", address] });
+      queryClient.invalidateQueries({ queryKey: ["tracks"] }); // Refresh discover page
+      queryClient.invalidateQueries({ queryKey: ["track", trackId] }); // Refresh track detail
 
       toast.success(data.isLiked ? "Track liked!" : "Track unliked!");
     },
@@ -53,6 +55,8 @@ export function useAddComment() {
     },
     onSuccess: (data, { trackId }) => {
       queryClient.invalidateQueries({ queryKey: ["track-comments", trackId] });
+      queryClient.invalidateQueries({ queryKey: ["tracks"] }); // Refresh discover page
+      queryClient.invalidateQueries({ queryKey: ["track", trackId] }); // Refresh track detail
       toast.success("Comment added!");
     },
     onError: (error) => {
@@ -171,7 +175,8 @@ export function useIsFollowing(followingAddress: string) {
 
   return useQuery({
     queryKey: ["is-following", address, followingAddress],
-    queryFn: () => socialQueries.follows.isFollowing(address!, followingAddress),
+    queryFn: () =>
+      socialQueries.follows.isFollowing(address!, followingAddress),
     enabled: !!address && !!followingAddress && address !== followingAddress,
   });
 }
@@ -186,7 +191,8 @@ export function useSocialActions() {
 
   return {
     likeTrack: likeTrack.mutate,
-    addComment: (trackId: string, content: string) => addComment.mutate({ trackId, content }),
+    addComment: (trackId: string, content: string) =>
+      addComment.mutate({ trackId, content }),
     follow: follow.mutate,
     isLoading: likeTrack.isPending || addComment.isPending || follow.isPending,
   };

@@ -4,8 +4,15 @@ import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
 import { useTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
+import {
+  useLikeTrack,
+  useAddComment,
+  useUserLikes,
+} from "@/hooks/use-social-actions";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { toast } from "sonner";
+import { useAccount } from "wagmi";
 import FeedTabs from "./_components/feed-tabs";
 import TrendingBanner from "./_components/trending-banner";
 
@@ -13,21 +20,41 @@ export default function DiscoverPage() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<string>(
-    tabParam === "verified" || tabParam === "trending" || tabParam === "following"
+    tabParam === "verified" ||
+      tabParam === "trending" ||
+      tabParam === "following"
       ? tabParam
-      : "following",
+      : "following"
   );
 
   // Music player state
   const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // User authentication
+  const { address } = useAccount();
+
   // Load tracks based on active tab
   const { data: tracksResponse, isLoading, error } = useTracks(activeTab);
   const dbTracks = tracksResponse?.data?.tracks || [];
 
-  // Transform database tracks to legacy format for components
-  const tracks = dbTracks.map(transformDbTrackToLegacy);
+  // Load user's liked tracks to determine isLiked status
+  const { data: userLikes = [] } = useUserLikes();
+  const likedTrackIds = useMemo(() => {
+    return new Set(userLikes.map((like) => like.track_id));
+  }, [userLikes]);
+
+  // Transform database tracks to legacy format with real liked status
+  const tracks = useMemo(() => {
+    return dbTracks.map((dbTrack) => ({
+      ...transformDbTrackToLegacy(dbTrack),
+      isLiked: address ? likedTrackIds.has(dbTrack.id) : false,
+    }));
+  }, [dbTracks, likedTrackIds, address]);
+
+  // Social actions hooks
+  const likeTrackMutation = useLikeTrack();
+  const addCommentMutation = useAddComment();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -46,18 +73,26 @@ export default function DiscoverPage() {
   };
 
   const handleLike = (trackId: string) => {
-    console.log("Liking track:", trackId);
-    // Handle like logic - integrate with API later
+    likeTrackMutation.mutate(trackId);
   };
 
   const handleComment = (trackId: string) => {
-    console.log("Commenting on track:", trackId);
-    // Handle comment logic - integrate with API later
+    // For now, we'll navigate to track detail page for commenting
+    // In the future, we could open a comment modal here
+    window.location.href = `/track/${trackId}#comments`;
   };
 
   const handleShare = (trackId: string) => {
-    console.log("Sharing track:", trackId);
-    // Handle share logic - integrate with API later
+    const shareUrl = `${window.location.origin}/track/${trackId}`;
+    if (navigator.share) {
+      navigator.share({
+        title: "Check out this track",
+        url: shareUrl,
+      });
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Track link copied to clipboard!");
+    }
   };
 
   const handlePlayerClose = () => {
@@ -109,8 +144,8 @@ export default function DiscoverPage() {
               {activeTab === "verified"
                 ? "No verified tracks available yet"
                 : activeTab === "trending"
-                  ? "No trending tracks available yet"
-                  : "No tracks available yet"}
+                ? "No trending tracks available yet"
+                : "No tracks available yet"}
             </p>
           </div>
         ) : (

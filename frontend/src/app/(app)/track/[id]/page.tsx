@@ -6,11 +6,20 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useTrack } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
+import {
+  useLikeTrack,
+  useAddComment,
+  useTrackComments,
+  useIsTrackLiked,
+} from "@/hooks/use-social-actions";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useAccount } from "wagmi";
 import LicenseInfo from "./_components/license-info";
 import TrackHeader from "./_components/track-header";
 import TrackMedia from "./_components/trackmedia";
+import CommentsSection from "./_components/comments-section";
 
 export default function TrackPage() {
   const params = useParams();
@@ -21,23 +30,51 @@ export default function TrackPage() {
   const { data: trackResponse, isLoading, error } = useTrack(trackId);
   const dbTrack = trackResponse?.data;
 
+  // Social actions hooks
+  const likeTrackMutation = useLikeTrack();
+  const addCommentMutation = useAddComment();
+  const { data: commentsData } = useTrackComments(trackId);
+  const { data: isLikedData } = useIsTrackLiked(trackId);
+  const { address } = useAccount();
+
   // Transform database track to legacy format for components
-  const track = dbTrack ? transformDbTrackToLegacy(dbTrack) : null;
+  const track = dbTrack
+    ? {
+        ...transformDbTrackToLegacy(dbTrack),
+        isLiked: isLikedData?.isLiked || false,
+      }
+    : null;
 
   const handlePlay = () => {
     setIsPlaying(!isPlaying);
   };
 
   const handleLike = () => {
-    // Handle like logic
+    if (!address) {
+      toast.error("Please connect your wallet to like tracks");
+      return;
+    }
+    likeTrackMutation.mutate(trackId);
   };
 
   const handleComment = () => {
-    // Handle comment logic
+    // Scroll to comments section
+    document
+      .getElementById("comments-section")
+      ?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleShare = () => {
-    // Handle share logic
+    const shareUrl = `${window.location.origin}/track/${trackId}`;
+    if (navigator.share) {
+      navigator.share({
+        title: track?.title || "Check out this track",
+        url: shareUrl,
+      });
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Track link copied to clipboard!");
+    }
   };
 
   if (isLoading) {
@@ -198,6 +235,11 @@ export default function TrackPage() {
             </div>
           </Card>
         </div>
+      </div>
+
+      {/* Comments Section - Full Width Below */}
+      <div className="mt-8">
+        <CommentsSection trackId={trackId} />
       </div>
     </div>
   );
