@@ -103,17 +103,8 @@ app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
     try {
         const { tab, user_address, genre, limit, offset } = c.req.valid('query')
 
-        // Build base query with artist profile info
-        let baseQuery = supabase.from('tracks').select(
-            `
-                *,
-                profiles!tracks_artist_address_fkey (
-                    display_name,
-                    avatar_url,
-                    username
-                )
-            `
-        )
+        // Build base query - we'll join profiles manually
+        let baseQuery = supabase.from('tracks').select('*')
 
         // Apply genre filter if specified
         if (genre) {
@@ -153,19 +144,7 @@ app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
                     tracksData = []
                 } else {
                     // Get tracks from followed creators
-                    let followingQuery = supabase
-                        .from('tracks')
-                        .select(
-                            `
-                            *,
-                            profiles!tracks_artist_address_fkey (
-                                display_name,
-                                avatar_url,
-                                username
-                            )
-                        `
-                        )
-                        .in('artist_address', followedAddresses)
+                    let followingQuery = supabase.from('tracks').select('*').in('artist_address', followedAddresses)
 
                     // Apply genre filter if specified
                     if (genre) {
@@ -190,16 +169,7 @@ app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
             }
         } else if (tab === 'trending') {
             // For trending tab, order by plays descending (most played first)
-            let trendingQuery = supabase.from('tracks').select(
-                `
-                    *,
-                    profiles!tracks_artist_address_fkey (
-                        display_name,
-                        avatar_url,
-                        username
-                    )
-                `
-            )
+            let trendingQuery = supabase.from('tracks').select('*')
 
             // Apply genre filter if specified
             if (genre) {
@@ -239,28 +209,43 @@ app.get('/', zValidator('query', TracksQuerySchema), async (c) => {
             )
         }
 
+        // Get unique artist addresses to fetch profile data
+        const artistAddresses = [...new Set((tracksData || []).map((track) => track.artist_address))]
+
+        // Fetch profile data for all artists
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('address, display_name, avatar_url, username')
+            .in('address', artistAddresses)
+
+        // Create a map for quick profile lookup
+        const profileMap = new Map(profiles?.map((p) => [p.address, p]) || [])
+
         // Transform to match frontend expected format - simple approach
-        const tracks = (tracksData || []).map((track) => ({
-            id: track.id,
-            ipId: track.id,
-            title: track.title,
-            artist:
-                track.artist_name ||
-                track.profiles?.display_name ||
-                `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
-            artistAddress: track.artist_address,
-            artistAvatarUrl: track.profiles?.avatar_url,
-            duration: track.duration || '0:00',
-            plays: track.plays || 0,
-            verified: track.verified || false,
-            likes: track.likes_count || 0,
-            comments: track.comments_count || 0,
-            isLiked: false, // TODO: Check if current user liked this track
-            imageUrl: track.ipfs_url || '',
-            description: track.description,
-            genre: track.genre,
-            createdAt: track.created_at?.split('T')[0] || '',
-        }))
+        const tracks = (tracksData || []).map((track) => {
+            const profile = profileMap.get(track.artist_address)
+            return {
+                id: track.id,
+                ipId: track.id,
+                title: track.title,
+                artist:
+                    track.artist_name ||
+                    profile?.display_name ||
+                    `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
+                artistAddress: track.artist_address,
+                artistAvatarUrl: profile?.avatar_url,
+                duration: track.duration || '0:00',
+                plays: track.plays || 0,
+                verified: track.verified || false,
+                likes: track.likes_count || 0,
+                comments: track.comments_count || 0,
+                isLiked: false, // TODO: Check if current user liked this track
+                imageUrl: track.ipfs_url || '',
+                description: track.description,
+                genre: track.genre,
+                createdAt: track.created_at?.split('T')[0] || '',
+            }
+        })
 
         // Get total count for pagination
         const { count: totalCount } = await supabase.from('tracks').select('*', { count: 'exact', head: true })
@@ -292,20 +277,7 @@ app.get('/:id', async (c) => {
     try {
         const trackId = c.req.param('id')
 
-        const { data: track, error } = await supabase
-            .from('tracks')
-            .select(
-                `
-                *,
-                profiles!tracks_artist_address_fkey (
-                    display_name,
-                    avatar_url,
-                    username
-                )
-            `
-            )
-            .eq('id', trackId)
-            .single()
+        const { data: track, error } = await supabase.from('tracks').select('*').eq('id', trackId).single()
 
         if (error || !track) {
             return c.json(
@@ -317,6 +289,13 @@ app.get('/:id', async (c) => {
             )
         }
 
+        // Get profile data for the artist
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('address, display_name, avatar_url, username')
+            .eq('address', track.artist_address)
+            .single()
+
         // Transform to match frontend expected format - simple approach
         const transformedTrack = {
             id: track.id,
@@ -324,10 +303,10 @@ app.get('/:id', async (c) => {
             title: track.title,
             artist:
                 track.artist_name ||
-                track.profiles?.display_name ||
+                profile?.display_name ||
                 `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
             artistAddress: track.artist_address,
-            artistAvatarUrl: track.profiles?.avatar_url,
+            artistAvatarUrl: profile?.avatar_url,
             duration: track.duration || '0:00',
             plays: track.plays || 0,
             verified: track.verified || false,
@@ -361,20 +340,7 @@ app.get('/:id', async (c) => {
  */
 app.get('/trending/sidebar', async (c) => {
     try {
-        const { data: tracksData, error } = await supabase
-            .from('tracks')
-            .select(
-                `
-                *,
-                profiles!tracks_artist_address_fkey (
-                    display_name,
-                    avatar_url,
-                    username
-                )
-            `
-            )
-            .order('plays', { ascending: false })
-            .limit(5)
+        const { data: tracksData, error } = await supabase.from('tracks').select('*').order('plays', { ascending: false }).limit(5)
 
         if (error) {
             console.error('Get trending tracks error:', error)
@@ -387,25 +353,40 @@ app.get('/trending/sidebar', async (c) => {
             )
         }
 
+        // Get unique artist addresses to fetch profile data
+        const artistAddresses = [...new Set((tracksData || []).map((track) => track.artist_address))]
+
+        // Fetch profile data for all artists
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('address, display_name, avatar_url, username')
+            .in('address', artistAddresses)
+
+        // Create a map for quick profile lookup
+        const profileMap = new Map(profiles?.map((p) => [p.address, p]) || [])
+
         // Transform to match frontend expected format - simple approach
-        const tracks = (tracksData || []).map((track) => ({
-            id: track.id,
-            ipId: track.id,
-            title: track.title,
-            artist:
-                track.artist_name ||
-                track.profiles?.display_name ||
-                `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
-            artistAddress: track.artist_address,
-            artistAvatarUrl: track.profiles?.avatar_url,
-            duration: track.duration || '0:00',
-            plays: track.plays || 0,
-            verified: track.verified || false,
-            likes: track.likes_count || 0,
-            comments: track.comments_count || 0,
-            isLiked: false,
-            imageUrl: track.ipfs_url || '',
-        }))
+        const tracks = (tracksData || []).map((track) => {
+            const profile = profileMap.get(track.artist_address)
+            return {
+                id: track.id,
+                ipId: track.id,
+                title: track.title,
+                artist:
+                    track.artist_name ||
+                    profile?.display_name ||
+                    `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
+                artistAddress: track.artist_address,
+                artistAvatarUrl: profile?.avatar_url,
+                duration: track.duration || '0:00',
+                plays: track.plays || 0,
+                verified: track.verified || false,
+                likes: track.likes_count || 0,
+                comments: track.comments_count || 0,
+                isLiked: false,
+                imageUrl: track.ipfs_url || '',
+            }
+        })
 
         return c.json({
             success: true,
