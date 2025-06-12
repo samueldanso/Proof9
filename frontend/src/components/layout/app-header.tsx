@@ -47,12 +47,17 @@ function NotificationsButton() {
   const handleNotificationClick = () => {
     // TODO: Implement notifications feature
     alert(
-      "🔔 Notifications coming soon!\n\nYou'll get notified about:\n• New license purchases\n• Revenue claims\n• Comments & likes\n• Followers",
+      "🔔 Notifications coming soon!\n\nYou'll get notified about:\n• New license purchases\n• Revenue claims\n• Comments & likes\n• Followers"
     );
   };
 
   return (
-    <Button variant="ghost" size="sm" onClick={handleNotificationClick} className="relative">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleNotificationClick}
+      className="relative"
+    >
       <Bell className="h-5 w-5" />
       {/* Notification badge - hidden for now */}
       {/* <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
@@ -117,7 +122,11 @@ export function AppHeader() {
             <div className="flex items-center gap-2">
               <UploadButton />
               <NotificationsButton />
-              <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(true)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSearchExpanded(true)}
+              >
                 <Search className="h-5 w-5" />
               </Button>
               <Sheet>
@@ -139,7 +148,11 @@ export function AppHeader() {
             <div className="flex-1">
               <SearchBar />
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(false)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSearchExpanded(false)}
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -149,17 +162,17 @@ export function AppHeader() {
   }
 
   return (
-    <header className="flex h-16 w-full items-center justify-between bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      {/* Empty space for balance */}
-      <div />
+    <header className="flex h-16 w-full items-center bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Left: Empty space for balance */}
+      <div className="w-32" />
 
-      {/* Search Bar - Centered */}
-      <div className="-translate-x-1/2 absolute left-1/2 transform">
+      {/* Center: Search Bar - Give it more space */}
+      <div className="flex-1 mx-8 max-w-4xl">
         <SearchBar />
       </div>
 
       {/* Right: Upload, Notifications & Profile Avatar */}
-      <div className="flex items-center gap-3">
+      <div className="flex w-32 items-center justify-end gap-3">
         <UploadButton />
         <NotificationsButton />
         <UserProfileAvatar />
