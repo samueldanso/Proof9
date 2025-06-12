@@ -12,12 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -138,10 +133,7 @@ export function TrackActions({
                 <p>More actions</p>
               </TooltipContent>
             </Tooltip>
-            <DropdownMenuContent
-              align="end"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               <DropdownMenuItem onClick={handleShare}>
                 <IconShare className="mr-2 h-4 w-4" />
                 Share
@@ -154,9 +146,7 @@ export function TrackActions({
               )}
               <DropdownMenuItem
                 onClick={() =>
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}/track/${trackId}`
-                  )
+                  navigator.clipboard.writeText(`${window.location.origin}/track/${trackId}`)
                 }
               >
                 <IconShare className="mr-2 h-4 w-4" />

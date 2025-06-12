@@ -130,7 +130,7 @@ export const SearchBar = () => {
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onFocus={() => query.trim().length > 0 && setIsOpen(true)}
-        className="h-11 w-full rounded-full border-none bg-muted/50 pr-4 pl-11 focus:bg-background focus:ring-2 focus:ring-ring"
+        className="h-9 w-full rounded-full border-none bg-muted/50 pr-4 pl-11 focus:bg-background focus:ring-2 focus:ring-ring"
       />
 
       {/* Search Results Dropdown */}

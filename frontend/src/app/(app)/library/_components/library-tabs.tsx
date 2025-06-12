@@ -42,10 +42,7 @@ export default function LibraryTabs({
           onClick={() => onTabChange(tab.id)}
         >
           <span>{tab.label}</span>
-          <Badge
-            variant={activeTab === tab.id ? "default" : "secondary"}
-            className="ml-1 text-xs"
-          >
+          <Badge variant={activeTab === tab.id ? "default" : "secondary"} className="ml-1 text-xs">
             {tab.count}
           </Badge>
         </button>

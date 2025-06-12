@@ -2,11 +2,7 @@
 
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
-import {
-  useAddComment,
-  useLikeTrack,
-  useUserLikes,
-} from "@/hooks/use-social-actions";
+import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
 import { useTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useSearchParams } from "next/navigation";
@@ -23,7 +19,7 @@ export default function DiscoverPage() {
   const [activeTab, setActiveTab] = useState<string>(
     tabParam === "latest" || tabParam === "following" || tabParam === "trending"
       ? tabParam
-      : "latest"
+      : "latest",
   );
 
   // Genre filter state
@@ -137,10 +133,7 @@ export default function DiscoverPage() {
 
       {/* Genre Filter */}
       <div className="mx-auto max-w-7xl px-4">
-        <GenreFilter
-          activeGenre={activeGenre}
-          onGenreChange={handleGenreChange}
-        />
+        <GenreFilter activeGenre={activeGenre} onGenreChange={handleGenreChange} />
       </div>
 
       {/* Track Feed - Grid Layout */}
@@ -165,10 +158,10 @@ export default function DiscoverPage() {
               {activeTab === "latest"
                 ? "No new tracks uploaded yet"
                 : activeTab === "following"
-                ? "No tracks from creators you follow yet"
-                : activeTab === "trending"
-                ? "No trending tracks available yet"
-                : "No tracks available yet"}
+                  ? "No tracks from creators you follow yet"
+                  : activeTab === "trending"
+                    ? "No trending tracks available yet"
+                    : "No tracks available yet"}
             </p>
           </div>
         ) : (

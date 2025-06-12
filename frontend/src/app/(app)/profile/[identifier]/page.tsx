@@ -18,14 +18,10 @@ export default function ProfilePage() {
 
       {/* Main Content Area - Left aligned like discover */}
       <div className="flex w-full gap-6">
-        <div className="flex-1 space-y-6">
-          {/* Content below tabs goes here */}
-        </div>
+        <div className="flex-1 space-y-6">{/* Content below tabs goes here */}</div>
 
         {/* Potential future sidebar space */}
-        <div className="hidden w-72 lg:block">
-          {/* Reserved for future content */}
-        </div>
+        <div className="hidden w-72 lg:block">{/* Reserved for future content */}</div>
       </div>
     </div>
   );

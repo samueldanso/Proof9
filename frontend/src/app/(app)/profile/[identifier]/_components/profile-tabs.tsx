@@ -18,8 +18,7 @@ export function ProfileTabs() {
   const userData = userResponse?.data;
 
   // Check if this is the current user's profile (compare addresses)
-  const isOwnProfile =
-    connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
+  const isOwnProfile = connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
 
   const [activeTab, setActiveTab] = useState<string>("releases");
 

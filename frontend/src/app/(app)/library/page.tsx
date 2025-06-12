@@ -2,11 +2,7 @@
 
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
-import {
-  useAddComment,
-  useLikeTrack,
-  useUserLikes,
-} from "@/hooks/use-social-actions";
+import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
 import { useUserLicensedTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useMemo, useState } from "react";
@@ -26,8 +22,9 @@ export default function LibraryPage() {
   const { data: userLikes = [], isLoading: likesLoading } = useUserLikes();
 
   // Load user's licensed tracks
-  const { data: licensedTracks = [], isLoading: licensedLoading } =
-    useUserLicensedTracks(address || "");
+  const { data: licensedTracks = [], isLoading: licensedLoading } = useUserLicensedTracks(
+    address || "",
+  );
 
   // Transform liked tracks for display
   const likedTracks = useMemo(() => {
@@ -105,8 +102,7 @@ export default function LibraryPage() {
   };
 
   // Get current tracks based on active tab
-  const currentTracks =
-    activeTab === "liked" ? likedTracks : licensedTracksFormatted;
+  const currentTracks = activeTab === "liked" ? likedTracks : licensedTracksFormatted;
   const isLoading = activeTab === "liked" ? likesLoading : licensedLoading;
 
   // Get empty state message
@@ -140,9 +136,7 @@ export default function LibraryPage() {
       <div className="mx-auto max-w-7xl px-4">
         <div className="mb-6">
           <h1 className="mb-2 font-bold text-3xl">Your Library</h1>
-          <p className="text-muted-foreground">
-            Your liked tracks and licensed music collection
-          </p>
+          <p className="text-muted-foreground">Your liked tracks and licensed music collection</p>
         </div>
       </div>
 
@@ -172,12 +166,8 @@ export default function LibraryPage() {
         ) : currentTracks.length === 0 ? (
           // Empty state
           <div className="flex flex-col items-center justify-center p-8 text-center">
-            <h3 className="mb-3 font-bold text-xl">
-              {getEmptyMessage().title}
-            </h3>
-            <p className="text-muted-foreground">
-              {getEmptyMessage().description}
-            </p>
+            <h3 className="mb-3 font-bold text-xl">{getEmptyMessage().title}</h3>
+            <p className="text-muted-foreground">{getEmptyMessage().description}</p>
           </div>
         ) : (
           // Track grid - 4 columns on large screens, responsive
