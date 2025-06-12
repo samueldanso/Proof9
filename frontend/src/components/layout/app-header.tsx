@@ -7,7 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useUser } from "@/lib/api/hooks";
 import { getAvatarUrl } from "@/lib/avatar";
 import { useAccountModal, useConnectModal } from "@tomo-inc/tomo-evm-kit";
-import { Menu, Plus, Search, X } from "lucide-react";
+import { Bell, Menu, Plus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAccount } from "wagmi";
@@ -32,6 +32,33 @@ function UploadButton() {
         <span className="hidden sm:inline">Upload</span>
       </Button>
     </Link>
+  );
+}
+
+// Notifications Button Component
+function NotificationsButton() {
+  const { isConnected } = useAccount();
+
+  if (!isConnected) {
+    return null;
+  }
+
+  // For now, just show coming soon - no real functionality yet
+  const handleNotificationClick = () => {
+    // TODO: Implement notifications feature
+    alert(
+      "🔔 Notifications coming soon!\n\nYou'll get notified about:\n• New license purchases\n• Revenue claims\n• Comments & likes\n• Followers",
+    );
+  };
+
+  return (
+    <Button variant="ghost" size="sm" onClick={handleNotificationClick} className="relative">
+      <Bell className="h-5 w-5" />
+      {/* Notification badge - hidden for now */}
+      {/* <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+        3
+      </span> */}
+    </Button>
   );
 }
 
@@ -86,9 +113,10 @@ export function AppHeader() {
             {/* Left: User Profile Avatar on Mobile */}
             <UserProfileAvatar />
 
-            {/* Right: Upload, Search, Menu */}
+            {/* Right: Upload, Notifications, Search, Menu */}
             <div className="flex items-center gap-2">
               <UploadButton />
+              <NotificationsButton />
               <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(true)}>
                 <Search className="h-5 w-5" />
               </Button>
@@ -130,9 +158,10 @@ export function AppHeader() {
         <SearchBar />
       </div>
 
-      {/* Right: Upload Button & Profile Avatar */}
+      {/* Right: Upload, Notifications & Profile Avatar */}
       <div className="flex items-center gap-3">
         <UploadButton />
+        <NotificationsButton />
         <UserProfileAvatar />
       </div>
     </header>
