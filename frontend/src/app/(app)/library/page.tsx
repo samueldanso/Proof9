@@ -160,7 +160,7 @@ export default function LibraryPage() {
       <div className="mx-auto max-w-7xl px-4">
         {isLoading ? (
           // Loading state - Grid skeleton
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="animate-pulse">
                 <div className="mb-3 aspect-square w-full rounded-lg bg-muted" />
@@ -181,7 +181,7 @@ export default function LibraryPage() {
           </div>
         ) : (
           // Track grid - 4 columns on large screens, responsive
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {currentTracks.map((track) => (
               <TrackCard
                 key={track.id}

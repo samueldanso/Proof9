@@ -2,7 +2,11 @@
 
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
-import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
+import {
+  useAddComment,
+  useLikeTrack,
+  useUserLikes,
+} from "@/hooks/use-social-actions";
 import { useTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useSearchParams } from "next/navigation";
@@ -19,7 +23,7 @@ export default function DiscoverPage() {
   const [activeTab, setActiveTab] = useState<string>(
     tabParam === "latest" || tabParam === "following" || tabParam === "trending"
       ? tabParam
-      : "latest",
+      : "latest"
   );
 
   // Genre filter state
@@ -133,14 +137,17 @@ export default function DiscoverPage() {
 
       {/* Genre Filter */}
       <div className="mx-auto max-w-7xl px-4">
-        <GenreFilter activeGenre={activeGenre} onGenreChange={handleGenreChange} />
+        <GenreFilter
+          activeGenre={activeGenre}
+          onGenreChange={handleGenreChange}
+        />
       </div>
 
       {/* Track Feed - Grid Layout */}
       <div className="mx-auto max-w-7xl px-4">
         {isLoading ? (
           // Loading state - Grid skeleton
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
               <div key={i} className="animate-pulse">
                 <div className="mb-4 aspect-square w-full rounded-xl bg-muted" />
@@ -158,15 +165,15 @@ export default function DiscoverPage() {
               {activeTab === "latest"
                 ? "No new tracks uploaded yet"
                 : activeTab === "following"
-                  ? "No tracks from creators you follow yet"
-                  : activeTab === "trending"
-                    ? "No trending tracks available yet"
-                    : "No tracks available yet"}
+                ? "No tracks from creators you follow yet"
+                : activeTab === "trending"
+                ? "No trending tracks available yet"
+                : "No tracks available yet"}
             </p>
           </div>
         ) : (
           // Track grid - Up to 5 columns on very large screens, responsive
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {tracks.map((track) => (
               <TrackCard
                 key={track.id}

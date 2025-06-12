@@ -166,8 +166,8 @@ export function AppHeader() {
       {/* Left: Empty space for balance */}
       <div className="w-32" />
 
-      {/* Center: Search Bar - Give it more space */}
-      <div className="flex-1 mx-8 max-w-4xl">
+      {/* Center: Search Bar - Properly sized */}
+      <div className="flex-1 mx-6 max-w-2xl">
         <SearchBar />
       </div>
 

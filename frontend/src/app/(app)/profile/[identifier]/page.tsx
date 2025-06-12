@@ -5,7 +5,7 @@ import { ProfileTabs } from "./_components/profile-tabs";
 
 export default function ProfilePage() {
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-6">
       {/* Profile Header - Consistent with other pages */}
       <div className="mx-auto max-w-7xl px-4">
         <ProfileHeader />
