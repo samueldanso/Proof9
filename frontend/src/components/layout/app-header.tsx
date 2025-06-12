@@ -1,6 +1,5 @@
 "use client";
 
-import { ConnectButton } from "@/components/auth/connect";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -8,11 +7,60 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useUser } from "@/lib/api/hooks";
 import { getAvatarUrl } from "@/lib/avatar";
 import { useAccountModal, useConnectModal } from "@tomo-inc/tomo-evm-kit";
-import { Menu, Search, X } from "lucide-react";
+import { Bell, Menu, Plus, Search, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useAccount } from "wagmi";
-import { Logo } from "./logo";
 import { Sidebar } from "./sidebar";
+
+// Upload Button Component
+function UploadButton() {
+  const { isConnected } = useAccount();
+
+  if (!isConnected) {
+    return null;
+  }
+
+  return (
+    <Link href="/upload">
+      <Button
+        variant="default"
+        size="sm"
+        className="flex items-center gap-2 bg-[#ced925] font-medium text-black hover:bg-[#b8c220]"
+      >
+        <Plus className="h-4 w-4" />
+        <span className="hidden sm:inline">Upload</span>
+      </Button>
+    </Link>
+  );
+}
+
+// Notifications Button Component
+function NotificationsButton() {
+  const { isConnected } = useAccount();
+
+  if (!isConnected) {
+    return null;
+  }
+
+  // For now, just show coming soon - no real functionality yet
+  const handleNotificationClick = () => {
+    // TODO: Implement notifications feature
+    alert(
+      "🔔 Notifications coming soon!\n\nYou'll get notified about:\n• New license purchases\n• Revenue claims\n• Comments & likes\n• Followers",
+    );
+  };
+
+  return (
+    <Button variant="ghost" size="sm" onClick={handleNotificationClick} className="relative">
+      <Bell className="h-5 w-5" />
+      {/* Notification badge - hidden for now */}
+      {/* <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+        3
+      </span> */}
+    </Button>
+  );
+}
 
 // User Profile Avatar Component
 function UserProfileAvatar() {
@@ -32,7 +80,7 @@ function UserProfileAvatar() {
         className="bg-[#ced925] text-black hover:bg-[#b8c220]"
         variant="default"
       >
-        Connect Wallet
+        Log in
       </Button>
     );
   }
@@ -62,14 +110,14 @@ export function AppHeader() {
       <header className="flex h-16 w-full items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         {!isSearchExpanded ? (
           <>
-            {/* User Profile Avatar on Mobile */}
+            {/* Left: User Profile Avatar on Mobile */}
             <UserProfileAvatar />
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsSearchExpanded(true)}
-              >
+
+            {/* Right: Upload, Notifications, Search, Menu */}
+            <div className="flex items-center gap-2">
+              <UploadButton />
+              <NotificationsButton />
+              <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(true)}>
                 <Search className="h-5 w-5" />
               </Button>
               <Sheet>
@@ -91,11 +139,7 @@ export function AppHeader() {
             <div className="flex-1">
               <SearchBar />
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsSearchExpanded(false)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setIsSearchExpanded(false)}>
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -114,8 +158,10 @@ export function AppHeader() {
         <SearchBar />
       </div>
 
-      {/* User Profile Avatar */}
-      <div className="flex items-center">
+      {/* Right: Upload, Notifications & Profile Avatar */}
+      <div className="flex items-center gap-3">
+        <UploadButton />
+        <NotificationsButton />
         <UserProfileAvatar />
       </div>
     </header>

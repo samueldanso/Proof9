@@ -224,3 +224,17 @@ export function useSearchUsers(query: string) {
     staleTime: 30000, // Cache for 30 seconds
   });
 }
+
+// Licensed tracks hook (for library)
+export function useUserLicensedTracks(userAddress: string) {
+  return useQuery({
+    queryKey: ["user", userAddress, "licensed"],
+    queryFn: async () => {
+      if (!userAddress) return [];
+      // Use direct database query since this is new functionality
+      const { monetizationQueries } = await import("@/lib/db/queries");
+      return monetizationQueries.licenses.getForUser(userAddress);
+    },
+    enabled: !!userAddress,
+  });
+}

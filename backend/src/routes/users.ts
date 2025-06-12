@@ -414,4 +414,56 @@ app.get('/:address/onboarding-status', zValidator('param', z.object({ address: A
     }
 })
 
+/**
+ * Get creator earnings summary
+ * GET /api/users/:address/earnings
+ */
+app.get('/:address/earnings', zValidator('param', z.object({ address: AddressSchema })), async (c) => {
+    try {
+        const { address } = c.req.valid('param')
+
+        // Get creator's tracks with revenue data
+        const { data: tracks, error: tracksError } = await supabase
+            .from('tracks')
+            .select('total_revenue_earned, total_licenses_sold')
+            .eq('artist_address', address)
+
+        if (tracksError) throw tracksError
+
+        // Get creator's revenue claims
+        const { data: claims, error: claimsError } = await supabase
+            .from('revenue_claims')
+            .select('amount_claimed')
+            .eq('creator_address', address)
+
+        if (claimsError) throw claimsError
+
+        // Calculate summary
+        const totalRevenue = tracks?.reduce((sum, track) => sum + (track.total_revenue_earned || 0), 0) || 0
+        const totalLicensesSold = tracks?.reduce((sum, track) => sum + (track.total_licenses_sold || 0), 0) || 0
+        const totalClaimed = claims?.reduce((sum, claim) => sum + claim.amount_claimed, 0) || 0
+        const pendingRevenue = totalRevenue - totalClaimed
+
+        return c.json({
+            success: true,
+            data: {
+                totalRevenue,
+                totalLicensesSold,
+                totalClaimed,
+                pendingRevenue,
+                trackCount: tracks?.length || 0,
+            },
+        })
+    } catch (error: any) {
+        console.error('Get earnings summary error:', error)
+        return c.json(
+            {
+                success: false,
+                error: error.message,
+            },
+            500
+        )
+    }
+})
+
 export default app
