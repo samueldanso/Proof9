@@ -75,7 +75,8 @@ export default function LibraryPage() {
   };
 
   const handleLike = (trackId: string) => {
-    likeTrackMutation.mutate(trackId);
+    const track = currentTracks.find((t) => t.id === trackId);
+    likeTrackMutation.mutate({ trackId, trackTitle: track?.title });
   };
 
   const handleComment = (trackId: string) => {

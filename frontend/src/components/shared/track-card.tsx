@@ -116,9 +116,9 @@ export function TrackCard({
 
             {/* Track Info */}
             <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-1 font-medium text-sm leading-tight">{track.title}</h3>
-              <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                <span>{track.plays.toLocaleString()} plays</span>
+              <h3 className="line-clamp-1 font-semibold text-base leading-tight">{track.title}</h3>
+              <div className="flex items-center gap-3 text-muted-foreground text-sm">
+                <span className="font-medium">{track.plays.toLocaleString()} plays</span>
                 {track.duration && (
                   <>
                     <span>•</span>
@@ -134,8 +134,8 @@ export function TrackCard({
                 {track.verified && (
                   <>
                     <span>•</span>
-                    <div className="flex h-3 w-3 items-center justify-center rounded-full bg-green-500">
-                      <div className="h-1 w-1 rounded-full bg-white" />
+                    <div className="flex h-4 w-4 items-center justify-center rounded-full bg-green-500">
+                      <div className="h-1.5 w-1.5 rounded-full bg-white" />
                     </div>
                   </>
                 )}
@@ -143,7 +143,7 @@ export function TrackCard({
             </div>
 
             {/* Track Actions */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center">
               <TrackActions
                 trackId={track.id}
                 likes={track.likes}
@@ -153,6 +153,8 @@ export function TrackCard({
                 onComment={onComment}
                 onShare={onShare}
                 showLicenseButton={false}
+                trackTitle={track.title}
+                variant="compact"
               />
             </div>
           </div>
@@ -164,11 +166,11 @@ export function TrackCard({
   // Original grid variant (feed/profile)
   return (
     <Card className="group cursor-pointer overflow-hidden border-0 bg-transparent p-0 transition-all hover:bg-accent/50">
-      <div className="p-3" onClick={handleCardClick}>
+      <div className="p-4" onClick={handleCardClick}>
         {/* Track Content */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {/* Album Art with Play Button - Square aspect ratio for grid */}
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-800">
+          <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-neutral-200 dark:bg-neutral-800">
             <img
               src={getCoverUrl(track.imageUrl, track.genre)}
               alt={track.title}
@@ -187,68 +189,88 @@ export function TrackCard({
             </div>
 
             {/* Play Button Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/30">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/40">
               <Button
-                size="sm"
+                size="lg"
                 variant="ghost"
-                className="h-12 w-12 rounded-full bg-white/90 text-black opacity-0 transition-all hover:bg-white group-hover:opacity-100"
+                className="h-16 w-16 rounded-full bg-white/95 text-black opacity-0 transition-all hover:scale-110 hover:bg-white group-hover:opacity-100"
                 onClick={handlePlayClick}
               >
                 {isPlaying ? (
-                  <Pause className="h-5 w-5 fill-current" />
+                  <Pause className="h-7 w-7 fill-current" />
                 ) : (
-                  <Play className="h-5 w-5 fill-current" />
+                  <Play className="ml-1 h-7 w-7 fill-current" />
                 )}
               </Button>
             </div>
 
             {/* Verification Badge */}
             {track.verified && (
-              <div className="absolute top-2 right-2">
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
-                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
+              <div className="absolute top-3 right-3">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow-lg">
+                  <div className="h-2 w-2 rounded-full bg-white" />
                 </div>
               </div>
             )}
 
             {/* Duration Badge */}
-            <div className="absolute right-2 bottom-2">
-              <div className="rounded bg-black/70 px-1.5 py-0.5 text-white text-xs">
+            <div className="absolute right-3 bottom-3">
+              <div className="rounded-md bg-black/80 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
                 {track.duration}
               </div>
             </div>
           </div>
 
-          {/* Track Info - Optimized for grid */}
-          <div className="space-y-1">
-            <h3 className="line-clamp-2 font-semibold text-sm leading-tight">{track.title}</h3>
+          {/* Track Info - Enhanced for professional look */}
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <h3 className="line-clamp-2 font-bold text-base leading-tight">{track.title}</h3>
 
-            {/* Artist info - More compact for grid */}
-            {showArtist && (
-              <div className="flex items-center gap-2">
-                <Avatar className="h-4 w-4">
-                  <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} alt={track.artist} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {getUserInitials(track.artist)}
-                  </AvatarFallback>
-                </Avatar>
-                <Link
-                  href={`/profile/${track.artistUsername || track.artistAddress}`}
-                  className="line-clamp-1 text-muted-foreground text-xs hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {track.artist}
-                </Link>
-              </div>
-            )}
+              {/* Artist info - Bigger and more prominent */}
+              {showArtist && (
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} alt={track.artist} />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                      {getUserInitials(track.artist)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Link
+                    href={`/profile/${track.artistUsername || track.artistAddress}`}
+                    className="line-clamp-1 font-medium text-muted-foreground text-sm hover:text-foreground hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {track.artist}
+                  </Link>
+                </div>
+              )}
 
-            {/* Stats - Compact for grid */}
-            <div className="flex items-center justify-between text-muted-foreground text-xs">
-              <span>{track.plays.toLocaleString()} plays</span>
-              <div className="flex items-center gap-3">
-                <span>♡ {track.likes}</span>
-                <span>💬 {track.comments}</span>
+              {/* Stats - More prominent */}
+              <div className="flex items-center gap-3 text-muted-foreground text-sm">
+                <span className="font-medium">{track.plays.toLocaleString()} plays</span>
+                {track.createdAt && (
+                  <>
+                    <span>•</span>
+                    <span>{formatTrackDate(track.createdAt)}</span>
+                  </>
+                )}
               </div>
+            </div>
+
+            {/* Track Actions - Using new compact variant */}
+            <div className="flex items-center justify-between pt-1">
+              <TrackActions
+                trackId={track.id}
+                likes={track.likes}
+                comments={track.comments}
+                isLiked={track.isLiked}
+                onLike={onLike}
+                onComment={onComment}
+                onShare={onShare}
+                showLicenseButton={true}
+                trackTitle={track.title}
+                variant="compact"
+              />
             </div>
           </div>
         </div>
