@@ -18,7 +18,8 @@ export function ProfileTabs() {
   const userData = userResponse?.data;
 
   // Check if this is the current user's profile (compare addresses)
-  const isOwnProfile = connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
+  const isOwnProfile =
+    connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
 
   const [activeTab, setActiveTab] = useState<string>("releases");
 
@@ -49,7 +50,7 @@ export function ProfileTabs() {
   return (
     <div className="flex w-full flex-col gap-4">
       {/* Tab Headers */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center gap-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}

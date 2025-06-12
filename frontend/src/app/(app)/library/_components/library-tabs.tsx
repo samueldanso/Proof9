@@ -29,7 +29,7 @@ export default function LibraryTabs({
   ];
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="flex items-center gap-2">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -42,7 +42,10 @@ export default function LibraryTabs({
           onClick={() => onTabChange(tab.id)}
         >
           <span>{tab.label}</span>
-          <Badge variant={activeTab === tab.id ? "default" : "secondary"} className="ml-1 text-xs">
+          <Badge
+            variant={activeTab === tab.id ? "default" : "secondary"}
+            className="ml-1 text-xs"
+          >
             {tab.count}
           </Badge>
         </button>
