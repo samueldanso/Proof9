@@ -28,7 +28,7 @@ export function Sidebar() {
   const navLinks = [
     {
       href: "/discover",
-      label: "Discover",
+      label: "Home",
       icon: IconHome,
       iconFill: IconHomeFill,
     },

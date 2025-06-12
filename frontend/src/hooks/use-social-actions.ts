@@ -15,11 +15,18 @@ export function useLikeTrack() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (trackId: string) => {
+    mutationFn: async ({
+      trackId,
+      trackTitle,
+    }: {
+      trackId: string;
+      trackTitle?: string;
+    }) => {
       if (!address) throw new Error("User not connected");
-      return socialQueries.likes.toggle(address, trackId);
+      const result = await socialQueries.likes.toggle(address, trackId);
+      return { ...result, trackTitle };
     },
-    onMutate: async (trackId) => {
+    onMutate: async ({ trackId }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["tracks"] });
       await queryClient.cancelQueries({ queryKey: ["track", trackId] });
@@ -83,7 +90,7 @@ export function useLikeTrack() {
 
       return { previousTracksQueries, previousTrack, previousUserLikes };
     },
-    onError: (err, trackId, context) => {
+    onError: (err, { trackId }, context) => {
       // Rollback optimistic updates on error
       if (context?.previousTracksQueries) {
         context.previousTracksQueries.forEach(([queryKey, queryData]) => {
@@ -100,14 +107,25 @@ export function useLikeTrack() {
       toast.error("Failed to update like");
       console.error("Like error:", err);
     },
-    onSuccess: (data, trackId) => {
+    onSuccess: (data, { trackId }) => {
       // Invalidate to ensure data is fresh
       queryClient.invalidateQueries({ queryKey: ["track-likes", trackId] });
       queryClient.invalidateQueries({ queryKey: ["user-likes", address] });
       queryClient.invalidateQueries({ queryKey: ["tracks"] });
       queryClient.invalidateQueries({ queryKey: ["track", trackId] });
 
-      toast.success(data.isLiked ? "Track liked!" : "Track unliked!");
+      // Show better toast message
+      if (data.isLiked) {
+        const message = data.trackTitle
+          ? `${data.trackTitle} was saved to your library`
+          : "Track saved to your library";
+        toast.success(message);
+      } else {
+        const message = data.trackTitle
+          ? `${data.trackTitle} was removed from your library`
+          : "Track removed from your library";
+        toast.success(message);
+      }
     },
   });
 }

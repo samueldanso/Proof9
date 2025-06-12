@@ -54,7 +54,7 @@ export default function TrackPage() {
       toast.error("Please connect your wallet to like tracks");
       return;
     }
-    likeTrackMutation.mutate(trackId);
+    likeTrackMutation.mutate({ trackId, trackTitle: track?.title });
   };
 
   const handleComment = () => {

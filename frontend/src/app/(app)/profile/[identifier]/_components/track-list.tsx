@@ -46,12 +46,16 @@ export function TrackList() {
   };
 
   const handleLike = (trackId: string) => {
-    likeTrackMutation.mutate(trackId, {
-      onError: (error) => {
-        toast.error("Failed to like track");
-        console.error("Like error:", error);
+    const track = userTracks.find((t) => t.id === trackId);
+    likeTrackMutation.mutate(
+      { trackId, trackTitle: track?.title },
+      {
+        onError: (error) => {
+          toast.error("Failed to like track");
+          console.error("Like error:", error);
+        },
       },
-    });
+    );
   };
 
   const handleComment = (trackId: string) => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@/lib/api/hooks";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useAccount } from "wagmi";
@@ -9,13 +10,16 @@ import { TrackList } from "./track-list";
 
 export function ProfileTabs() {
   const params = useParams();
-  const { address } = useAccount();
+  const { address: connectedAddress } = useAccount();
   const profileIdentifier = params.identifier as string;
 
-  // Check if this is the user's own profile
+  // Get user data from API (works with both username and address)
+  const { data: userResponse } = useUser(profileIdentifier);
+  const userData = userResponse?.data;
+
+  // Check if this is the current user's profile (compare addresses)
   const isOwnProfile =
-    address &&
-    (address.toLowerCase() === profileIdentifier.toLowerCase() || profileIdentifier === "me");
+    connectedAddress?.toLowerCase() === userData?.address?.toLowerCase();
 
   const [activeTab, setActiveTab] = useState<string>("releases");
 
@@ -46,7 +50,7 @@ export function ProfileTabs() {
   return (
     <div className="flex w-full flex-col gap-4">
       {/* Tab Headers */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center gap-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}

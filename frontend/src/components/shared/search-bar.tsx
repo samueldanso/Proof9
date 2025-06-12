@@ -120,7 +120,7 @@ export const SearchBar = () => {
   ] as const;
 
   return (
-    <div className="relative w-full max-w-4xl">
+    <div className="relative w-full max-w-6xl">
       <Search className="-translate-y-1/2 absolute top-1/2 left-4 h-4 w-4 text-muted-foreground" />
       <Input
         ref={inputRef}
@@ -130,14 +130,14 @@ export const SearchBar = () => {
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onFocus={() => query.trim().length > 0 && setIsOpen(true)}
-        className="h-12 rounded-full border-none bg-muted/50 pr-4 pl-11 focus:bg-background focus:ring-2 focus:ring-ring"
+        className="h-11 w-full rounded-full border-none bg-muted/50 pr-4 pl-11 focus:bg-background focus:ring-2 focus:ring-ring"
       />
 
       {/* Search Results Dropdown */}
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute top-14 left-0 z-50 max-h-80 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-lg"
+          className="absolute top-13 left-0 z-50 max-h-80 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-lg"
         >
           {/* Filter Tabs */}
           {debouncedQuery.trim().length > 0 && (

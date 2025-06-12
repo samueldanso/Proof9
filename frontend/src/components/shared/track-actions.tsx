@@ -1,11 +1,23 @@
 "use client";
 
 import IconBubble from "@/components/icons/bubble.svg";
+import IconEllipsis from "@/components/icons/ellipsis.svg";
 import IconHeart from "@/components/icons/hearth.svg";
 import IconHeartFill from "@/components/icons/hearthFill.svg";
 import IconShare from "@/components/icons/share.svg";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -19,6 +31,8 @@ interface TrackActionsProps {
   onShare?: (trackId: string) => void;
   showLicenseButton?: boolean;
   licensePrice?: string;
+  trackTitle?: string;
+  variant?: "compact" | "full"; // Add variant for different layouts
 }
 
 export function TrackActions({
@@ -31,6 +45,8 @@ export function TrackActions({
   onShare,
   showLicenseButton = true,
   licensePrice,
+  trackTitle,
+  variant = "full",
 }: TrackActionsProps) {
   const router = useRouter();
 
@@ -58,59 +74,187 @@ export function TrackActions({
     router.push(`/track/${trackId}`);
   };
 
+  // Compact variant for grid cards
+  if (variant === "compact") {
+    return (
+      <TooltipProvider>
+        <div className="flex items-center gap-2">
+          {/* Like Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex h-8 items-center gap-1.5 px-2 hover:bg-red-50 dark:hover:bg-red-950/20"
+                onClick={handleLike}
+              >
+                {isLiked ? (
+                  <IconHeartFill className="h-4 w-4 text-red-500" />
+                ) : (
+                  <IconHeart className="h-4 w-4 hover:text-red-500" />
+                )}
+                <span className="font-medium text-sm">{likes}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isLiked ? "Unlike" : "Like"}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Comment Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex h-8 items-center gap-1.5 px-2"
+                onClick={handleComment}
+              >
+                <IconBubble className="h-4 w-4" />
+                <span className="font-medium text-sm">{comments}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Comment</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* More Actions Dropdown */}
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <IconEllipsis className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>More actions</p>
+              </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent
+              align="end"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DropdownMenuItem onClick={handleShare}>
+                <IconShare className="mr-2 h-4 w-4" />
+                Share
+              </DropdownMenuItem>
+              {showLicenseButton && (
+                <DropdownMenuItem onClick={handleBuyLicense}>
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  {licensePrice ? `License $${licensePrice}` : "License"}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    `${window.location.origin}/track/${trackId}`
+                  )
+                }
+              >
+                <IconShare className="mr-2 h-4 w-4" />
+                Copy Link
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </TooltipProvider>
+    );
+  }
+
+  // Full variant for detailed views
   return (
-    <div className="flex items-center justify-between">
-      {/* Left Actions: Like & Comment */}
-      <div className="flex items-center gap-4">
-        {/* Like Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex h-auto items-center gap-1 px-2 py-1"
-          onClick={handleLike}
-        >
-          {isLiked ? (
-            <IconHeartFill className="h-4 w-4 text-white" />
-          ) : (
-            <IconHeart className="h-4 w-4" />
-          )}
-          <span className="text-sm">{likes}</span>
-        </Button>
+    <TooltipProvider>
+      <div className="flex items-center justify-between">
+        {/* Left Actions: Like & Comment */}
+        <div className="flex items-center gap-4">
+          {/* Like Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex h-auto items-center gap-2 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/20"
+                onClick={handleLike}
+              >
+                {isLiked ? (
+                  <IconHeartFill className="h-5 w-5 text-red-500" />
+                ) : (
+                  <IconHeart className="h-5 w-5 hover:text-red-500" />
+                )}
+                <span className="font-medium text-sm">{likes}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isLiked ? "Unlike" : "Like"}</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Comment Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex h-auto items-center gap-1 px-2 py-1"
-          onClick={handleComment}
-        >
-          <IconBubble className="h-4 w-4" />
-          <span className="text-sm">{comments}</span>
-        </Button>
+          {/* Comment Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex h-auto items-center gap-2 px-3 py-2"
+                onClick={handleComment}
+              >
+                <IconBubble className="h-5 w-5" />
+                <span className="font-medium text-sm">{comments}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Comment</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Share Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex h-auto items-center gap-1 px-2 py-1"
-          onClick={handleShare}
-        >
-          <IconShare className="h-4 w-4" />
-        </Button>
+          {/* Share Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex h-auto items-center gap-2 px-3 py-2"
+                onClick={handleShare}
+              >
+                <IconShare className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Share</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* License Button */}
+        {showLicenseButton && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex h-auto items-center gap-2 px-4 py-2"
+                onClick={handleBuyLicense}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                <span className="font-medium text-sm">
+                  {licensePrice ? `$${licensePrice}` : "License"}
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Buy License</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
-
-      {/* License Button */}
-      {showLicenseButton && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex h-auto items-center gap-1 px-3 py-1"
-          onClick={handleBuyLicense}
-        >
-          <ShoppingCart className="h-3 w-3" />
-          <span className="text-sm">{licensePrice ? `$${licensePrice}` : "License"}</span>
-        </Button>
-      )}
-    </div>
+    </TooltipProvider>
   );
 }
