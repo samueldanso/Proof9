@@ -191,16 +191,17 @@ export default function UploadPage() {
         const mediaHash = `0x${uploadData.uploadInfo?.fileHash || ""}`; // Use existing file hash
 
         // Convert license form data to Story Protocol terms
-        const { convertLicenseFormToStoryTerms, getLicenseSummary } = await import(
-          "@/lib/story-protocol"
-        );
+        const { convertLicenseFormToStoryTerms, getLicenseSummary } =
+          await import("@/lib/story-protocol");
         const storyLicenseTerms = uploadData.license
           ? convertLicenseFormToStoryTerms(uploadData.license)
           : null;
 
         console.log(
           "🎵 License Terms:",
-          storyLicenseTerms ? getLicenseSummary(uploadData.license!) : "No license terms",
+          storyLicenseTerms
+            ? getLicenseSummary(uploadData.license!)
+            : "No license terms"
         );
 
         const registrationResult = await apiClient.post<{
@@ -248,11 +249,15 @@ export default function UploadPage() {
               },
               {
                 key: "License Price",
-                value: uploadData.license?.price ? `${uploadData.license.price} USD` : "Unknown",
+                value: uploadData.license?.price
+                  ? `${uploadData.license.price} USD`
+                  : "Unknown",
               },
               {
                 key: "Revenue Share",
-                value: storyLicenseTerms ? `${storyLicenseTerms.commercialRevShare}%` : "Unknown",
+                value: storyLicenseTerms
+                  ? `${storyLicenseTerms.commercialRevShare}%`
+                  : "Unknown",
               },
               {
                 key: "Platform",
@@ -267,7 +272,8 @@ export default function UploadPage() {
           // Add real Story Protocol license terms
           commercialRemixTerms: storyLicenseTerms
             ? {
-                defaultMintingFee: Number(storyLicenseTerms.defaultMintingFee) / 10 ** 18, // Convert back to number for API
+                defaultMintingFee:
+                  Number(storyLicenseTerms.defaultMintingFee) / 10 ** 18, // Convert back to number for API
                 commercialRevShare: storyLicenseTerms.commercialRevShare,
               }
             : undefined,
@@ -277,15 +283,22 @@ export default function UploadPage() {
 
         if (registrationResult.success) {
           toast.success("Track registered successfully on Story Protocol!");
-          console.log("✅ Story Protocol registration:", registrationResult.data);
+          console.log(
+            "✅ Story Protocol registration:",
+            registrationResult.data
+          );
         } else {
           console.error("❌ Story Protocol error:", registrationResult.error);
-          toast.error(`Story Protocol registration failed: ${registrationResult.error}`);
+          toast.error(
+            `Story Protocol registration failed: ${registrationResult.error}`
+          );
         }
       } else {
-        console.log("⚠️ Skipping Story Protocol registration - content not verified");
+        console.log(
+          "⚠️ Skipping Story Protocol registration - content not verified"
+        );
         toast.info(
-          "Track uploaded successfully (Story Protocol registration skipped for unverified content)",
+          "Track uploaded successfully (Story Protocol registration skipped for unverified content)"
         );
       }
 
@@ -300,7 +313,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="w-full space-y-8">
+    <div className="mx-auto max-w-7xl space-y-6 px-4">
       {/* Header - Centered like profile page */}
       <div className="mx-auto max-w-2xl space-y-2 text-center">
         <h1 className="font-bold text-3xl">Upload Your Sound</h1>
@@ -309,17 +322,22 @@ export default function UploadPage() {
         </p>
       </div>
 
-      {/* Progress and Content - Left aligned */}
-      <div className="max-w-4xl space-y-6">
+      {/* Progress and Content - Full width within container */}
+      <div className="space-y-6">
         {/* Progress Indicator */}
         <div className="space-y-4">
-          <Progress value={(currentStep / steps.length) * 100} className="h-2 [&>div]:bg-primary" />
+          <Progress
+            value={(currentStep / steps.length) * 100}
+            className="h-2 [&>div]:bg-primary"
+          />
           <div className="flex justify-between text-sm">
             {steps.map((step) => (
               <div
                 key={step.id}
                 className={`flex flex-col items-center space-y-1 ${
-                  currentStep >= step.id ? "text-primary" : "text-muted-foreground"
+                  currentStep >= step.id
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 }`}
               >
                 <div

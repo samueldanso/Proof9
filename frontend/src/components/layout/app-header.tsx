@@ -94,13 +94,13 @@ function UserProfileAvatar() {
   return (
     <button
       onClick={openAccountModal}
-      className="flex items-center gap-2 rounded-full p-1 transition-opacity hover:opacity-80"
+      className="flex items-center gap-2 rounded-full p-1 transition-all hover:bg-muted/50 hover:scale-105"
       type="button"
     >
       <img
         src={getAvatarUrl(userData?.avatar_url)}
         alt="Profile"
-        className="h-8 w-8 rounded-full bg-muted object-cover"
+        className="h-8 w-8 rounded-full bg-muted object-cover ring-2 ring-transparent hover:ring-ring/20"
       />
     </button>
   );
@@ -164,15 +164,15 @@ export function AppHeader() {
   return (
     <header className="flex h-16 w-full items-center bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       {/* Left: Empty space for balance */}
-      <div className="w-32" />
+      <div className="w-24" />
 
-      {/* Center: Search Bar - Properly sized */}
-      <div className="flex-1 mx-6 max-w-2xl">
+      {/* Center: Search Bar - Properly constrained */}
+      <div className="flex-1 mx-4 max-w-xl">
         <SearchBar />
       </div>
 
-      {/* Right: Upload, Notifications & Profile Avatar */}
-      <div className="flex w-32 items-center justify-end gap-3">
+      {/* Right: Upload, Notifications & Profile Avatar - More space */}
+      <div className="flex w-40 items-center justify-end gap-2">
         <UploadButton />
         <NotificationsButton />
         <UserProfileAvatar />
