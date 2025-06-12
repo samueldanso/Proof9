@@ -1,52 +1,70 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { useState } from "react";
+import { useAccount } from "wagmi";
+import { EarningsTab } from "./earnings-tab";
+import { LicenseesTab } from "./licensees-tab";
 import { TrackList } from "./track-list";
 
-interface ProfileTabsProps {
-  defaultTab?: "tracks" | "likes";
-}
+export function ProfileTabs() {
+  const params = useParams();
+  const { address } = useAccount();
+  const profileIdentifier = params.identifier as string;
 
-export function ProfileTabs({ defaultTab = "tracks" }: ProfileTabsProps) {
-  const [activeTab, setActiveTab] = useState<"tracks" | "likes">(defaultTab);
+  // Check if this is the user's own profile
+  const isOwnProfile =
+    address &&
+    (address.toLowerCase() === profileIdentifier.toLowerCase() || profileIdentifier === "me");
+
+  const [activeTab, setActiveTab] = useState<string>("releases");
+
+  // Different tabs for own profile vs others
+  const ownProfileTabs = [
+    { id: "releases", label: "Releases" },
+    { id: "licensees", label: "Licensees" },
+    { id: "earnings", label: "Earnings" },
+  ];
+
+  const otherProfileTabs = [{ id: "releases", label: "Releases" }];
+
+  const tabs = isOwnProfile ? ownProfileTabs : otherProfileTabs;
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "releases":
+        return <TrackList />;
+      case "licensees":
+        return isOwnProfile ? <LicenseesTab /> : null;
+      case "earnings":
+        return isOwnProfile ? <EarningsTab /> : null;
+      default:
+        return <TrackList />;
+    }
+  };
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {/* Tab Headers*/}
+      {/* Tab Headers */}
       <div className="flex items-center justify-center gap-2">
-        <button
-          type="button"
-          className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
-            activeTab === "tracks"
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
-          }`}
-          onClick={() => setActiveTab("tracks")}
-        >
-          Sounds
-        </button>
-        <button
-          type="button"
-          className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
-            activeTab === "likes"
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
-          }`}
-          onClick={() => setActiveTab("likes")}
-        >
-          Likes
-        </button>
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`rounded-full px-4 py-2 font-medium text-sm transition-all ${
+              activeTab === tab.id
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
+            }`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Tab Content */}
-      {activeTab === "tracks" ? (
-        <TrackList />
-      ) : (
-        <div className="flex flex-col items-center justify-center p-6 text-center">
-          <h3 className="mb-3 font-bold text-xl">No liked sounds yet</h3>
-          <p className="text-muted-foreground">Sounds you like will appear here</p>
-        </div>
-      )}
+      {renderTabContent()}
     </div>
   );
 }

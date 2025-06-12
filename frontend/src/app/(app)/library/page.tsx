@@ -3,56 +3,59 @@
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
 import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
-import { useTracks } from "@/lib/api/hooks";
+import { useUserLicensedTracks } from "@/lib/api/hooks";
 import { transformDbTrackToLegacy } from "@/lib/api/types";
-import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
-import FeedTabs from "./_components/feed-tabs";
-import GenreFilter from "./_components/genre-filter";
-import TrendingBanner from "./_components/trending-banner";
+import LibraryTabs from "./_components/library-tabs";
 
-export default function DiscoverPage() {
-  const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState<string>(
-    tabParam === "latest" || tabParam === "following" || tabParam === "trending"
-      ? tabParam
-      : "latest",
-  );
-
-  // Genre filter state
-  const [activeGenre, setActiveGenre] = useState<string | null>(null);
+export default function LibraryPage() {
+  const { address } = useAccount();
+  const [activeTab, setActiveTab] = useState<string>("liked");
 
   // Music player state
   const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // User authentication
-  const { address } = useAccount();
+  // Load user's liked tracks
+  const { data: userLikes = [], isLoading: likesLoading } = useUserLikes();
 
-  // Load tracks based on active tab and genre filter
-  const {
-    data: tracksResponse,
-    isLoading,
-    error,
-  } = useTracks(activeTab, address || undefined, activeGenre || undefined);
-  const dbTracks = tracksResponse?.data?.tracks || [];
+  // Load user's licensed tracks
+  const { data: licensedTracks = [], isLoading: licensedLoading } = useUserLicensedTracks(
+    address || "",
+  );
 
-  // Load user's liked tracks to determine isLiked status
-  const { data: userLikes = [] } = useUserLikes();
-  const likedTrackIds = useMemo(() => {
-    return new Set(userLikes.map((like) => like.track_id));
+  // Transform liked tracks for display
+  const likedTracks = useMemo(() => {
+    return userLikes
+      .map((like) => {
+        if (like.tracks) {
+          return {
+            ...transformDbTrackToLegacy(like.tracks as any),
+            isLiked: true,
+          };
+        }
+        return null;
+      })
+      .filter((track) => track !== null);
   }, [userLikes]);
 
-  // Transform database tracks to legacy format with real liked status
-  const tracks = useMemo(() => {
-    return dbTracks.map((dbTrack) => ({
-      ...transformDbTrackToLegacy(dbTrack),
-      isLiked: address ? likedTrackIds.has(dbTrack.id) : false,
-    }));
-  }, [dbTracks, likedTrackIds, address]);
+  // Transform licensed tracks for display
+  const licensedTracksFormatted = useMemo(() => {
+    return licensedTracks
+      .filter((license: any) => license.tracks) // Filter first to avoid nulls
+      .map((license: any) => ({
+        ...transformDbTrackToLegacy(license.tracks as any),
+        isLiked: false, // We'll check this separately
+        licenseInfo: {
+          purchaseDate: license.created_at,
+          licenseType: license.license_type,
+          pricePaid: license.price_paid,
+          status: license.status,
+        },
+      }));
+  }, [licensedTracks]);
 
   // Social actions hooks
   const likeTrackMutation = useLikeTrack();
@@ -60,19 +63,9 @@ export default function DiscoverPage() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    const url = new URL(window.location.href);
-    url.searchParams.set("tab", tab);
-    window.history.pushState({}, "", url);
-  };
-
-  const handleGenreChange = (genre: string | null) => {
-    setActiveGenre(genre);
   };
 
   const handlePlay = (track: any) => {
-    console.log("handlePlay - Track:", track.title);
-    console.log("handlePlay - AudioUrl:", track.audioUrl);
-
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
@@ -86,8 +79,6 @@ export default function DiscoverPage() {
   };
 
   const handleComment = (trackId: string) => {
-    // For now, we'll navigate to track detail page for commenting
-    // In the future, we could open a comment modal here
     window.location.href = `/track/${trackId}#comments`;
   };
 
@@ -109,31 +100,54 @@ export default function DiscoverPage() {
     setIsPlaying(false);
   };
 
-  if (error) {
+  // Get current tracks based on active tab
+  const currentTracks = activeTab === "liked" ? likedTracks : licensedTracksFormatted;
+  const isLoading = activeTab === "liked" ? likesLoading : licensedLoading;
+
+  // Get empty state message
+  const getEmptyMessage = () => {
+    if (activeTab === "liked") {
+      return {
+        title: "No liked tracks yet",
+        description: "Tracks you like will appear here",
+      };
+    }
+    return {
+      title: "No licensed tracks yet",
+      description: "Music you've licensed for use will appear here",
+    };
+  };
+
+  if (!address) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-center">
-        <h3 className="mb-3 font-bold text-xl">Failed to load tracks</h3>
-        <p className="text-muted-foreground">Please try again later</p>
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <h3 className="mb-3 font-bold text-xl">Connect Your Wallet</h3>
+        <p className="text-muted-foreground">
+          Please connect your wallet to view your music library
+        </p>
       </div>
     );
   }
 
   return (
     <div className="w-full space-y-6">
-      {/* Trending Banner - Full width aligned with tabs */}
-      <div className="mx-auto max-w-7xl px-4">
-        <TrendingBanner onExploreClick={() => handleTabChange("trending")} />
+      {/* Library Header */}
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-6">
+          <h1 className="mb-2 font-bold text-3xl">Your Library</h1>
+          <p className="text-muted-foreground">Your liked tracks and licensed music collection</p>
+        </div>
+
+        {/* Library Tabs */}
+        <LibraryTabs
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          likedCount={likedTracks.length}
+          licensedCount={licensedTracksFormatted.length}
+        />
       </div>
 
-      {/* Feed Tabs */}
-      <FeedTabs activeTab={activeTab} onTabChange={handleTabChange} />
-
-      {/* Genre Filter */}
-      <div className="mx-auto max-w-7xl px-4">
-        <GenreFilter activeGenre={activeGenre} onGenreChange={handleGenreChange} />
-      </div>
-
-      {/* Track Feed - Grid Layout */}
+      {/* Track Grid */}
       <div className="mx-auto max-w-7xl px-4">
         {isLoading ? (
           // Loading state - Grid skeleton
@@ -146,24 +160,16 @@ export default function DiscoverPage() {
               </div>
             ))}
           </div>
-        ) : tracks.length === 0 ? (
+        ) : currentTracks.length === 0 ? (
           // Empty state
           <div className="flex flex-col items-center justify-center p-8 text-center">
-            <h3 className="mb-3 font-bold text-xl">No tracks found</h3>
-            <p className="text-muted-foreground">
-              {activeTab === "latest"
-                ? "No new tracks uploaded yet"
-                : activeTab === "following"
-                  ? "No tracks from creators you follow yet"
-                  : activeTab === "trending"
-                    ? "No trending tracks available yet"
-                    : "No tracks available yet"}
-            </p>
+            <h3 className="mb-3 font-bold text-xl">{getEmptyMessage().title}</h3>
+            <p className="text-muted-foreground">{getEmptyMessage().description}</p>
           </div>
         ) : (
           // Track grid - 4 columns on large screens, responsive
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {tracks.map((track) => (
+            {currentTracks.map((track) => (
               <TrackCard
                 key={track.id}
                 track={track}

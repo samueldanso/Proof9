@@ -6,7 +6,8 @@ import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useUser } from "@/lib/api/hooks";
-import { Plus } from "lucide-react";
+import { Library } from "lucide-react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -32,10 +33,10 @@ export function Sidebar() {
       iconFill: IconHomeFill,
     },
     {
-      href: "/upload",
-      label: "Upload",
-      icon: Plus,
-      iconFill: Plus,
+      href: "/library",
+      label: "Library",
+      icon: Library,
+      iconFill: Library,
     },
     {
       href: `/profile/${profileIdentifier}`,

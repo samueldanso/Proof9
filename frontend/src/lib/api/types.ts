@@ -39,7 +39,7 @@ function formatAudioUrl(ipfsUrl: string): string {
 
 // Transform database Track to LegacyTrack for component compatibility
 export function transformDbTrackToLegacy(
-  dbTrack: DbTrack & { artistAvatarUrl?: string; artistUsername?: string }
+  dbTrack: DbTrack & { artistAvatarUrl?: string; artistUsername?: string },
 ): Track {
   return {
     id: dbTrack.id,

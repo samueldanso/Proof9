@@ -8,12 +8,7 @@ interface UseAudioPlayerProps {
   onError?: (error: any) => void;
 }
 
-export function useAudioPlayer({
-  src,
-  volume = 0.75,
-  onEnd,
-  onError,
-}: UseAudioPlayerProps = {}) {
+export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioPlayerProps = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -149,7 +144,7 @@ export function useAudioPlayer({
         setCurrentTime(seekTime);
       }
     },
-    [duration]
+    [duration],
   );
 
   const setVolume = useCallback((vol: number) => {

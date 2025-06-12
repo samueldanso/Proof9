@@ -19,9 +19,7 @@ function formatTrackDate(dateString?: string): string {
   try {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffInDays === 0) return "Today";
     if (diffInDays === 1) return "Yesterday";
@@ -89,20 +87,14 @@ export function TrackCard({
                 className="h-full w-full object-cover"
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
-                  const placeholder = e.currentTarget
-                    .nextElementSibling as HTMLElement;
+                  const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
                   if (placeholder) {
                     placeholder.style.display = "flex";
                   }
                 }}
               />
-              <div
-                className="flex h-full items-center justify-center"
-                style={{ display: "none" }}
-              >
-                <div className="text-neutral-400 text-xs">
-                  {getCoverPlaceholder(track.title)}
-                </div>
+              <div className="flex h-full items-center justify-center" style={{ display: "none" }}>
+                <div className="text-neutral-400 text-xs">{getCoverPlaceholder(track.title)}</div>
               </div>
 
               {/* Play Button Overlay */}
@@ -124,9 +116,7 @@ export function TrackCard({
 
             {/* Track Info */}
             <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-1 font-medium text-sm leading-tight">
-                {track.title}
-              </h3>
+              <h3 className="line-clamp-1 font-medium text-sm leading-tight">{track.title}</h3>
               <div className="flex items-center gap-2 text-muted-foreground text-xs">
                 <span>{track.plays.toLocaleString()} plays</span>
                 {track.duration && (
@@ -186,20 +176,14 @@ export function TrackCard({
               onError={(e) => {
                 // If image fails to load, show placeholder
                 e.currentTarget.style.display = "none";
-                const placeholder = e.currentTarget
-                  .nextElementSibling as HTMLElement;
+                const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
                 if (placeholder) {
                   placeholder.style.display = "flex";
                 }
               }}
             />
-            <div
-              className="flex h-full items-center justify-center"
-              style={{ display: "none" }}
-            >
-              <div className="text-4xl text-neutral-400">
-                {getCoverPlaceholder(track.title)}
-              </div>
+            <div className="flex h-full items-center justify-center" style={{ display: "none" }}>
+              <div className="text-4xl text-neutral-400">{getCoverPlaceholder(track.title)}</div>
             </div>
 
             {/* Play Button Overlay */}
@@ -237,26 +221,19 @@ export function TrackCard({
 
           {/* Track Info - Optimized for grid */}
           <div className="space-y-1">
-            <h3 className="line-clamp-2 font-semibold text-sm leading-tight">
-              {track.title}
-            </h3>
+            <h3 className="line-clamp-2 font-semibold text-sm leading-tight">{track.title}</h3>
 
             {/* Artist info - More compact for grid */}
             {showArtist && (
               <div className="flex items-center gap-2">
                 <Avatar className="h-4 w-4">
-                  <AvatarImage
-                    src={getAvatarUrl(track.artistAvatarUrl)}
-                    alt={track.artist}
-                  />
+                  <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} alt={track.artist} />
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                     {getUserInitials(track.artist)}
                   </AvatarFallback>
                 </Avatar>
                 <Link
-                  href={`/profile/${
-                    track.artistUsername || track.artistAddress
-                  }`}
+                  href={`/profile/${track.artistUsername || track.artistAddress}`}
                   className="line-clamp-1 text-muted-foreground text-xs hover:underline"
                   onClick={(e) => e.stopPropagation()}
                 >
