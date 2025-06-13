@@ -150,6 +150,28 @@ export function useUploadAvatar() {
   });
 }
 
+export function useUploadCoverArt() {
+  return useMutation({
+    mutationFn: (data: {
+      fileName: string;
+      fileType: string;
+      fileSize: number;
+      fileData: string;
+    }) =>
+      apiClient.post<
+        ApiResponse<{
+          fileName: string;
+          fileType: string;
+          fileSize: number;
+          fileHash: string;
+          ipfsHash: string;
+          ipfsUrl: string;
+          uploadedAt: string;
+        }>
+      >("/api/upload/audio", data),
+  });
+}
+
 // Registration hooks
 export function useRegisterTrack() {
   return useMutation({
@@ -320,10 +342,44 @@ export function useCreateTrack() {
       tags?: string[];
       duration?: string;
       artist_address: string;
+
+      // Story Protocol creators array
+      creators?: Array<{
+        name: string;
+        address: string;
+        contributionPercent: number;
+        description?: string;
+        socialMedia?: Array<{
+          platform: string;
+          url: string;
+        }>;
+      }>;
+
+      // File and IPFS data
       ipfs_hash?: string;
       ipfs_url?: string;
       file_hash?: string;
+
+      // Story Protocol metadata hashes
+      metadata_ipfs_hash?: string;
+      metadata_ipfs_url?: string;
+      nft_metadata_ipfs_hash?: string;
+      nft_metadata_ipfs_url?: string;
+      ip_metadata_hash?: string;
+      nft_metadata_hash?: string;
+
+      // Media hashes
+      image_url?: string;
+      image_hash?: string;
+      media_hash?: string;
+
+      // Story Protocol data
       ip_id?: string;
+      transaction_hash?: string;
+      token_id?: string;
+      license_terms_ids?: number[];
+
+      // Verification
       verified?: boolean;
       yakoa_token_id?: string;
     }) => apiClient.post<ApiResponse<any>>("/api/tracks", data),

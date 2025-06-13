@@ -4,7 +4,7 @@ import { Hono } from "hono"
 import { Address, toHex } from "viem"
 import { z } from "zod"
 
-import { client } from "../../../utils/config"
+import { client, networkInfo } from "../../../utils/config"
 import { uploadJSONToIPFS } from "../../../utils/functions/uploadToIpfs"
 import { SPGNFTContractAddress } from "../../../utils/utils"
 
@@ -97,7 +97,7 @@ derivativeRouter.post(
           nftMetadataHash: nftHash,
           ipMetadataURI: `https://gateway.pinata.cloud/ipfs/${ipIpfsHash}`,
           nftMetadataURI: `https://gateway.pinata.cloud/ipfs/${nftIpfsHash}`,
-          explorerUrl: `https://aeneid.storyscan.xyz/ipa/${response.ipId}`,
+          explorerUrl: `${networkInfo.protocolExplorer}/ipa/${response.ipId}`,
         },
       })
     } catch (error) {

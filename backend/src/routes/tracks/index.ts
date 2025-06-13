@@ -16,10 +16,44 @@ const CreateTrackSchema = z.object({
   artist_address: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
+
+  // Story Protocol creators array
+  creators: z.array(z.object({
+    name: z.string(),
+    address: z.string(),
+    contributionPercent: z.number(),
+    description: z.string().optional(),
+    socialMedia: z.array(z.object({
+      platform: z.string(),
+      url: z.string(),
+    })).optional(),
+  })).optional(),
+
+  // File and IPFS data
   ipfs_hash: z.string().optional(),
   ipfs_url: z.string().url().optional(),
   file_hash: z.string().optional(),
+
+  // Story Protocol metadata hashes
+  metadata_ipfs_hash: z.string().optional(),
+  metadata_ipfs_url: z.string().optional(),
+  nft_metadata_ipfs_hash: z.string().optional(),
+  nft_metadata_ipfs_url: z.string().optional(),
+  ip_metadata_hash: z.string().optional(),
+  nft_metadata_hash: z.string().optional(),
+
+  // Media hashes
+  image_url: z.string().url().optional(),
+  image_hash: z.string().optional(),
+  media_hash: z.string().optional(),
+
+  // Story Protocol data
   ip_id: z.string().optional(),
+  transaction_hash: z.string().optional(),
+  token_id: z.string().optional(),
+  license_terms_ids: z.array(z.number()).optional(),
+
+  // Verification
   verified: z.boolean().default(false),
   yakoa_token_id: z.string().optional(),
 })
@@ -58,12 +92,37 @@ tracksRouter.post("/", zValidator("json", CreateTrackSchema), async (c) => {
         duration: trackData.duration,
         artist_address: trackData.artist_address,
         artist_name: artistProfile?.display_name || null, // Populate from profile
+        creators: trackData.creators || null, // Story Protocol creators array
+
+        // File and IPFS data
         ipfs_hash: trackData.ipfs_hash,
         ipfs_url: trackData.ipfs_url,
         file_hash: trackData.file_hash,
+
+        // Story Protocol metadata hashes
+        metadata_ipfs_hash: trackData.metadata_ipfs_hash,
+        metadata_ipfs_url: trackData.metadata_ipfs_url,
+        nft_metadata_ipfs_hash: trackData.nft_metadata_ipfs_hash,
+        nft_metadata_ipfs_url: trackData.nft_metadata_ipfs_url,
+        ip_metadata_hash: trackData.ip_metadata_hash,
+        nft_metadata_hash: trackData.nft_metadata_hash,
+
+        // Media hashes
+        image_url: trackData.image_url,
+        image_hash: trackData.image_hash,
+        media_hash: trackData.media_hash,
+
+        // Story Protocol data
         ip_id: trackData.ip_id,
+        transaction_hash: trackData.transaction_hash,
+        token_id: trackData.token_id,
+        license_terms_ids: trackData.license_terms_ids,
+
+        // Verification
         verified: trackData.verified,
         yakoa_token_id: trackData.yakoa_token_id,
+
+        // Initialize social stats
         plays: 0,
         likes_count: 0,
         comments_count: 0,

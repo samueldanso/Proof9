@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { RegistrationSuccessModal } from "@/components/ui/registration-success-modal";
 import { env } from "@/env";
 import { useCreateTrack, useRegisterDerivative, useRegisterTrack } from "@/hooks/api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -45,11 +46,46 @@ interface UploadData {
     ipfsUrl: string;
     fileHash: string;
   };
+  // Story Protocol compliant metadata
   metadata?: {
+    // === IP METADATA (Story Protocol IPA Standard) ===
     title: string;
     description: string;
+
+    // Story Protocol creators array
+    creators: Array<{
+      name: string;
+      address: string;
+      contributionPercent: number;
+      description?: string;
+      socialMedia?: Array<{
+        platform: string;
+        url: string;
+      }>;
+    }>;
+
+    // Cover art (Story Protocol image.* fields)
+    coverArt?: File;
+    imageUrl?: string;
+    imageHash?: string;
+
+    // Audio file (Story Protocol media.* fields)
+    mediaUrl?: string;
+    mediaHash?: string;
+    mediaType?: string;
+
+    // === NFT METADATA (ERC-721 Standard) ===
+    nftName?: string;
+    nftDescription?: string;
+    attributes?: Array<{
+      key: string;
+      value: string;
+    }>;
+
+    // === ADDITIONAL METADATA (Platform-specific) ===
     genre: string;
     tags: string[];
+    duration?: string;
   };
   license?: {
     type: string;
@@ -81,6 +117,8 @@ export default function UploadPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadData, setUploadData] = useState<UploadData>({});
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [registrationResult, setRegistrationResult] = useState<any>(null);
 
   // Use hooks for API calls
   const createTrackMutation = useCreateTrack();
@@ -139,6 +177,7 @@ export default function UploadPage() {
         return (
           <MetadataForm
             initialData={uploadData.metadata}
+            audioFile={uploadData.file} // Pass audio file for media type detection
             onSubmit={(metadata) => {
               updateUploadData({ metadata });
               nextStep();
@@ -233,20 +272,20 @@ export default function UploadPage() {
             ? await registerDerivativeMutation.mutateAsync({
                 parentIpId: uploadData.remix.parentIpId,
                 licenseTermsId: "1", // Default license terms ID - should be dynamic
-                ipMetadata: {
-                  title: uploadData.metadata?.title || "",
-                  description: uploadData.metadata?.description || "",
-                  creators: [
-                    {
-                      name: "Creator",
-                      address: address,
-                      contributionPercent: 100,
-                    },
-                  ],
-                  image: uploadData.uploadInfo?.ipfsUrl || "",
-                  mediaUrl: uploadData.uploadInfo?.ipfsUrl,
-                  mediaType: "audio/mpeg",
-                },
+                                  ipMetadata: {
+                    title: uploadData.metadata?.title || "",
+                    description: uploadData.metadata?.description || "",
+                    creators: uploadData.metadata?.creators || [
+                      {
+                        name: "Creator",
+                        address: address,
+                        contributionPercent: 100,
+                      },
+                    ],
+                    image: uploadData.metadata?.imageUrl || uploadData.uploadInfo?.ipfsUrl || "",
+                    mediaUrl: uploadData.uploadInfo?.ipfsUrl,
+                    mediaType: uploadData.metadata?.mediaType || "audio/mpeg",
+                  },
                 nftMetadata: {
                   name: uploadData.metadata?.title || "Untitled Remix",
                   description: `${uploadData.metadata?.description || "No description"}. This is a remix of "${uploadData.remix.parentTitle}". This NFT represents ownership of the derivative IP Asset.`,
@@ -284,64 +323,67 @@ export default function UploadPage() {
                 },
               })
             : await registerTrackMutation.mutateAsync({
-                ipMetadata: {
-                  title: uploadData.metadata?.title || "",
-                  description: uploadData.metadata?.description || "",
-                  creators: [
-                    {
-                      name: "Creator",
-                      address: address,
-                      contributionPercent: 100,
-                    },
-                  ],
-                  image: uploadData.uploadInfo?.ipfsUrl || "",
-                  mediaUrl: uploadData.uploadInfo?.ipfsUrl,
-                  mediaType: "audio/mpeg", // Specific media type as per tutorial
-                },
-                nftMetadata: {
-                  name: uploadData.metadata?.title || "Untitled Track",
-                  description: `${uploadData.metadata?.description || "No description"}. This NFT represents ownership of the IP Asset.`,
-                  image: uploadData.uploadInfo?.ipfsUrl || "",
-                  attributes: [
-                    {
-                      key: "Yakoa Verified",
-                      value: uploadData.yakoa?.verified ? "Yes" : "No",
-                    },
-                    {
-                      key: "Yakoa Token ID",
-                      value: uploadData.yakoa?.tokenId || "Unknown",
-                    },
-                    {
-                      key: "Genre",
-                      value: uploadData.metadata?.genre || "Unknown",
-                    },
-                    {
-                      key: "License Type",
-                      value: uploadData.license?.type || "Unknown",
-                    },
-                    {
-                      key: "License Price",
-                      value: uploadData.license?.price
-                        ? `${uploadData.license.price} USD`
-                        : "Unknown",
-                    },
-                    {
-                      key: "Revenue Share",
-                      value: storyLicenseTerms
-                        ? `${storyLicenseTerms.commercialRevShare}%`
-                        : "Unknown",
-                    },
-                    {
-                      key: "Platform",
-                      value: "Proof9",
-                    },
-                    ...(uploadData.metadata?.tags?.map((tag) => ({
-                      key: "Tag",
-                      value: tag,
-                    })) || []),
-                  ],
-                },
-                // Add real Story Protocol license terms
+                // === IP METADATA (Story Protocol IPA Standard) ===
+                title: uploadData.metadata?.title || "",
+                description: uploadData.metadata?.description || "",
+                creators: uploadData.metadata?.creators || [
+                  {
+                    name: "Creator",
+                    address: address,
+                    contributionPercent: 100,
+                  },
+                ],
+                // Cover art (Story Protocol image.* fields)
+                imageUrl: uploadData.metadata?.imageUrl || uploadData.uploadInfo?.ipfsUrl || "",
+                imageHash: uploadData.metadata?.imageHash || uploadData.uploadInfo?.fileHash || "",
+                // Audio file (Story Protocol media.* fields)
+                mediaUrl: uploadData.uploadInfo?.ipfsUrl || "",
+                mediaHash: uploadData.uploadInfo?.fileHash || "",
+                mediaType: uploadData.metadata?.mediaType || "audio/mpeg",
+
+                // === NFT METADATA (ERC-721 Standard) ===
+                nftName: uploadData.metadata?.nftName,
+                nftDescription: uploadData.metadata?.nftDescription,
+                attributes: [
+                  {
+                    key: "Yakoa Verified",
+                    value: uploadData.yakoa?.verified ? "Yes" : "No",
+                  },
+                  {
+                    key: "Yakoa Token ID",
+                    value: uploadData.yakoa?.tokenId || "Unknown",
+                  },
+                  {
+                    key: "Genre",
+                    value: uploadData.metadata?.genre || "Unknown",
+                  },
+                  {
+                    key: "License Type",
+                    value: uploadData.license?.type || "Unknown",
+                  },
+                  {
+                    key: "License Price",
+                    value: uploadData.license?.price
+                      ? `${uploadData.license.price} USD`
+                      : "Unknown",
+                  },
+                  {
+                    key: "Revenue Share",
+                    value: storyLicenseTerms
+                      ? `${storyLicenseTerms.commercialRevShare}%`
+                      : "Unknown",
+                  },
+                  {
+                    key: "Platform",
+                    value: "Proof9",
+                  },
+                  ...(uploadData.metadata?.tags?.map((tag) => ({
+                    key: "Tag",
+                    value: tag,
+                  })) || []),
+                ],
+
+                // === LICENSE TERMS ===
                 commercialRemixTerms: storyLicenseTerms
                   ? {
                       defaultMintingFee: Number(storyLicenseTerms.defaultMintingFee) / 10 ** 18, // Convert back to number for API
@@ -353,10 +395,22 @@ export default function UploadPage() {
         console.log("📋 Story Protocol result:", registrationResult);
 
         if (registrationResult.success) {
-          const successMessage = uploadData.remix?.isRemix
-            ? "Remix registered successfully on Story Protocol!"
-            : "Track registered successfully on Story Protocol!";
-          toast.success(successMessage);
+          // Store registration result for success modal
+          setRegistrationResult({
+            title: uploadData.metadata?.title || "Untitled",
+            type: uploadData.remix?.isRemix ? "remix" : "track",
+            transactionHash: registrationResult.data.transactionHash,
+            ipId: registrationResult.data.ipId,
+            tokenId: registrationResult.data.tokenId,
+            licenseTermsIds: registrationResult.data.licenseTermsIds || [],
+            explorerUrl: registrationResult.data.explorerUrl,
+            creators: uploadData.metadata?.creators,
+            yakoaVerified: uploadData.yakoa?.verified,
+            yakoaTokenId: uploadData.yakoa?.tokenId,
+          });
+
+          // Show success modal instead of just toast
+          setShowSuccessModal(true);
           console.log("✅ Story Protocol registration:", registrationResult.data);
         } else {
           console.error("❌ Story Protocol error:", registrationResult.error);
@@ -370,13 +424,14 @@ export default function UploadPage() {
         toast.info(
           "Track uploaded successfully (Story Protocol registration skipped for unverified content)",
         );
-      }
 
-      const finalSuccessMessage = uploadData.remix?.isRemix
-        ? "Remix uploaded successfully!"
-        : "Track uploaded successfully!";
-      toast.success(finalSuccessMessage);
-      router.push(`/profile/${address}`);
+        // For unverified content, show a simple success message and redirect
+        const finalSuccessMessage = uploadData.remix?.isRemix
+          ? "Remix uploaded successfully!"
+          : "Track uploaded successfully!";
+        toast.success(finalSuccessMessage);
+        router.push(`/profile/${address}`);
+      }
     } catch (error: any) {
       console.error("Registration error:", error);
       toast.error("Failed to register track. Please try again.");
@@ -440,6 +495,29 @@ export default function UploadPage() {
           <CardContent className="p-8">{renderStepContent()}</CardContent>
         </Card>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && registrationResult && (
+        <RegistrationSuccessModal
+          open={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          data={registrationResult}
+          onViewProfile={() => {
+            setShowSuccessModal(false);
+            router.push(`/profile/${address}`);
+          }}
+          onDiscoverMore={() => {
+            setShowSuccessModal(false);
+            router.push("/discover");
+          }}
+          onViewTrack={() => {
+            setShowSuccessModal(false);
+            // Navigate to track page if we have the track ID
+            // For now, go to profile where they can see their tracks
+            router.push(`/profile/${address}`);
+          }}
+        />
+      )}
     </div>
   );
 }

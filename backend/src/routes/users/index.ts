@@ -12,36 +12,6 @@ import { supabase } from "../../lib/supabase"
 // Create router
 const usersRouter = new Hono()
 
-// Mock user data
-const mockUsers = new Map([
-  [
-    "0xE89fEf221bdEd027C4c9F07D256b9Dc1422A2455",
-    {
-      address: "0xE89fEf221bdEd027C4c9F07D256b9Dc1422A2455",
-      displayName: "0xE89f...2455",
-      trackCount: 3,
-      followingCount: 125,
-      followersCount: 2487,
-      verified: true,
-      joinedAt: "2024-01-01",
-      tracks: ["1", "2", "3"],
-    },
-  ],
-  [
-    "0xA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0",
-    {
-      address: "0xA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0",
-      displayName: "0xA1B2...3456",
-      trackCount: 1,
-      followingCount: 50,
-      followersCount: 1234,
-      verified: true,
-      joinedAt: "2024-01-05",
-      tracks: ["2"],
-    },
-  ],
-])
-
 // Address validation schema
 const AddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
   message: "Address must be a valid Ethereum address",

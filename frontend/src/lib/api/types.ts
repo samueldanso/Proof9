@@ -71,29 +71,42 @@ export function transformDbTrackToLegacy(
   };
 }
 
-// Registration & Verification
+// Registration & Verification (Story Protocol Compliant)
 export interface RegistrationRequest {
-  ipMetadata: {
-    title: string;
-    description: string;
-    creators: Array<{
-      name: string;
-      address: string;
-      contributionPercent: number;
-    }>;
-    image: string;
-    mediaUrl?: string;
-    mediaType?: string;
-  };
-  nftMetadata: {
+  // === IP METADATA (Story Protocol IPA Standard) ===
+  title: string;
+  description: string;
+
+  // Story Protocol creators array
+  creators: Array<{
     name: string;
-    description: string;
-    image: string;
-    attributes?: Array<{
-      key: string;
-      value: string;
+    address: string;
+    contributionPercent: number;
+    description?: string;
+    socialMedia?: Array<{
+      platform: string;
+      url: string;
     }>;
-  };
+  }>;
+
+  // Cover art (Story Protocol image.* fields)
+  imageUrl: string;
+  imageHash: string;
+
+  // Audio file (Story Protocol media.* fields)
+  mediaUrl: string;
+  mediaHash: string;
+  mediaType: string;
+
+  // === NFT METADATA (ERC-721 Standard) ===
+  nftName?: string;
+  nftDescription?: string;
+  attributes?: Array<{
+    key: string;
+    value: string;
+  }>;
+
+  // === LICENSE TERMS ===
   commercialRemixTerms?: {
     defaultMintingFee: number;
     commercialRevShare: number;
