@@ -1,56 +1,41 @@
-import { Hono } from 'hono'
-import { logger } from 'hono/logger'
-import { prettyJSON } from 'hono/pretty-json'
-import { cors } from 'hono/cors'
-import env from './env'
-
-import registrationRoutes from './routes/registration'
-import licenseRoutes from './routes/licenses'
-import royaltyRoutes from './routes/royalty'
-import verificationRoutes from './routes/verification'
-import tracksRoutes from './routes/tracks'
-import usersRoutes from './routes/users'
-import uploadRoutes from './routes/upload'
+import { Hono } from "hono"
+import { bodyLimit } from "hono/body-limit"
+import { cors } from "hono/cors"
+import { errorHandler } from "./middleware/error"
+import * as routes from "./routes"
 
 const app = new Hono()
 
-app.use('*', cors({ origin: '*' }))
-app.use('*', logger())
-app.use('*', prettyJSON())
+// Middleware
+app.use("*", cors({ origin: "*" }))
+app.use("*", bodyLimit({ maxSize: 100 * 1024 * 1024 }))
 
-// Routes - Core Story Protocol Integration
-app.route('/api/registration', registrationRoutes)
-app.route('/api/licenses', licenseRoutes)
-app.route('/api/royalty', royaltyRoutes)
-app.route('/api/verification', verificationRoutes)
+// Error handling
+app.onError(errorHandler)
 
-// Routes - Frontend Support
-app.route('/api/tracks', tracksRoutes)
-app.route('/api/users', usersRoutes)
-app.route('/api/upload', uploadRoutes)
-
-// API info route
-app.get('/', (c) => {
-    return c.json({
-        message: 'Proof9 API Server',
-        version: '1.0.0',
-        description: 'Core backend for music IP protection, verification, and licensing',
-        endpoints: {
-            core_features: ['/api/registration', '/api/licenses', '/api/royalty', '/api/verification'],
-            frontend_support: ['/api/tracks', '/api/users', '/api/upload'],
-        },
-        integrations: {
-            'Story Protocol': 'IP registration and licensing',
-            Yakoa: 'Music verification and originality checking',
-            IPFS: 'Decentralized metadata storage',
-        },
-    })
+// Health check endpoint
+app.get("/health", (c) => {
+  return c.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0",
+  })
 })
 
-// Startup logging
-console.log(`🎵 Proof9 API Server starting on port ${env.PORT}`)
+// Routes
+app.route("/api/registration", routes.registrationRouter)
+app.route("/api/licenses", routes.licensesRouter)
+app.route("/api/royalty", routes.royaltyRouter)
+app.route("/api/verification", routes.verificationRouter)
+app.route("/api/tracks", routes.tracksRouter)
+app.route("/api/users", routes.usersRouter)
+app.route("/api/upload", routes.uploadRouter)
+app.route("/api/derivative", routes.derivativeRouter)
+
+const port = process.env.PORT || 3001
+console.log(`🚀 Server running on port ${port}`)
 
 export default {
-    port: env.PORT,
-    fetch: app.fetch,
+  port,
+  fetch: app.fetch,
 }

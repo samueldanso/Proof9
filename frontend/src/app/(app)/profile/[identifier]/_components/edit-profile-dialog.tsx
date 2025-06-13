@@ -1,9 +1,9 @@
 "use client";
 
-import { apiClient } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useUpdateProfile, useUploadAvatar } from "@/hooks/api";
 import { Camera, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -31,8 +31,11 @@ export function EditProfileDialog({
   const [username, setUsername] = useState(currentUsername || "");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>(currentAvatarUrl || "");
-  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Use hooks for API calls
+  const uploadAvatarMutation = useUploadAvatar();
+  const updateProfileMutation = useUpdateProfile();
 
   // Sync form state with props when dialog opens or props change
   useEffect(() => {
@@ -73,14 +76,15 @@ export function EditProfileDialog({
 
       const base64Data = await base64Promise;
 
-      const uploadResponse = await apiClient.post<{ avatarUrl: string }>("/api/upload/avatar", {
+      // Use the upload avatar hook
+      const result = await uploadAvatarMutation.mutateAsync({
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
         fileData: base64Data,
       });
 
-      return uploadResponse.avatarUrl;
+      return result.data.avatarUrl;
     } catch (error) {
       console.error("Avatar upload error:", error);
       throw error;
@@ -93,7 +97,6 @@ export function EditProfileDialog({
       return;
     }
 
-    setIsLoading(true);
     try {
       let avatarUrl: string | null = currentAvatarUrl || null;
 
@@ -103,11 +106,9 @@ export function EditProfileDialog({
         avatarUrl = await uploadAvatar(avatarFile);
       }
 
-      // Update profile
-      const response = await apiClient.put<{
-        success: boolean;
-        error?: string;
-      }>(`/api/users/${address}`, {
+      // Use the update profile hook
+      const response = await updateProfileMutation.mutateAsync({
+        address,
         display_name: displayName.trim(),
         username: username.trim() || undefined,
         avatar_url: avatarUrl,
@@ -122,8 +123,6 @@ export function EditProfileDialog({
       }
     } catch (error) {
       toast.error("Failed to update profile. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -134,6 +133,8 @@ export function EditProfileDialog({
     setAvatarPreview(currentAvatarUrl || "");
     onOpenChange(false);
   };
+
+  const isLoading = uploadAvatarMutation.isPending || updateProfileMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

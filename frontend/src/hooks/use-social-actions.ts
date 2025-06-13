@@ -331,6 +331,23 @@ export function useSocialActions() {
   };
 }
 
+/**
+ * Hook to search users (social feature)
+ */
+export function useSearchUsers(query: string) {
+  return useQuery({
+    queryKey: ["search", "users", query],
+    queryFn: async () => {
+      if (!query.trim()) return [];
+      // Use direct Supabase for social search feature
+      const { profileQueries } = await import("@/lib/db/queries");
+      return profileQueries.search(query, 10);
+    },
+    enabled: !!query.trim(),
+    staleTime: 30000, // Cache for 30 seconds
+  });
+}
+
 // Legacy exports for backward compatibility
 export const {
   useLikeTrack: useLikeTrackSupabase,

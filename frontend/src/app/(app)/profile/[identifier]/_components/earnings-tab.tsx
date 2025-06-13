@@ -3,15 +3,25 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useClaimRoyalty } from "@/hooks/api";
 import { monetizationQueries, trackQueries } from "@/lib/db";
 import { useQuery } from "@tanstack/react-query";
-import { DollarSign, Download, ExternalLink, Music, TrendingUp, Users } from "lucide-react";
+import {
+  DollarSign,
+  Download,
+  ExternalLink,
+  Loader2,
+  Music,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
 
 export function EarningsTab() {
   const { address } = useAccount();
+  const claimRoyalty = useClaimRoyalty();
 
   // Get creator's tracks
   const { data: creatorTracks = [] } = useQuery({
@@ -56,22 +66,13 @@ export function EarningsTab() {
   }, [creatorTracks, revenueClaims]);
 
   const handleClaimRevenue = async () => {
+    if (!address) return;
+
     try {
-      if (!address) return;
-
-      // Call the backend API to claim revenue
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/royalty/claim`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ancestorIpId: address, // Use creator's address as IP ID
-          claimer: address,
-        }),
+      const result = await claimRoyalty.mutateAsync({
+        ancestorIpId: address, // Use creator's address as IP ID
+        claimer: address,
       });
-
-      const result = await response.json();
 
       if (result.success) {
         toast.success(`Successfully claimed ${earningsSummary.pendingRevenue} WIP tokens!`);
@@ -172,8 +173,19 @@ export function EarningsTab() {
                   {earningsSummary.pendingRevenue} WIP tokens are ready to be claimed
                 </p>
               </div>
-              <Button onClick={handleClaimRevenue} className="bg-green-600 hover:bg-green-700">
-                Claim {earningsSummary.pendingRevenue} WIP
+              <Button
+                onClick={handleClaimRevenue}
+                disabled={claimRoyalty.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {claimRoyalty.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Claiming...
+                  </>
+                ) : (
+                  `Claim ${earningsSummary.pendingRevenue} WIP`
+                )}
               </Button>
             </div>
           </CardContent>

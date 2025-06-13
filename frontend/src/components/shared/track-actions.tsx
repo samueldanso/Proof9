@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ShoppingCart } from "lucide-react";
+import { Music, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface TrackActionsProps {
@@ -28,6 +28,8 @@ interface TrackActionsProps {
   licensePrice?: string;
   trackTitle?: string;
   variant?: "compact" | "full"; // Add variant for different layouts
+  ipAssetId?: string; // For remix functionality
+  allowRemix?: boolean; // Whether this track allows remixes
 }
 
 export function TrackActions({
@@ -42,6 +44,8 @@ export function TrackActions({
   licensePrice,
   trackTitle,
   variant = "full",
+  ipAssetId,
+  allowRemix = true,
 }: TrackActionsProps) {
   const router = useRouter();
 
@@ -67,6 +71,19 @@ export function TrackActions({
     e.preventDefault();
     e.stopPropagation();
     router.push(`/track/${trackId}`);
+  };
+
+  const handleRemix = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Navigate to upload page with remix parameters
+    const remixParams = new URLSearchParams({
+      remix: "true",
+      parentTrackId: trackId,
+      ...(ipAssetId && { parentIpId: ipAssetId }),
+      ...(trackTitle && { parentTitle: trackTitle }),
+    });
+    router.push(`/upload?${remixParams.toString()}`);
   };
 
   // Compact variant for grid cards
@@ -138,6 +155,12 @@ export function TrackActions({
                 <IconShare className="mr-2 h-4 w-4" />
                 Share
               </DropdownMenuItem>
+              {allowRemix && (
+                <DropdownMenuItem onClick={handleRemix}>
+                  <Music className="mr-2 h-4 w-4" />
+                  Create Remix
+                </DropdownMenuItem>
+              )}
               {showLicenseButton && (
                 <DropdownMenuItem onClick={handleBuyLicense}>
                   <ShoppingCart className="mr-2 h-4 w-4" />
@@ -221,6 +244,25 @@ export function TrackActions({
               <p>Share</p>
             </TooltipContent>
           </Tooltip>
+
+          {/* Remix Button */}
+          {allowRemix && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex h-auto items-center gap-2 px-3 py-2"
+                  onClick={handleRemix}
+                >
+                  <Music className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Create Remix</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
 
         {/* License Button */}

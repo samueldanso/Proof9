@@ -1,8 +1,8 @@
 "use client";
 
-import { apiClient } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCreateProfile, useUploadAvatar } from "@/hooks/api";
 import { Camera, User } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -14,8 +14,11 @@ export function ProfileSetup() {
   const [displayName, setDisplayName] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Use hooks for API calls
+  const uploadAvatarMutation = useUploadAvatar();
+  const createProfileMutation = useCreateProfile();
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -47,14 +50,15 @@ export function ProfileSetup() {
 
       const base64Data = await base64Promise;
 
-      const uploadResponse = await apiClient.post<{ avatarUrl: string }>("/api/upload/avatar", {
+      // Use the upload avatar hook
+      const result = await uploadAvatarMutation.mutateAsync({
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
         fileData: base64Data,
       });
 
-      return uploadResponse.avatarUrl;
+      return result.data.avatarUrl;
     } catch (error) {
       console.error("Avatar upload error:", error);
       throw error;
@@ -67,7 +71,6 @@ export function ProfileSetup() {
       return;
     }
 
-    setIsLoading(true);
     try {
       let avatarUrl: string | null = null;
 
@@ -77,10 +80,8 @@ export function ProfileSetup() {
         avatarUrl = await uploadAvatar(avatarFile);
       }
 
-      const response = await apiClient.post<{
-        success: boolean;
-        error?: string;
-      }>("/api/users/create-profile", {
+      // Use the create profile hook
+      const response = await createProfileMutation.mutateAsync({
         address,
         display_name: displayName.trim(),
         avatar_url: avatarUrl,
@@ -97,10 +98,10 @@ export function ProfileSetup() {
       }
     } catch (error) {
       toast.error("Failed to create profile. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const isLoading = uploadAvatarMutation.isPending || createProfileMutation.isPending;
 
   return (
     <>

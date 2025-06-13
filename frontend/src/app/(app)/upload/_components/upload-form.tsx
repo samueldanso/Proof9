@@ -1,8 +1,8 @@
 "use client";
 
-import { useUploadAudio } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useUploadAudio } from "@/hooks/api";
 import { FileAudio, Music, Upload } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
