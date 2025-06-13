@@ -1,11 +1,11 @@
 "use client";
 
+import { useSearchUsers, useTracks } from "@/api/hooks";
+import { transformDbTrackToLegacy } from "@/api/types";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useSearchUsers, useTracks } from "@/lib/api/hooks";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
-import { getAvatarUrl } from "@/lib/avatar";
-import { getCoverUrl } from "@/lib/cover";
+import { getAvatarUrl } from "@/lib/utils/avatar";
+import { getCoverUrl } from "@/lib/utils/cover";
 import { Music, Search, User, Verified } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useRef, useEffect, useMemo } from "react";

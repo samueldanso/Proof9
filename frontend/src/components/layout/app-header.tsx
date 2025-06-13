@@ -1,11 +1,11 @@
 "use client";
 
+import { useUser } from "@/api/hooks";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useUser } from "@/lib/api/hooks";
-import { getAvatarUrl } from "@/lib/avatar";
+import { getAvatarUrl } from "@/lib/utils/avatar";
 import { useAccountModal, useConnectModal } from "@tomo-inc/tomo-evm-kit";
 import { Bell, Menu, Plus, Search, X } from "lucide-react";
 import Link from "next/link";

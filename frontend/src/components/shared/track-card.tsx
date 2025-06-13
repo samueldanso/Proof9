@@ -3,8 +3,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
-import { getCoverPlaceholder, getCoverUrl } from "@/lib/cover";
+import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
+import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
 import type { LegacyTrack } from "@/types/track";
 import { Pause, Play } from "lucide-react";
 import Link from "next/link";

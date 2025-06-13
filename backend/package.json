@@ -7,6 +7,7 @@
     "scripts": {
         "dev": "bun run --hot src/index.ts",
         "start": "bun run src/index.ts",
+        "format": "biome format --write .",
         "test": "echo \"Error: no test specified\" && exit 1",
         "register": "bun run ./scripts/registration/register.ts",
         "register-custom": "bun run ./scripts/registration/registerCustom.ts",
@@ -31,6 +32,7 @@
         "zod": "^3.25.30"
     },
     "devDependencies": {
+        "@biomejs/biome": "1.9.4",
         "@types/node": "^20.11.17",
         "@types/bun": "latest",
         "prettier": "3.2.5",

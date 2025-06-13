@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 
-import { useUser } from "@/lib/api/hooks";
+import { useUser } from "@/api/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -12,7 +12,7 @@ import { EditProfileDialog } from "./edit-profile-dialog";
 import PencilIcon from "@/components/icons/pencil.svg";
 import { AddressDisplay } from "@/components/shared/address-display";
 import { useFollow, useIsFollowing } from "@/hooks/use-social-actions";
-import { getAvatarUrl } from "@/lib/avatar";
+import { getAvatarUrl } from "@/lib/utils/avatar";
 import { Music, UserPlus, Users } from "lucide-react";
 
 export function ProfileHeader() {

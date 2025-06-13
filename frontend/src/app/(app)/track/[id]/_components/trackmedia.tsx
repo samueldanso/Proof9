@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getCoverPlaceholder, getCoverUrl } from "@/lib/cover";
+import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
 import { Pause, Play } from "lucide-react";
 
 interface Track {

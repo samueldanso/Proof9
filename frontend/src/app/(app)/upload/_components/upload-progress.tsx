@@ -15,11 +15,11 @@ async function generateContentHash(data: object): Promise<string> {
   return hashHex;
 }
 
+import { useUploadAudio, useVerificationStatus, useVerifyTrack } from "@/api/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useUploadAudio, useVerificationStatus, useVerifyTrack } from "@/lib/api/hooks";
 import { AlertTriangle, Brain, CheckCircle, FileAudio, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";

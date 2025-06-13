@@ -8,7 +8,7 @@ import {
   convertLicenseFormToStoryTerms,
   convertUSDToWIP,
   getLicenseSummary,
-} from "@/lib/story-protocol";
+} from "@/lib/utils/story-protocol";
 import { CheckCircle, Download, ExternalLink, Loader2, Shield } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

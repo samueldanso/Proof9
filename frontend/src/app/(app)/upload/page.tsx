@@ -1,9 +1,9 @@
 "use client";
 
+import { apiClient } from "@/api/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { env } from "@/env";
-import { apiClient } from "@/lib/api/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -192,7 +192,7 @@ export default function UploadPage() {
 
         // Convert license form data to Story Protocol terms
         const { convertLicenseFormToStoryTerms, getLicenseSummary } = await import(
-          "@/lib/story-protocol"
+          "@/lib/utils/story-protocol"
         );
         const storyLicenseTerms = uploadData.license
           ? convertLicenseFormToStoryTerms(uploadData.license)

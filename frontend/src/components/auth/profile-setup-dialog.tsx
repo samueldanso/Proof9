@@ -1,9 +1,9 @@
 "use client";
 
+import { apiClient } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { apiClient } from "@/lib/api/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Camera, User } from "lucide-react";
 import { useRef, useState } from "react";

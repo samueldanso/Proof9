@@ -1,10 +1,10 @@
 "use client";
 
+import { useUser, useUserTracks } from "@/api/hooks";
+import { useTracks } from "@/api/hooks";
+import { transformDbTrackToLegacy } from "@/api/types";
 import { TrackCard } from "@/components/shared/track-card";
 import { useAddComment, useLikeTrack } from "@/hooks/use-social-actions";
-import { useUser, useUserTracks } from "@/lib/api/hooks";
-import { useTracks } from "@/lib/api/hooks";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 

@@ -4,7 +4,7 @@ import { IpMetadata } from '@story-protocol/core-sdk'
 import { client, account, networkInfo } from '../../utils/config'
 import { createCommercialRemixTerms, SPGNFTContractAddress } from '../../utils/utils'
 import { uploadJSONToIPFS } from '../../utils/functions/uploadToIpfs'
-import { verifyMusicContent } from '../../utils/functions/verifyMusic'
+import { verifyMusicContent } from '../../utils/functions/verifySound'
 
 /**
  * Verify music content with Yakoa and then register with Story Protocol

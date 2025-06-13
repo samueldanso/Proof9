@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@/lib/api/hooks";
+import { useUser } from "@/api/hooks";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { ProfileSetupDialog } from "./profile-setup-dialog";

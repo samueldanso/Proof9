@@ -56,16 +56,17 @@ Proof9 is a sound rights platform that gives creators the tools to protect their
 -   **Forms & Validation**: [react-hook-form](https://react-hook-form.com/), [zod](https://zod.dev/)
 -   **Data Fetching**: [TanStack Query](https://tanstack.com/query)
 
-### Backend
+### Backend (API)
 
 -   **Runtime**: [Bun](https://bun.sh/)
--   **Framework**: [Hono](https://hono.dev/), [TypeScript 5](https://www.typescriptlang.org/)
+-   **Framework**: [Hono](https://hono.dev/),
+-   **Language**: [TypeScript 5](https://www.typescriptlang.org/)
 -   **Story Protocol**: [@story-protocol/core-sdk](https://docs.storyprotocol.xyz/)
+-   **Yakoa AI Verification**: [Yakoa API](https://docs.yakoa.ai/)
+-   **Onchain Storage**: [IPFS (via Pinata)](https://www.pinata.cloud/)
+-   **Offchain Database**: [Supabase](https://supabase.com/) (PostgreSQL)
 -   **Web3 Integration**: [viem](https://viem.sh/)
 -   **Validation**: [zod](https://zod.dev/), [@hono/zod-validator](https://hono.dev/middleware/validator)
--   **Offchain Database**: [Supabase](https://supabase.com/) (PostgreSQL)
--   **Storage**: [IPFS (via Pinata)](https://www.pinata.cloud/)
--   **Verification**: [Yakoa API](https://docs.yakoa.ai/)
 
 ## Story Protocol Integration
 
@@ -86,47 +87,92 @@ Proof9 integrates Yakoa for basic music content verification:
 -   **Brand Authorization**: `/api/verification/authorize` - Manage brand permissions for licensed content
 -   **Pre-Registration Verification**: Verify content authenticity before Story Protocol IP registration
 
-## Setup
+## 📦 Project Structure
+
+```
+
+```
+
+## 🛠️ Setup & Installation
 
 ### Prerequisites
 
 -   Node.js 18+
--   **Package Manager**: [Bun](https://bun.sh/)
+-   **Runtime & Package Manager**: [Bun](https://bun.sh/)
 -   **Backend Framework**: [Hono](https://hono.dev/)
 -   **Linting & Formatting**: [Biome](https://biomejs.dev/)
 
-1. Clone the repository:
+1. **Clone the repository**
 
     ```bash
     git clone https://github.com/samueldanso/Proof9.git
     cd Proof9
     ```
 
-2. Install dependencies:
+2. **Install dependencies**
+
+Install dependencies in both backend and frontend:
 
     ```bash
     bun install
     ```
 
-3. Set up environment variables:
+3. Setup environment variables:
+
+Create .env files in both backend and frontend:
 
     ```bash
     cp env.example .env
     ```
 
-    Then edit `.env` and add your API keys and credentials:
+For `backends/.env`:
+
+```
+WALLET_PRIVATE_KEY=your_wallet_key
+PINATA_JWT=your_pinata_jwt_secret_key
+STORY_NETWORK=your_story_network
+YAKOA_API_KEY=your_yakoa_api_key
+YAKOA_SUBDOMAIN=your_yakoa_subdomain
+YAKOA_NETWORK=your_yakoa_network
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+PORT=3001
+
+```
+
+For `frontend/.env`:
+
+```
+NEXT_PUBLIC_APP_URL=your_app_url
+NEXT_PUBLIC_TOMO_CLIENT_ID=your_tomo_client_id
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
+NEXT_PUBLIC_API_URL=your_api_url
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
 4. Start the development server:
+
+Run the development server in both backend and frontend
 
     ```bash
     bun run dev
     ```
 
-    Open [http://localhost:3000](http://localhost:3000) in your browser
+This will start both the backend and frontens in development mode:
 
-## Roadmap
+-   API: http://localhost:3001
+-   Web: http://localhost:3000
 
--   [] Implement creator verified badges
+## 📤 Deployment
+
+### Frontend (Next.js) on Vercel
+
+Deploy the frontend repository to [Vercel](https://vercel.com)
+
+### Backend API (Bun) on Render
+
+Deploy the backend repository web service on [Render](https://render.com)
 
 ## Contributing
 

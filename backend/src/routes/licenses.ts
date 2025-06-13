@@ -8,7 +8,6 @@ import { client, account, publicClient, walletClient } from '../../utils/config'
 import { SPGNFTContractAddress, createCommercialRemixTerms } from '../../utils/utils'
 import { totalLicenseTokenLimitHook } from '../../utils/abi/totalLicenseTokenLimitHook'
 
-// Create router
 const app = new Hono()
 
 // Schema for minting license tokens
@@ -161,4 +160,3 @@ app.post('/one-time-use', zValidator('json', OneTimeUseLicenseSchema), async (c)
 })
 
 export default app
-

@@ -9,7 +9,6 @@ import { createCommercialRemixTerms, NFTContractAddress, SPGNFTContractAddress }
 import { uploadJSONToIPFS } from '../../utils/functions/uploadToIpfs'
 import { mintNFT } from '../../utils/functions/mintNFT'
 
-// Create router
 const app = new Hono()
 
 // Schema for IP metadata

@@ -3,10 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
 
-// ==========================================
-// SOCIAL HOOKS - MODERN CLEAN VERSION
-// ==========================================
-
 /**
  * Hook to like/unlike a track
  */

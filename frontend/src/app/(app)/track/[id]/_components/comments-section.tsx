@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useAddComment, useTrackComments } from "@/hooks/use-social-actions";
-import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
+import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";

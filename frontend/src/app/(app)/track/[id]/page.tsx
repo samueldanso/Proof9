@@ -1,5 +1,7 @@
 "use client";
 
+import { useTrack } from "@/api/hooks";
+import { transformDbTrackToLegacy } from "@/api/types";
 import { TrackActions } from "@/components/shared/track-actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,8 +12,6 @@ import {
   useLikeTrack,
   useTrackComments,
 } from "@/hooks/use-social-actions";
-import { useTrack } from "@/lib/api/hooks";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

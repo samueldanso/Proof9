@@ -1,8 +1,5 @@
 /**
- * PROOF9 YAKOA VERIFICATION API
- *
- * This module implements Yakoa content authentication for music verification.
- * Follows Yakoa's API conventions for seamless integration with their service.
+ * This module implements Yakoa content authentication for sound verification.
  */
 
 import { Hono } from 'hono'
@@ -77,7 +74,7 @@ const AuthorizationSchema = z.object({
 })
 
 /**
- * Verify music content with Yakoa
+ * Verify sound content with Yakoa
  * This endpoint registers a token with Yakoa for content authentication
  */
 app.post('/verify-music', zValidator('json', VerifyMusicSchema), async (c) => {

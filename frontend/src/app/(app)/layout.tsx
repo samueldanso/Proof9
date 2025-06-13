@@ -1,18 +1,17 @@
 "use client";
 
+import { apiClient } from "@/api/client";
 import { Onboarding } from "@/components/auth/onboarding";
 import { ProfileSetupGuard } from "@/components/auth/profile-setup-guard";
 import { AppHeader } from "@/components/layout/app-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Loader } from "@/components/ui/loader";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { apiClient } from "@/lib/api/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  // Official Tomo pattern - direct wagmi usage
   const { address, isConnected } = useAccount();
   const isMobile = useIsMobile();
   const router = useRouter();

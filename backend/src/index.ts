@@ -4,7 +4,6 @@ import { prettyJSON } from 'hono/pretty-json'
 import { cors } from 'hono/cors'
 import env from './env'
 
-// Import routes
 import registrationRoutes from './routes/registration'
 import licenseRoutes from './routes/licenses'
 import royaltyRoutes from './routes/royalty'
@@ -15,7 +14,6 @@ import uploadRoutes from './routes/upload'
 
 const app = new Hono()
 
-// Middleware
 app.use('*', cors({ origin: '*' }))
 app.use('*', logger())
 app.use('*', prettyJSON())
@@ -34,7 +32,7 @@ app.route('/api/upload', uploadRoutes)
 // API info route
 app.get('/', (c) => {
     return c.json({
-        message: 'Proof9 API Server - Music Creator Platform',
+        message: 'Proof9 API Server',
         version: '1.0.0',
         description: 'Core backend for music IP protection, verification, and licensing',
         endpoints: {

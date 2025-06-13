@@ -8,8 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
-import { getAvatarUrl, getUserInitials } from "@/lib/avatar";
-import { getCoverPlaceholder, getCoverUrl } from "@/lib/cover";
+import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
+import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
 import { Loader2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { useState } from "react";
 

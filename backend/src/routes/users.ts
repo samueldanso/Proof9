@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { supabase } from '../lib/supabase'
-import { generateUsername, isValidUsername, generateUniqueUsernameSuffix, isEthereumAddress } from '../utils/username'
+import { generateUsername, isValidUsername, generateUniqueUsernameSuffix, isEthereumAddress } from '../../utils/username'
 
 // Create router
 const app = new Hono()
