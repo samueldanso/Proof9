@@ -6,11 +6,11 @@ import {
   generateUsername,
   isEthereumAddress,
   isValidUsername,
-} from "../../utils/username"
-import { supabase } from "../lib/supabase"
+} from "../../../utils/username"
+import { supabase } from "../../lib/supabase"
 
 // Create router
-const app = new Hono()
+const usersRouter = new Hono()
 
 // Mock user data
 const mockUsers = new Map([
@@ -50,7 +50,7 @@ const AddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
 /**
  * Get user profile by username or address
  */
-app.get(
+usersRouter.get(
   "/:identifier",
   zValidator("param", z.object({ identifier: z.string() })),
   async (c) => {
@@ -150,7 +150,7 @@ app.get(
 /**
  * Get user's tracks
  */
-app.get(
+usersRouter.get(
   "/:address/tracks",
   zValidator("param", z.object({ address: AddressSchema })),
   async (c) => {
@@ -204,7 +204,7 @@ const CreateProfileSchema = z.object({
 /**
  * Create user profile
  */
-app.post(
+usersRouter.post(
   "/create-profile",
   zValidator("json", CreateProfileSchema),
   async (c) => {
@@ -271,7 +271,7 @@ app.post(
 /**
  * Update user profile
  */
-app.put(
+usersRouter.put(
   "/:address",
   zValidator("param", z.object({ address: AddressSchema })),
   zValidator(
@@ -379,7 +379,7 @@ app.put(
 /**
  * Check username availability
  */
-app.get(
+usersRouter.get(
   "/check-username/:username",
   zValidator("param", z.object({ username: z.string() })),
   async (c) => {
@@ -430,7 +430,7 @@ app.get(
 /**
  * Check onboarding status
  */
-app.get(
+usersRouter.get(
   "/:address/onboarding-status",
   zValidator("param", z.object({ address: AddressSchema })),
   async (c) => {
@@ -468,7 +468,7 @@ app.get(
  * Get user's licensed tracks (for library)
  * GET /api/users/:address/licensed-tracks
  */
-app.get(
+usersRouter.get(
   "/:address/licensed-tracks",
   zValidator("param", z.object({ address: AddressSchema })),
   async (c) => {
@@ -517,7 +517,7 @@ app.get(
  * Get creator earnings summary
  * GET /api/users/:address/earnings
  */
-app.get(
+usersRouter.get(
   "/:address/earnings",
   zValidator("param", z.object({ address: AddressSchema })),
   async (c) => {
@@ -578,4 +578,4 @@ app.get(
   },
 )
 
-export default app
+export { usersRouter }

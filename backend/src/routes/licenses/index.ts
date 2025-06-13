@@ -4,14 +4,19 @@ import { Hono } from "hono"
 import { Address, toHex, zeroAddress } from "viem"
 import { z } from "zod"
 
-import { totalLicenseTokenLimitHook } from "../../utils/abi/totalLicenseTokenLimitHook"
-import { account, client, publicClient, walletClient } from "../../utils/config"
+import { totalLicenseTokenLimitHook } from "../../../utils/abi/totalLicenseTokenLimitHook"
+import {
+  account,
+  client,
+  publicClient,
+  walletClient,
+} from "../../../utils/config"
 import {
   SPGNFTContractAddress,
   createCommercialRemixTerms,
-} from "../../utils/utils"
+} from "../../../utils/utils"
 
-const app = new Hono()
+const licensesRouter = new Hono()
 
 // Schema for minting license tokens
 const MintLicenseSchema = z.object({
@@ -48,50 +53,54 @@ const OneTimeUseLicenseSchema = z.object({
  * Mint license tokens endpoint
  * Mints license tokens for an IP with specific license terms
  */
-app.post("/mint", zValidator("json", MintLicenseSchema), async (c) => {
-  try {
-    const {
-      licensorIpId,
-      licenseTermsId,
-      amount,
-      maxMintingFee,
-      maxRevenueShare,
-    } = c.req.valid("json")
+licensesRouter.post(
+  "/mint",
+  zValidator("json", MintLicenseSchema),
+  async (c) => {
+    try {
+      const {
+        licensorIpId,
+        licenseTermsId,
+        amount,
+        maxMintingFee,
+        maxRevenueShare,
+      } = c.req.valid("json")
 
-    // Mint license tokens
-    const response = await client.license.mintLicenseTokens({
-      licenseTermsId,
-      licensorIpId: licensorIpId as Address,
-      amount,
-      maxMintingFee: BigInt(maxMintingFee),
-      maxRevenueShare,
-      txOptions: { waitForTransaction: true },
-    })
+      // Mint license tokens
+      const response = await client.license.mintLicenseTokens({
+        licenseTermsId,
+        licensorIpId: licensorIpId as Address,
+        amount,
+        maxMintingFee: BigInt(maxMintingFee),
+        maxRevenueShare,
+        txOptions: { waitForTransaction: true },
+      })
 
-    return c.json({
-      success: true,
-      data: {
-        transactionHash: response.txHash,
-        licenseTokenIds: response.licenseTokenIds,
-      },
-    })
-  } catch (error: any) {
-    console.error("License minting error:", error)
-    return c.json(
-      {
-        success: false,
-        error: error.message,
-      },
-      500,
-    )
-  }
-})
+      return c.json({
+        success: true,
+        data: {
+          transactionHash: response.txHash,
+          licenseTokenIds: response.licenseTokenIds,
+        },
+      })
+    } catch (error: any) {
+      console.error("License minting error:", error)
+      return c.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        500,
+      )
+    }
+  },
+)
 
 /**
  * One-time use license endpoint
  * Creates an IP asset with a licensing configuration that limits total license tokens
  */
-app.post(
+licensesRouter.post(
   "/one-time-use",
   zValidator("json", OneTimeUseLicenseSchema),
   async (c) => {
@@ -193,4 +202,4 @@ app.post(
   },
 )
 
-export default app
+export { licensesRouter }

@@ -1,10 +1,10 @@
 import { zValidator } from "@hono/zod-validator"
 import { Hono } from "hono"
 import { z } from "zod"
-import { supabase } from "../lib/supabase"
+import { supabase } from "../../lib/supabase"
 
 // Create router
-const app = new Hono()
+const tracksRouter = new Hono()
 
 // Schema for track creation
 const CreateTrackSchema = z.object({
@@ -36,7 +36,7 @@ const TracksQuerySchema = z.object({
 /**
  * Create a new track
  */
-app.post("/", zValidator("json", CreateTrackSchema), async (c) => {
+tracksRouter.post("/", zValidator("json", CreateTrackSchema), async (c) => {
   try {
     const trackData = c.req.valid("json")
 
@@ -101,7 +101,7 @@ app.post("/", zValidator("json", CreateTrackSchema), async (c) => {
 /**
  * Get tracks for discovery feed
  */
-app.get("/", zValidator("query", TracksQuerySchema), async (c) => {
+tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
   try {
     const { tab, user_address, genre, limit, offset } = c.req.valid("query")
 
@@ -289,7 +289,7 @@ app.get("/", zValidator("query", TracksQuerySchema), async (c) => {
 /**
  * Get single track by ID
  */
-app.get("/:id", async (c) => {
+tracksRouter.get("/:id", async (c) => {
   try {
     const trackId = c.req.param("id")
 
@@ -359,7 +359,7 @@ app.get("/:id", async (c) => {
 /**
  * Get trending tracks for sidebar
  */
-app.get("/trending/sidebar", async (c) => {
+tracksRouter.get("/trending/sidebar", async (c) => {
   try {
     const { data: tracksData, error } = await supabase
       .from("tracks")
@@ -432,4 +432,4 @@ app.get("/trending/sidebar", async (c) => {
   }
 })
 
-export default app
+export { tracksRouter }

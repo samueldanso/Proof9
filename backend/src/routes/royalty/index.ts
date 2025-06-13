@@ -4,16 +4,16 @@ import { Hono } from "hono"
 import { Address, parseEther, toHex, zeroAddress } from "viem"
 import { z } from "zod"
 
-import { account, client } from "../../utils/config"
+import { account, client } from "../../../utils/config"
 import {
   RoyaltyPolicyLRP,
   SPGNFTContractAddress,
   convertRoyaltyPercentToTokens,
   createCommercialRemixTerms,
-} from "../../utils/utils"
+} from "../../../utils/utils"
 
 // Create router
-const app = new Hono()
+const royaltyRouter = new Hono()
 
 // Common schema for IP IDs
 const IpIdSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
@@ -91,7 +91,7 @@ const ClaimRevenueSchema = z.object({
  * Pay revenue endpoint
  * Pays royalty to an IP asset
  */
-app.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
+royaltyRouter.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
   try {
     const { receiverIpId, payerIpId, token, amount, createDerivative } =
       c.req.valid("json")
@@ -159,7 +159,7 @@ app.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
  * License revenue endpoint
  * Mints license tokens from an IP asset to generate revenue
  */
-app.post(
+royaltyRouter.post(
   "/license-revenue",
   zValidator("json", LicenseRevenueSchema),
   async (c) => {
@@ -248,7 +248,7 @@ app.post(
  * Transfer royalty tokens endpoint
  * Transfers royalty tokens from an IP asset to a target address
  */
-app.post(
+royaltyRouter.post(
   "/transfer-tokens",
   zValidator("json", TransferRoyaltyTokensSchema),
   async (c) => {
@@ -337,43 +337,47 @@ app.post(
  * Claim revenue endpoint
  * Claims revenue for an IP asset
  */
-app.post("/claim", zValidator("json", ClaimRevenueSchema), async (c) => {
-  try {
-    const {
-      ancestorIpId,
-      claimer,
-      childIpIds,
-      royaltyPolicies,
-      currencyTokens,
-    } = c.req.valid("json")
+royaltyRouter.post(
+  "/claim",
+  zValidator("json", ClaimRevenueSchema),
+  async (c) => {
+    try {
+      const {
+        ancestorIpId,
+        claimer,
+        childIpIds,
+        royaltyPolicies,
+        currencyTokens,
+      } = c.req.valid("json")
 
-    // Claim revenue
-    const response = await client.royalty.claimAllRevenue({
-      ancestorIpId: ancestorIpId as Address,
-      claimer: (claimer || ancestorIpId) as Address,
-      childIpIds: childIpIds as Address[],
-      royaltyPolicies:
-        royaltyPolicies.length > 0 ? (royaltyPolicies as Address[]) : [],
-      currencyTokens: currencyTokens as Address[],
-    })
+      // Claim revenue
+      const response = await client.royalty.claimAllRevenue({
+        ancestorIpId: ancestorIpId as Address,
+        claimer: (claimer || ancestorIpId) as Address,
+        childIpIds: childIpIds as Address[],
+        royaltyPolicies:
+          royaltyPolicies.length > 0 ? (royaltyPolicies as Address[]) : [],
+        currencyTokens: currencyTokens as Address[],
+      })
 
-    // Return result
-    return c.json({
-      success: true,
-      data: {
-        claimedTokens: response.claimedTokens,
-      },
-    })
-  } catch (error: any) {
-    console.error("Claim revenue error:", error)
-    return c.json(
-      {
-        success: false,
-        error: error.message,
-      },
-      500,
-    )
-  }
-})
+      // Return result
+      return c.json({
+        success: true,
+        data: {
+          claimedTokens: response.claimedTokens,
+        },
+      })
+    } catch (error: any) {
+      console.error("Claim revenue error:", error)
+      return c.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        500,
+      )
+    }
+  },
+)
 
-export default app
+export { royaltyRouter }

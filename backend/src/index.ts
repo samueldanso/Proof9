@@ -1,33 +1,49 @@
 import { Hono } from "hono"
+import { bodyLimit } from "hono/body-limit"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { prettyJSON } from "hono/pretty-json"
 import env from "./env"
+import { errorHandler } from "./middleware/error"
 
-import licenseRoutes from "./routes/licenses"
-import registrationRoutes from "./routes/registration"
-import royaltyRoutes from "./routes/royalty"
-import tracksRoutes from "./routes/tracks"
-import uploadRoutes from "./routes/upload"
-import usersRoutes from "./routes/users"
-import verificationRoutes from "./routes/verification"
+import { licensesRouter } from "./routes/licenses"
+import { registrationRouter } from "./routes/registration"
+import { royaltyRouter } from "./routes/royalty"
+import { tracksRouter } from "./routes/tracks"
+import { uploadRouter } from "./routes/upload"
+import { usersRouter } from "./routes/users"
+import { verificationRouter } from "./routes/verification"
 
 const app = new Hono()
 
+// Middleware
 app.use("*", cors({ origin: "*" }))
 app.use("*", logger())
 app.use("*", prettyJSON())
+app.use("*", bodyLimit({ maxSize: 100 * 1024 * 1024 })) // 100MB for audio files
+
+// Error handling
+app.onError(errorHandler)
+
+// Health check endpoint
+app.get("/health", (c) => {
+  return c.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0",
+  })
+})
 
 // Routes - Core Story Protocol Integration
-app.route("/api/registration", registrationRoutes)
-app.route("/api/licenses", licenseRoutes)
-app.route("/api/royalty", royaltyRoutes)
-app.route("/api/verification", verificationRoutes)
+app.route("/api/registration", registrationRouter)
+app.route("/api/licenses", licensesRouter)
+app.route("/api/royalty", royaltyRouter)
+app.route("/api/verification", verificationRouter)
 
 // Routes - Frontend Support
-app.route("/api/tracks", tracksRoutes)
-app.route("/api/users", usersRoutes)
-app.route("/api/upload", uploadRoutes)
+app.route("/api/tracks", tracksRouter)
+app.route("/api/users", usersRouter)
+app.route("/api/upload", uploadRouter)
 
 // API info route
 app.get("/", (c) => {
