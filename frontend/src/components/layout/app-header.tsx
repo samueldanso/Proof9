@@ -1,9 +1,9 @@
 "use client";
 
-import { useUser } from "@/api/hooks";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useUser } from "@/hooks/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getAvatarUrl } from "@/lib/utils/avatar";
 import { useAccountModal, useConnectModal } from "@tomo-inc/tomo-evm-kit";

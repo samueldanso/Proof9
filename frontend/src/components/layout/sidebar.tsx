@@ -1,11 +1,11 @@
 "use client";
 
-import { useUser } from "@/api/hooks";
 import IconHome from "@/components/icons/home.svg";
 import IconHomeFill from "@/components/icons/homeFill.svg";
 import IconProfile from "@/components/icons/person.svg";
 import IconProfileFill from "@/components/icons/personFill.svg";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { useUser } from "@/hooks/api";
 import { Library } from "lucide-react";
 
 import Link from "next/link";

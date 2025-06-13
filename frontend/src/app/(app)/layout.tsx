@@ -1,51 +1,29 @@
 "use client";
 
-import { apiClient } from "@/api/client";
 import { Onboarding } from "@/components/auth/onboarding";
 import { ProfileSetupGuard } from "@/components/auth/profile-setup-guard";
 import { AppHeader } from "@/components/layout/app-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Loader } from "@/components/ui/loader";
+import { useOnboardingStatus } from "@/hooks/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAccount } from "wagmi";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { address, isConnected } = useAccount();
   const isMobile = useIsMobile();
   const router = useRouter();
-  const [profileStatus, setProfileStatus] = useState<{
-    loading: boolean;
-    hasProfile: boolean;
-  }>({ loading: true, hasProfile: false });
 
-  // Check if user has completed onboarding
+  // Use the onboarding status hook
+  const { data: onboardingData, isLoading: profileLoading } = useOnboardingStatus(address || "");
+
+  // Redirect to home if not connected
   useEffect(() => {
-    async function checkProfile() {
-      if (!isConnected || !address) {
-        router.push("/");
-        return;
-      }
-
-      try {
-        const response = await apiClient.get<{
-          success: boolean;
-          data: { hasProfile: boolean };
-          error?: string;
-        }>(`/api/users/${address}/onboarding-status`);
-
-        setProfileStatus({
-          loading: false,
-          hasProfile: response?.data?.hasProfile || false,
-        });
-      } catch (error) {
-        // If error checking profile, assume no profile exists
-        setProfileStatus({ loading: false, hasProfile: false });
-      }
+    if (!isConnected || !address) {
+      router.push("/");
     }
-
-    checkProfile();
   }, [isConnected, address, router]);
 
   if (!isConnected || !address) {
@@ -53,12 +31,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   // Show loading while checking profile status
-  if (profileStatus.loading) {
+  if (profileLoading) {
     return <Loader />;
   }
 
   // Show onboarding if user hasn't completed profile setup
-  if (!profileStatus.hasProfile) {
+  if (!onboardingData?.data?.hasProfile) {
     return <Onboarding />;
   }
 

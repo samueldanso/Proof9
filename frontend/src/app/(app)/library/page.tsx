@@ -1,10 +1,10 @@
 "use client";
 
-import { useUserLicensedTracks } from "@/api/hooks";
-import { transformDbTrackToLegacy } from "@/api/types";
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
+import { useUserLicensedTracks } from "@/hooks/api";
 import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
+import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";

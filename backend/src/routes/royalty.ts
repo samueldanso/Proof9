@@ -1,23 +1,23 @@
-import { Hono } from 'hono'
-import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
-import { Address, parseEther, toHex, zeroAddress } from 'viem'
-import { WIP_TOKEN_ADDRESS } from '@story-protocol/core-sdk'
+import { zValidator } from "@hono/zod-validator"
+import { WIP_TOKEN_ADDRESS } from "@story-protocol/core-sdk"
+import { Hono } from "hono"
+import { Address, parseEther, toHex, zeroAddress } from "viem"
+import { z } from "zod"
 
-import { client, account } from '../../utils/config'
-import { 
-  SPGNFTContractAddress, 
-  RoyaltyPolicyLRP, 
+import { account, client } from "../../utils/config"
+import {
+  RoyaltyPolicyLRP,
+  SPGNFTContractAddress,
   convertRoyaltyPercentToTokens,
-  createCommercialRemixTerms
-} from '../../utils/utils'
+  createCommercialRemixTerms,
+} from "../../utils/utils"
 
 // Create router
 const app = new Hono()
 
 // Common schema for IP IDs
 const IpIdSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-  message: 'IP ID must be a valid Ethereum address'
+  message: "IP ID must be a valid Ethereum address",
 })
 
 // Schema for paying revenue
@@ -26,16 +26,20 @@ const PayRevenueSchema = z.object({
   payerIpId: IpIdSchema.optional().default(zeroAddress as string),
   token: z.string().default(WIP_TOKEN_ADDRESS),
   amount: z.number().positive(),
-  createDerivative: z.object({
-    parentIpId: IpIdSchema,
-    licenseTermsId: z.string(),
-    metadata: z.object({
-      ipMetadataURI: z.string().default('test-uri'),
-      ipMetadataHash: z.string().optional(),
-      nftMetadataHash: z.string().optional(),
-      nftMetadataURI: z.string().default('test-nft-uri')
-    }).optional()
-  }).optional()
+  createDerivative: z
+    .object({
+      parentIpId: IpIdSchema,
+      licenseTermsId: z.string(),
+      metadata: z
+        .object({
+          ipMetadataURI: z.string().default("test-uri"),
+          ipMetadataHash: z.string().optional(),
+          nftMetadataHash: z.string().optional(),
+          nftMetadataURI: z.string().default("test-nft-uri"),
+        })
+        .optional(),
+    })
+    .optional(),
 })
 
 // Schema for license revenue
@@ -45,26 +49,33 @@ const LicenseRevenueSchema = z.object({
   amount: z.number().int().positive().default(1),
   maxMintingFee: z.number().default(0),
   maxRevenueShare: z.number().int().min(0).max(100).default(100),
-  createDerivative: z.object({
-    parentIpId: IpIdSchema,
-    licenseTermsId: z.string(),
-    metadata: z.object({
-      ipMetadataURI: z.string().default('test-uri'),
-      ipMetadataHash: z.string().optional(),
-      nftMetadataHash: z.string().optional(),
-      nftMetadataURI: z.string().default('test-nft-uri')
-    }).optional()
-  }).optional()
+  createDerivative: z
+    .object({
+      parentIpId: IpIdSchema,
+      licenseTermsId: z.string(),
+      metadata: z
+        .object({
+          ipMetadataURI: z.string().default("test-uri"),
+          ipMetadataHash: z.string().optional(),
+          nftMetadataHash: z.string().optional(),
+          nftMetadataURI: z.string().default("test-nft-uri"),
+        })
+        .optional(),
+    })
+    .optional(),
 })
 
 // Schema for transferring royalty tokens
 const TransferRoyaltyTokensSchema = z.object({
   ipId: IpIdSchema,
   percentToTransfer: z.number().min(0).max(100),
-  targetAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-    message: 'Target address must be a valid Ethereum address'
-  }).default(account.address),
-  createIpAsset: z.boolean().default(false)
+  targetAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/, {
+      message: "Target address must be a valid Ethereum address",
+    })
+    .default(account.address),
+  createIpAsset: z.boolean().default(false),
 })
 
 // Schema for claiming revenue
@@ -73,45 +84,48 @@ const ClaimRevenueSchema = z.object({
   claimer: IpIdSchema.optional(),
   childIpIds: z.array(IpIdSchema).default([]),
   royaltyPolicies: z.array(z.string()).default([]),
-  currencyTokens: z.array(z.string()).default([WIP_TOKEN_ADDRESS])
+  currencyTokens: z.array(z.string()).default([WIP_TOKEN_ADDRESS]),
 })
 
 /**
  * Pay revenue endpoint
  * Pays royalty to an IP asset
  */
-app.post('/pay', zValidator('json', PayRevenueSchema), async (c) => {
+app.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
   try {
-    const { receiverIpId, payerIpId, token, amount, createDerivative } = c.req.valid('json')
-    
+    const { receiverIpId, payerIpId, token, amount, createDerivative } =
+      c.req.valid("json")
+
     let derivativeIpId = receiverIpId
-    
+
     // Create derivative if requested
     if (createDerivative) {
       const { parentIpId, licenseTermsId, metadata } = createDerivative
-      
-      // Default metadata if not provided
-      const ipMetadata = metadata || {
-        ipMetadataURI: 'derivative-pay-revenue-uri',
-        ipMetadataHash: toHex('derivative-pay-revenue-hash', { size: 32 }),
-        nftMetadataHash: toHex('derivative-pay-revenue-nft-hash', { size: 32 }),
-        nftMetadataURI: 'derivative-pay-revenue-nft-uri',
-      }
-      
-      // Create derivative
+
+      // Create derivative - using the pattern from scripts
       const childIp = await client.ipAsset.mintAndRegisterIpAndMakeDerivative({
         spgNftContract: SPGNFTContractAddress,
         derivData: {
           parentIpIds: [parentIpId as Address],
           licenseTermsIds: [licenseTermsId],
         },
-        ipMetadata,
+        // Use the same pattern as the scripts - simple metadata for derivatives
+        ipMetadata: {
+          ipMetadataURI:
+            metadata?.ipMetadataURI || "derivative-pay-revenue-uri",
+          ipMetadataHash: toHex("derivative-pay-revenue-hash", { size: 32 }),
+          nftMetadataHash: toHex("derivative-pay-revenue-nft-hash", {
+            size: 32,
+          }),
+          nftMetadataURI:
+            metadata?.nftMetadataURI || "derivative-pay-revenue-nft-uri",
+        },
         txOptions: { waitForTransaction: true },
       })
-      
+
       derivativeIpId = childIp.ipId as string
     }
-    
+
     // Pay royalty
     const payRoyalty = await client.royalty.payRoyaltyOnBehalf({
       receiverIpId: derivativeIpId as Address,
@@ -120,21 +134,24 @@ app.post('/pay', zValidator('json', PayRevenueSchema), async (c) => {
       amount: parseEther(amount.toString()),
       txOptions: { waitForTransaction: true },
     })
-    
+
     // Return result
     return c.json({
       success: true,
       data: {
         transactionHash: payRoyalty.txHash,
-        derivativeIpId: createDerivative ? derivativeIpId : undefined
-      }
+        derivativeIpId: createDerivative ? derivativeIpId : undefined,
+      },
     })
   } catch (error: any) {
-    console.error('Pay revenue error:', error)
-    return c.json({
-      success: false,
-      error: error.message
-    }, 500)
+    console.error("Pay revenue error:", error)
+    return c.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      500,
+    )
   }
 })
 
@@ -142,173 +159,221 @@ app.post('/pay', zValidator('json', PayRevenueSchema), async (c) => {
  * License revenue endpoint
  * Mints license tokens from an IP asset to generate revenue
  */
-app.post('/license-revenue', zValidator('json', LicenseRevenueSchema), async (c) => {
-  try {
-    const { licenseTermsId, licensorIpId, amount, maxMintingFee, maxRevenueShare, createDerivative } = c.req.valid('json')
-    
-    let ipId = licensorIpId
-    
-    // Create derivative if requested
-    if (createDerivative) {
-      const { parentIpId, licenseTermsId: derivLicenseTermsId, metadata } = createDerivative
-      
-      // Default metadata if not provided
-      const ipMetadata = metadata || {
-        ipMetadataURI: 'derivative-license-revenue-uri',
-        ipMetadataHash: toHex('derivative-license-revenue-hash', { size: 32 }),
-        nftMetadataHash: toHex('derivative-license-revenue-nft-hash', { size: 32 }),
-        nftMetadataURI: 'derivative-license-revenue-nft-uri',
+app.post(
+  "/license-revenue",
+  zValidator("json", LicenseRevenueSchema),
+  async (c) => {
+    try {
+      const {
+        licenseTermsId,
+        licensorIpId,
+        amount,
+        maxMintingFee,
+        maxRevenueShare,
+        createDerivative,
+      } = c.req.valid("json")
+
+      let ipId = licensorIpId
+
+      // Create derivative if requested
+      if (createDerivative) {
+        const {
+          parentIpId,
+          licenseTermsId: derivLicenseTermsId,
+          metadata,
+        } = createDerivative
+
+        // Create derivative - using the pattern from scripts
+        const childIp = await client.ipAsset.mintAndRegisterIpAndMakeDerivative(
+          {
+            spgNftContract: SPGNFTContractAddress,
+            derivData: {
+              parentIpIds: [parentIpId as Address],
+              licenseTermsIds: [derivLicenseTermsId],
+            },
+            // Use the same pattern as the scripts - simple metadata for derivatives
+            ipMetadata: {
+              ipMetadataURI:
+                metadata?.ipMetadataURI || "derivative-license-revenue-uri",
+              ipMetadataHash: toHex("derivative-license-revenue-hash", {
+                size: 32,
+              }),
+              nftMetadataHash: toHex("derivative-license-revenue-nft-hash", {
+                size: 32,
+              }),
+              nftMetadataURI:
+                metadata?.nftMetadataURI ||
+                "derivative-license-revenue-nft-uri",
+            },
+            txOptions: { waitForTransaction: true },
+          },
+        )
+
+        ipId = childIp.ipId as string
       }
-      
-      // Create derivative
-      const childIp = await client.ipAsset.mintAndRegisterIpAndMakeDerivative({
-        spgNftContract: SPGNFTContractAddress,
-        derivData: {
-          parentIpIds: [parentIpId as Address],
-          licenseTermsIds: [derivLicenseTermsId],
-        },
-        ipMetadata,
+
+      // Mint license tokens
+      const mintTokens = await client.license.mintLicenseTokens({
+        licenseTermsId,
+        licensorIpId: ipId as Address,
+        amount,
+        maxMintingFee: BigInt(maxMintingFee),
+        maxRevenueShare,
         txOptions: { waitForTransaction: true },
       })
-      
-      ipId = childIp.ipId as string
+
+      // Return result
+      return c.json({
+        success: true,
+        data: {
+          transactionHash: mintTokens.txHash,
+          licenseTokenIds: mintTokens.licenseTokenIds,
+          ipId,
+        },
+      })
+    } catch (error: any) {
+      console.error("License revenue error:", error)
+      return c.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        500,
+      )
     }
-    
-    // Mint license tokens
-    const mintTokens = await client.license.mintLicenseTokens({
-      licenseTermsId,
-      licensorIpId: ipId as Address,
-      amount,
-      maxMintingFee: BigInt(maxMintingFee),
-      maxRevenueShare,
-      txOptions: { waitForTransaction: true },
-    })
-    
-    // Return result
-    return c.json({
-      success: true,
-      data: {
-        transactionHash: mintTokens.txHash,
-        licenseTokenIds: mintTokens.licenseTokenIds,
-        ipId
-      }
-    })
-  } catch (error: any) {
-    console.error('License revenue error:', error)
-    return c.json({
-      success: false,
-      error: error.message
-    }, 500)
-  }
-})
+  },
+)
 
 /**
  * Transfer royalty tokens endpoint
  * Transfers royalty tokens from an IP asset to a target address
  */
-app.post('/transfer-tokens', zValidator('json', TransferRoyaltyTokensSchema), async (c) => {
-  try {
-    const { ipId, percentToTransfer, targetAddress, createIpAsset } = c.req.valid('json')
-    
-    let assetIpId = ipId
-    
-    // Create IP asset if requested
-    if (createIpAsset) {
-      // Create a new IP Asset
-      const parentIp = await client.ipAsset.mintAndRegisterIpAssetWithPilTerms({
-        spgNftContract: SPGNFTContractAddress,
-        licenseTermsData: [
+app.post(
+  "/transfer-tokens",
+  zValidator("json", TransferRoyaltyTokensSchema),
+  async (c) => {
+    try {
+      const { ipId, percentToTransfer, targetAddress, createIpAsset } =
+        c.req.valid("json")
+
+      let assetIpId = ipId
+
+      // Create IP asset if requested
+      if (createIpAsset) {
+        // Create a new IP Asset
+        const parentIp =
+          await client.ipAsset.mintAndRegisterIpAssetWithPilTerms({
+            spgNftContract: SPGNFTContractAddress,
+            licenseTermsData: [
+              {
+                terms: createCommercialRemixTerms({
+                  defaultMintingFee: 0,
+                  commercialRevShare: 0,
+                }),
+              },
+            ],
+            txOptions: { waitForTransaction: true },
+          })
+
+        assetIpId = parentIp.ipId as string
+
+        // Mint a license token to trigger IP Royalty Vault deployment
+        await client.license.mintLicenseTokens({
+          licenseTermsId: parentIp.licenseTermsIds?.[0]!,
+          licensorIpId: assetIpId as Address,
+          amount: 1,
+          maxMintingFee: BigInt(0),
+          maxRevenueShare: 100,
+          txOptions: { waitForTransaction: true },
+        })
+      }
+
+      // Get the IP Royalty Vault Address
+      const royaltyVaultAddress = await client.royalty.getRoyaltyVaultAddress(
+        assetIpId as Address,
+      )
+
+      // Calculate tokens to transfer based on percentage
+      const tokenAmount = convertRoyaltyPercentToTokens(percentToTransfer)
+
+      // Transfer royalty tokens
+      const transferRoyaltyTokens = await client.ipAccount.transferErc20({
+        ipId: assetIpId as Address,
+        tokens: [
           {
-            terms: createCommercialRemixTerms({ defaultMintingFee: 0, commercialRevShare: 0 }),
+            address: royaltyVaultAddress,
+            amount: tokenAmount,
+            target: targetAddress as Address,
           },
         ],
         txOptions: { waitForTransaction: true },
       })
-      
-      assetIpId = parentIp.ipId as string
-      
-      // Mint a license token to trigger IP Royalty Vault deployment
-      await client.license.mintLicenseTokens({
-        licenseTermsId: parentIp.licenseTermsIds?.[0]!,
-        licensorIpId: assetIpId as Address,
-        amount: 1,
-        maxMintingFee: BigInt(0),
-        maxRevenueShare: 100,
-        txOptions: { waitForTransaction: true },
-      })
-    }
-    
-    // Get the IP Royalty Vault Address
-    const royaltyVaultAddress = await client.royalty.getRoyaltyVaultAddress(assetIpId as Address)
-    
-    // Calculate tokens to transfer based on percentage
-    const tokenAmount = convertRoyaltyPercentToTokens(percentToTransfer)
-    
-    // Transfer royalty tokens
-    const transferRoyaltyTokens = await client.ipAccount.transferErc20({
-      ipId: assetIpId as Address,
-      tokens: [
-        {
-          address: royaltyVaultAddress,
-          amount: tokenAmount,
-          target: targetAddress as Address,
+
+      // Return result
+      return c.json({
+        success: true,
+        data: {
+          transactionHash: transferRoyaltyTokens.txHash,
+          ipId: assetIpId,
+          royaltyVaultAddress,
+          tokenAmount,
+          targetAddress,
         },
-      ],
-      txOptions: { waitForTransaction: true },
-    })
-    
-    // Return result
-    return c.json({
-      success: true,
-      data: {
-        transactionHash: transferRoyaltyTokens.txHash,
-        ipId: assetIpId,
-        royaltyVaultAddress,
-        tokenAmount,
-        targetAddress
-      }
-    })
-  } catch (error: any) {
-    console.error('Transfer royalty tokens error:', error)
-    return c.json({
-      success: false,
-      error: error.message
-    }, 500)
-  }
-})
+      })
+    } catch (error: any) {
+      console.error("Transfer royalty tokens error:", error)
+      return c.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        500,
+      )
+    }
+  },
+)
 
 /**
  * Claim revenue endpoint
  * Claims revenue for an IP asset
  */
-app.post('/claim', zValidator('json', ClaimRevenueSchema), async (c) => {
+app.post("/claim", zValidator("json", ClaimRevenueSchema), async (c) => {
   try {
-    const { ancestorIpId, claimer, childIpIds, royaltyPolicies, currencyTokens } = c.req.valid('json')
-    
+    const {
+      ancestorIpId,
+      claimer,
+      childIpIds,
+      royaltyPolicies,
+      currencyTokens,
+    } = c.req.valid("json")
+
     // Claim revenue
     const response = await client.royalty.claimAllRevenue({
       ancestorIpId: ancestorIpId as Address,
       claimer: (claimer || ancestorIpId) as Address,
       childIpIds: childIpIds as Address[],
-      royaltyPolicies: royaltyPolicies.length > 0 ? royaltyPolicies as Address[] : [],
+      royaltyPolicies:
+        royaltyPolicies.length > 0 ? (royaltyPolicies as Address[]) : [],
       currencyTokens: currencyTokens as Address[],
     })
-    
+
     // Return result
     return c.json({
       success: true,
       data: {
-        claimedTokens: response.claimedTokens
-      }
+        claimedTokens: response.claimedTokens,
+      },
     })
   } catch (error: any) {
-    console.error('Claim revenue error:', error)
-    return c.json({
-      success: false,
-      error: error.message
-    }, 500)
+    console.error("Claim revenue error:", error)
+    return c.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      500,
+    )
   }
 })
 
 export default app
-

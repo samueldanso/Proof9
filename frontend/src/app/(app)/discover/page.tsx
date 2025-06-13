@@ -1,10 +1,10 @@
 "use client";
 
-import { useTracks } from "@/api/hooks";
-import { transformDbTrackToLegacy } from "@/api/types";
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
+import { useTracks } from "@/hooks/api";
 import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
+import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";

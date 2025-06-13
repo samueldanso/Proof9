@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@/api/hooks";
+import { useUser } from "@/hooks/api";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useAccount } from "wagmi";

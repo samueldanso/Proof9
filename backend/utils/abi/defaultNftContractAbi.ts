@@ -105,4 +105,4 @@ export const defaultNftContractAbi = [
     stateMutability: "view",
     type: "function",
   },
-];
+]

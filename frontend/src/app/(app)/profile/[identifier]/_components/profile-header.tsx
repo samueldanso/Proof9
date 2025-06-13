@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 
-import { useUser } from "@/api/hooks";
+import { useUser } from "@/hooks/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useState } from "react";

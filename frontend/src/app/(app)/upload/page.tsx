@@ -1,9 +1,9 @@
 "use client";
 
-import { apiClient } from "@/api/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { env } from "@/env";
+import { useCreateTrack, useRegisterTrack } from "@/hooks/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -74,6 +74,10 @@ export default function UploadPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadData, setUploadData] = useState<UploadData>({});
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Use hooks for API calls
+  const createTrackMutation = useCreateTrack();
+  const registerTrackMutation = useRegisterTrack();
 
   const updateUploadData = (stepData: Partial<UploadData>) => {
     setUploadData((prev) => ({ ...prev, ...stepData }));
@@ -157,13 +161,9 @@ export default function UploadPage() {
     setIsProcessing(true);
 
     try {
-      // Step 1: Create track in database using API client
-      const trackResult = await apiClient.post<{
-        success: boolean;
-        data: any;
-        error?: string;
-      }>("/api/tracks", {
-        title: uploadData.metadata?.title,
+      // Step 1: Create track in database using hook
+      const trackResult = await createTrackMutation.mutateAsync({
+        title: uploadData.metadata?.title || "",
         description: uploadData.metadata?.description,
         genre: uploadData.metadata?.genre,
         tags: uploadData.metadata?.tags,
@@ -186,10 +186,6 @@ export default function UploadPage() {
       if (uploadData.yakoa?.verified) {
         console.log("🚀 Starting Story Protocol registration...");
 
-        // Generate proper hashes for Story Protocol (as per tutorial)
-        const imageHash = `0x${uploadData.uploadInfo?.fileHash || ""}`; // Use existing file hash
-        const mediaHash = `0x${uploadData.uploadInfo?.fileHash || ""}`; // Use existing file hash
-
         // Convert license form data to Story Protocol terms
         const { convertLicenseFormToStoryTerms, getLicenseSummary } = await import(
           "@/lib/utils/story-protocol"
@@ -203,14 +199,10 @@ export default function UploadPage() {
           storyLicenseTerms ? getLicenseSummary(uploadData.license!) : "No license terms",
         );
 
-        const registrationResult = await apiClient.post<{
-          success: boolean;
-          data: any;
-          error?: string;
-        }>("/api/registration/register", {
+        const registrationResult = await registerTrackMutation.mutateAsync({
           ipMetadata: {
-            title: uploadData.metadata?.title,
-            description: uploadData.metadata?.description,
+            title: uploadData.metadata?.title || "",
+            description: uploadData.metadata?.description || "",
             creators: [
               {
                 name: "Creator",
@@ -219,16 +211,13 @@ export default function UploadPage() {
               },
             ],
             image: uploadData.uploadInfo?.ipfsUrl || "",
-            imageHash: imageHash,
             mediaUrl: uploadData.uploadInfo?.ipfsUrl,
-            mediaHash: mediaHash,
             mediaType: "audio/mpeg", // Specific media type as per tutorial
           },
           nftMetadata: {
-            name: uploadData.metadata?.title,
-            description: `${uploadData.metadata?.description}. This NFT represents ownership of the IP Asset.`,
+            name: uploadData.metadata?.title || "Untitled Track",
+            description: `${uploadData.metadata?.description || "No description"}. This NFT represents ownership of the IP Asset.`,
             image: uploadData.uploadInfo?.ipfsUrl || "",
-            animation_url: uploadData.uploadInfo?.ipfsUrl, // Add animation_url for audio
             attributes: [
               {
                 key: "Yakoa Verified",
