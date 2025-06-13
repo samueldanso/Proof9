@@ -3,10 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { env } from "@/env";
-import { useCreateTrack, useRegisterTrack } from "@/hooks/api";
+import { useCreateTrack, useRegisterDerivative, useRegisterTrack } from "@/hooks/api";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
 import LicenseForm from "./_components/license-form";
@@ -58,6 +58,12 @@ interface UploadData {
     territory: string;
   };
   yakoa?: YakoaResult; // Use the complete YakoaResult type
+  remix?: {
+    isRemix: boolean;
+    parentTrackId?: string;
+    parentIpId?: string;
+    parentTitle?: string;
+  };
 }
 
 const steps = [
@@ -70,6 +76,7 @@ const steps = [
 export default function UploadPage() {
   const { address } = useAccount();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadData, setUploadData] = useState<UploadData>({});
@@ -78,6 +85,27 @@ export default function UploadPage() {
   // Use hooks for API calls
   const createTrackMutation = useCreateTrack();
   const registerTrackMutation = useRegisterTrack();
+  const registerDerivativeMutation = useRegisterDerivative();
+
+  // Check for remix parameters on mount
+  useEffect(() => {
+    const isRemix = searchParams.get("remix") === "true";
+    if (isRemix) {
+      const parentTrackId = searchParams.get("parentTrackId");
+      const parentIpId = searchParams.get("parentIpId");
+      const parentTitle = searchParams.get("parentTitle");
+
+      setUploadData((prev) => ({
+        ...prev,
+        remix: {
+          isRemix: true,
+          parentTrackId: parentTrackId || undefined,
+          parentIpId: parentIpId || undefined,
+          parentTitle: parentTitle || undefined,
+        },
+      }));
+    }
+  }, [searchParams]);
 
   const updateUploadData = (stepData: Partial<UploadData>) => {
     setUploadData((prev) => ({ ...prev, ...stepData }));
@@ -199,77 +227,143 @@ export default function UploadPage() {
           storyLicenseTerms ? getLicenseSummary(uploadData.license!) : "No license terms",
         );
 
-        const registrationResult = await registerTrackMutation.mutateAsync({
-          ipMetadata: {
-            title: uploadData.metadata?.title || "",
-            description: uploadData.metadata?.description || "",
-            creators: [
-              {
-                name: "Creator",
-                address: address,
-                contributionPercent: 100,
-              },
-            ],
-            image: uploadData.uploadInfo?.ipfsUrl || "",
-            mediaUrl: uploadData.uploadInfo?.ipfsUrl,
-            mediaType: "audio/mpeg", // Specific media type as per tutorial
-          },
-          nftMetadata: {
-            name: uploadData.metadata?.title || "Untitled Track",
-            description: `${uploadData.metadata?.description || "No description"}. This NFT represents ownership of the IP Asset.`,
-            image: uploadData.uploadInfo?.ipfsUrl || "",
-            attributes: [
-              {
-                key: "Yakoa Verified",
-                value: uploadData.yakoa?.verified ? "Yes" : "No",
-              },
-              {
-                key: "Yakoa Token ID",
-                value: uploadData.yakoa?.tokenId || "Unknown",
-              },
-              {
-                key: "Genre",
-                value: uploadData.metadata?.genre || "Unknown",
-              },
-              {
-                key: "License Type",
-                value: uploadData.license?.type || "Unknown",
-              },
-              {
-                key: "License Price",
-                value: uploadData.license?.price ? `${uploadData.license.price} USD` : "Unknown",
-              },
-              {
-                key: "Revenue Share",
-                value: storyLicenseTerms ? `${storyLicenseTerms.commercialRevShare}%` : "Unknown",
-              },
-              {
-                key: "Platform",
-                value: "Proof9",
-              },
-              ...(uploadData.metadata?.tags?.map((tag) => ({
-                key: "Tag",
-                value: tag,
-              })) || []),
-            ],
-          },
-          // Add real Story Protocol license terms
-          commercialRemixTerms: storyLicenseTerms
-            ? {
-                defaultMintingFee: Number(storyLicenseTerms.defaultMintingFee) / 10 ** 18, // Convert back to number for API
-                commercialRevShare: storyLicenseTerms.commercialRevShare,
-              }
-            : undefined,
-        });
+        // Choose registration method based on whether this is a remix
+        const registrationResult =
+          uploadData.remix?.isRemix && uploadData.remix.parentIpId
+            ? await registerDerivativeMutation.mutateAsync({
+                parentIpId: uploadData.remix.parentIpId,
+                licenseTermsId: "1", // Default license terms ID - should be dynamic
+                ipMetadata: {
+                  title: uploadData.metadata?.title || "",
+                  description: uploadData.metadata?.description || "",
+                  creators: [
+                    {
+                      name: "Creator",
+                      address: address,
+                      contributionPercent: 100,
+                    },
+                  ],
+                  image: uploadData.uploadInfo?.ipfsUrl || "",
+                  mediaUrl: uploadData.uploadInfo?.ipfsUrl,
+                  mediaType: "audio/mpeg",
+                },
+                nftMetadata: {
+                  name: uploadData.metadata?.title || "Untitled Remix",
+                  description: `${uploadData.metadata?.description || "No description"}. This is a remix of "${uploadData.remix.parentTitle}". This NFT represents ownership of the derivative IP Asset.`,
+                  image: uploadData.uploadInfo?.ipfsUrl || "",
+                  attributes: [
+                    {
+                      key: "Type",
+                      value: "Remix",
+                    },
+                    {
+                      key: "Parent Track",
+                      value: uploadData.remix.parentTitle || "Unknown",
+                    },
+                    {
+                      key: "Parent IP ID",
+                      value: uploadData.remix.parentIpId,
+                    },
+                    {
+                      key: "Yakoa Verified",
+                      value: uploadData.yakoa?.verified ? "Yes" : "No",
+                    },
+                    {
+                      key: "Genre",
+                      value: uploadData.metadata?.genre || "Unknown",
+                    },
+                    {
+                      key: "Platform",
+                      value: "Proof9",
+                    },
+                    ...(uploadData.metadata?.tags?.map((tag) => ({
+                      key: "Tag",
+                      value: tag,
+                    })) || []),
+                  ],
+                },
+              })
+            : await registerTrackMutation.mutateAsync({
+                ipMetadata: {
+                  title: uploadData.metadata?.title || "",
+                  description: uploadData.metadata?.description || "",
+                  creators: [
+                    {
+                      name: "Creator",
+                      address: address,
+                      contributionPercent: 100,
+                    },
+                  ],
+                  image: uploadData.uploadInfo?.ipfsUrl || "",
+                  mediaUrl: uploadData.uploadInfo?.ipfsUrl,
+                  mediaType: "audio/mpeg", // Specific media type as per tutorial
+                },
+                nftMetadata: {
+                  name: uploadData.metadata?.title || "Untitled Track",
+                  description: `${uploadData.metadata?.description || "No description"}. This NFT represents ownership of the IP Asset.`,
+                  image: uploadData.uploadInfo?.ipfsUrl || "",
+                  attributes: [
+                    {
+                      key: "Yakoa Verified",
+                      value: uploadData.yakoa?.verified ? "Yes" : "No",
+                    },
+                    {
+                      key: "Yakoa Token ID",
+                      value: uploadData.yakoa?.tokenId || "Unknown",
+                    },
+                    {
+                      key: "Genre",
+                      value: uploadData.metadata?.genre || "Unknown",
+                    },
+                    {
+                      key: "License Type",
+                      value: uploadData.license?.type || "Unknown",
+                    },
+                    {
+                      key: "License Price",
+                      value: uploadData.license?.price
+                        ? `${uploadData.license.price} USD`
+                        : "Unknown",
+                    },
+                    {
+                      key: "Revenue Share",
+                      value: storyLicenseTerms
+                        ? `${storyLicenseTerms.commercialRevShare}%`
+                        : "Unknown",
+                    },
+                    {
+                      key: "Platform",
+                      value: "Proof9",
+                    },
+                    ...(uploadData.metadata?.tags?.map((tag) => ({
+                      key: "Tag",
+                      value: tag,
+                    })) || []),
+                  ],
+                },
+                // Add real Story Protocol license terms
+                commercialRemixTerms: storyLicenseTerms
+                  ? {
+                      defaultMintingFee: Number(storyLicenseTerms.defaultMintingFee) / 10 ** 18, // Convert back to number for API
+                      commercialRevShare: storyLicenseTerms.commercialRevShare,
+                    }
+                  : undefined,
+              });
 
         console.log("📋 Story Protocol result:", registrationResult);
 
         if (registrationResult.success) {
-          toast.success("Track registered successfully on Story Protocol!");
+          const successMessage = uploadData.remix?.isRemix
+            ? "Remix registered successfully on Story Protocol!"
+            : "Track registered successfully on Story Protocol!";
+          toast.success(successMessage);
           console.log("✅ Story Protocol registration:", registrationResult.data);
         } else {
           console.error("❌ Story Protocol error:", registrationResult.error);
-          toast.error(`Story Protocol registration failed: ${registrationResult.error}`);
+          const errorMessage = uploadData.remix?.isRemix
+            ? `Remix registration failed: ${registrationResult.error}`
+            : `Story Protocol registration failed: ${registrationResult.error}`;
+          toast.error(errorMessage);
         }
       } else {
         console.log("⚠️ Skipping Story Protocol registration - content not verified");
@@ -278,7 +372,10 @@ export default function UploadPage() {
         );
       }
 
-      toast.success("Track uploaded successfully!");
+      const finalSuccessMessage = uploadData.remix?.isRemix
+        ? "Remix uploaded successfully!"
+        : "Track uploaded successfully!";
+      toast.success(finalSuccessMessage);
       router.push(`/profile/${address}`);
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -292,9 +389,20 @@ export default function UploadPage() {
     <div className="mx-auto max-w-7xl space-y-6 px-4">
       {/* Header - Left aligned like library page */}
       <div className="space-y-2">
-        <h1 className="font-bold text-3xl">Upload Your Sound</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="font-bold text-3xl">
+            {uploadData.remix?.isRemix ? "Create Remix" : "Upload Your Sound"}
+          </h1>
+          {uploadData.remix?.isRemix && (
+            <div className="rounded-full bg-purple-100 px-3 py-1 font-medium text-purple-800 text-sm dark:bg-purple-900 dark:text-purple-200">
+              Remix
+            </div>
+          )}
+        </div>
         <p className="text-muted-foreground">
-          Protect your IP with AI verification and blockchain registration
+          {uploadData.remix?.isRemix
+            ? `Creating a remix of "${uploadData.remix.parentTitle || "Unknown Track"}"`
+            : "Protect your IP with AI verification and blockchain registration"}
         </p>
       </div>
 

@@ -28,7 +28,7 @@ export class ApiClient {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
         success: false,
-        error: "Network error"
+        error: "Network error",
       }));
       throw new Error(errorData.error || `HTTP ${response.status}`);
     }

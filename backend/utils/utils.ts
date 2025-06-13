@@ -1,7 +1,4 @@
-import {
-  LicenseTerms,
-  WIP_TOKEN_ADDRESS,
-} from "@story-protocol/core-sdk"
+import { LicenseTerms, WIP_TOKEN_ADDRESS } from "@story-protocol/core-sdk"
 import dotenv from "dotenv"
 import { Address, parseEther, zeroAddress } from "viem"
 import { networkInfo } from "./config"

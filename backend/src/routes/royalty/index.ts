@@ -37,29 +37,6 @@ const PayRevenueSchema = z.object({
     .optional(),
 })
 
-// Schema for license revenue
-const LicenseRevenueSchema = z.object({
-  licenseTermsId: z.string(),
-  licensorIpId: IpIdSchema,
-  amount: z.number().int().positive().default(1),
-  maxMintingFee: z.number().default(0),
-  maxRevenueShare: z.number().int().min(0).max(100).default(100),
-  createDerivative: z
-    .object({
-      parentIpId: IpIdSchema,
-      licenseTermsId: z.string(),
-      metadata: z
-        .object({
-          ipMetadataURI: z.string().default("test-uri"),
-          ipMetadataHash: z.string().optional(),
-          nftMetadataHash: z.string().optional(),
-          nftMetadataURI: z.string().default("test-nft-uri"),
-        })
-        .optional(),
-    })
-    .optional(),
-})
-
 // Schema for claiming revenue
 const ClaimRevenueSchema = z.object({
   ancestorIpId: IpIdSchema,
@@ -136,95 +113,6 @@ royaltyRouter.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
     )
   }
 })
-
-/**
- * License revenue endpoint
- * Mints license tokens from an IP asset to generate revenue
- */
-royaltyRouter.post(
-  "/license-revenue",
-  zValidator("json", LicenseRevenueSchema),
-  async (c) => {
-    try {
-      const {
-        licenseTermsId,
-        licensorIpId,
-        amount,
-        maxMintingFee,
-        maxRevenueShare,
-        createDerivative,
-      } = c.req.valid("json")
-
-      let ipId = licensorIpId
-
-      // Create derivative if requested
-      if (createDerivative) {
-        const {
-          parentIpId,
-          licenseTermsId: derivLicenseTermsId,
-          metadata,
-        } = createDerivative
-
-        // Create derivative - using the pattern from scripts
-        const childIp = await client.ipAsset.mintAndRegisterIpAndMakeDerivative(
-          {
-            spgNftContract: SPGNFTContractAddress,
-            derivData: {
-              parentIpIds: [parentIpId as Address],
-              licenseTermsIds: [derivLicenseTermsId],
-            },
-            // Use the same pattern as the scripts - simple metadata for derivatives
-            ipMetadata: {
-              ipMetadataURI:
-                metadata?.ipMetadataURI || "derivative-license-revenue-uri",
-              ipMetadataHash: toHex("derivative-license-revenue-hash", {
-                size: 32,
-              }),
-              nftMetadataHash: toHex("derivative-license-revenue-nft-hash", {
-                size: 32,
-              }),
-              nftMetadataURI:
-                metadata?.nftMetadataURI ||
-                "derivative-license-revenue-nft-uri",
-            },
-            txOptions: { waitForTransaction: true },
-          },
-        )
-
-        ipId = childIp.ipId as string
-      }
-
-      // Mint license tokens
-      const mintTokens = await client.license.mintLicenseTokens({
-        licenseTermsId,
-        licensorIpId: ipId as Address,
-        amount,
-        maxMintingFee: BigInt(maxMintingFee),
-        maxRevenueShare,
-        txOptions: { waitForTransaction: true },
-      })
-
-      // Return result
-      return c.json({
-        success: true,
-        data: {
-          transactionHash: mintTokens.txHash,
-          licenseTokenIds: mintTokens.licenseTokenIds,
-          ipId,
-        },
-      })
-    } catch (error: any) {
-      console.error("License revenue error:", error)
-      return c.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        500,
-      )
-    }
-  },
-)
 
 /**
  * Claim revenue endpoint

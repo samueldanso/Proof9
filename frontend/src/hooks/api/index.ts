@@ -239,23 +239,6 @@ export function useClaimRoyalty() {
   });
 }
 
-export function useLicenseRevenue() {
-  return useMutation({
-    mutationFn: (data: {
-      licenseTermsId: string;
-      licensorIpId: string;
-      amount?: number;
-      maxMintingFee?: number;
-      maxRevenueShare?: number;
-      createDerivative?: {
-        parentIpId: string;
-        licenseTermsId: string;
-        metadata?: any;
-      };
-    }) => apiClient.post<ApiResponse<any>>("/api/royalty/license-revenue", data),
-  });
-}
-
 // ==========================================
 // PROFILE MANAGEMENT HOOKS (CRITICAL)
 // ==========================================
@@ -360,5 +343,79 @@ export function useCreateAuthorization() {
       authorizationType: string;
       authorizationData: Record<string, any>;
     }) => apiClient.post<ApiResponse<any>>("/api/verification/authorize", data),
+  });
+}
+
+// ==========================================
+// DERIVATIVE HOOKS (REMIX/COVER FUNCTIONALITY)
+// ==========================================
+
+export function useRegisterDerivative() {
+  return useMutation({
+    mutationFn: (data: {
+      parentIpId: string;
+      licenseTermsId: string;
+      ipMetadata: {
+        title: string;
+        description: string;
+        creators: Array<{
+          name: string;
+          address: string;
+          contributionPercent: number;
+        }>;
+        image: string;
+        mediaUrl?: string;
+        mediaType?: string;
+      };
+      nftMetadata: {
+        name: string;
+        description: string;
+        image: string;
+        animation_url?: string;
+        attributes?: Array<{
+          key: string;
+          value: string;
+        }>;
+      };
+    }) => apiClient.post<ApiResponse<any>>("/api/derivative/register", data),
+    onSuccess: (response) => {
+      console.log("Derivative registered:", response);
+    },
+    onError: (error) => {
+      console.error("Derivative registration failed:", error);
+    },
+  });
+}
+
+export function useGetDerivativeChildren(parentIpId: string) {
+  return useQuery({
+    queryKey: ["derivative", "children", parentIpId],
+    queryFn: () =>
+      apiClient.get<ApiResponse<{ parentIpId: string; derivatives: any[] }>>(
+        `/api/derivative/children/${parentIpId}`,
+      ),
+    enabled: !!parentIpId,
+  });
+}
+
+export function useGetDerivativeParents(derivativeIpId: string) {
+  return useQuery({
+    queryKey: ["derivative", "parents", derivativeIpId],
+    queryFn: () =>
+      apiClient.get<ApiResponse<{ derivativeIpId: string; parents: any[] }>>(
+        `/api/derivative/parents/${derivativeIpId}`,
+      ),
+    enabled: !!derivativeIpId,
+  });
+}
+
+export function useCanRemix(parentIpId: string) {
+  return useQuery({
+    queryKey: ["derivative", "can-remix", parentIpId],
+    queryFn: () =>
+      apiClient.get<ApiResponse<{ canRemix: boolean; licenseTerms?: any; requirements?: any }>>(
+        `/api/derivative/can-remix/${parentIpId}`,
+      ),
+    enabled: !!parentIpId,
   });
 }
