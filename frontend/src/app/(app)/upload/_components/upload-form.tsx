@@ -144,9 +144,11 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
       {/* File Upload Area */}
       <Card
         className={`relative cursor-pointer transition-all duration-200 ${
-          dragActive
-            ? "border-primary bg-primary/5"
-            : "border-2 border-dashed hover:border-primary/50 hover:bg-accent/50"
+          selectedFile
+            ? "border-2 border-primary bg-primary/5" // Primary color when file selected
+            : dragActive
+              ? "border-primary bg-primary/5"
+              : "border-2 border-dashed hover:border-primary/50 hover:bg-accent/50"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -161,46 +163,24 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
           disabled={uploadMutation.isPending}
         />
 
-        <div className="flex flex-col items-center justify-center space-y-4 p-8">
-          <div className="rounded-full bg-primary/10 p-4">
-            <FileAudio className="h-8 w-8 text-primary" />
-          </div>
-
-          <div className="space-y-2 text-center">
-            <h3 className="font-semibold">Drop your audio file here</h3>
-            <p className="text-muted-foreground text-sm">or click to browse your files</p>
-          </div>
-
-          <div className="text-muted-foreground text-xs">
-            Supports: MP3, WAV, FLAC, AAC • Max size: 100MB
-          </div>
-        </div>
-      </Card>
-
-      {/* Selected File Preview */}
-      {selectedFile && (
-        <Card className="p-4">
-          <div className="flex items-center space-x-4">
-            <div className="rounded-lg bg-primary/10 p-3">
-              <FileAudio className="h-6 w-6 text-primary" />
+        {selectedFile ? (
+          // Show preview inside the drop zone when file is selected
+          <div className="flex flex-col items-center justify-center space-y-4 p-8">
+            <div className="rounded-full bg-primary/20 p-4">
+              <FileAudio className="h-8 w-8 text-primary" />
             </div>
 
-            <div className="flex-1 space-y-2">
-              <h4 className="font-medium">{selectedFile.name}</h4>
-              <div className="flex items-center space-x-4 text-muted-foreground text-sm">
+            <div className="space-y-3 text-center">
+              <h3 className="font-semibold text-primary">{selectedFile.name}</h3>
+              <div className="flex items-center justify-center space-x-4 text-muted-foreground text-sm">
                 <span>{formatFileSize(selectedFile.size)}</span>
                 <span>•</span>
                 <span>{selectedFile.type}</span>
               </div>
 
               {/* Audio Preview */}
-              <div className="mt-2">
-                <audio
-                  controls
-                  className="h-8 w-full"
-                  style={{ maxWidth: "300px" }}
-                  preload="metadata"
-                >
+              <div className="mt-4">
+                <audio controls className="h-10 w-full max-w-sm rounded-lg" preload="metadata">
                   <source src={URL.createObjectURL(selectedFile)} type={selectedFile.type} />
                   <track kind="captions" label="Music Preview" default />
                   Your browser does not support the audio element.
@@ -216,8 +196,24 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
               {uploadMutation.isPending ? "Uploading..." : "Continue →"}
             </Button>
           </div>
-        </Card>
-      )}
+        ) : (
+          // Show drop zone when no file selected
+          <div className="flex flex-col items-center justify-center space-y-4 p-8">
+            <div className="rounded-full bg-primary/10 p-4">
+              <FileAudio className="h-8 w-8 text-primary" />
+            </div>
+
+            <div className="space-y-2 text-center">
+              <h3 className="font-semibold">Drop your audio file here</h3>
+              <p className="text-muted-foreground text-sm">or click to browse your files</p>
+            </div>
+
+            <div className="text-muted-foreground text-xs">
+              Supports: MP3, WAV, FLAC, AAC • Max size: 100MB
+            </div>
+          </div>
+        )}
+      </Card>
 
       {/* Format Guidelines */}
       <div className="rounded-lg border bg-muted/30 p-4">

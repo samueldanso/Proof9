@@ -1,14 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { AddressDisplay } from "@/components/shared/address-display";
-import { CheckCircle, ExternalLink, Copy, Music, User, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { CheckCircle, Copy, ExternalLink, Eye, Music, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface RegistrationSuccessModalProps {
   open: boolean;
@@ -73,7 +73,7 @@ export function RegistrationSuccessModal({
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
             <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <DialogTitle className="font-bold text-2xl text-green-600 dark:text-green-400">
             Registration Successful!
           </DialogTitle>
           <p className="text-muted-foreground">
@@ -108,7 +108,7 @@ export function RegistrationSuccessModal({
                 <h3 className="mb-3 font-semibold text-sm">IP Asset Details</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-muted-foreground text-xs">IP Asset ID</label>
+                    <span className="text-muted-foreground text-xs">IP Asset ID</span>
                     <div className="flex items-center gap-2">
                       <code className="flex-1 rounded bg-muted px-2 py-1 font-mono text-xs">
                         {formatHash(data.ipId)}
@@ -119,17 +119,21 @@ export function RegistrationSuccessModal({
                         onClick={() => handleCopy(data.ipId, "IP Asset ID")}
                         className="h-6 w-6 p-0"
                       >
-                        <Copy className={cn(
-                          "h-3 w-3",
-                          copiedField === "IP Asset ID" ? "text-green-500" : "text-muted-foreground"
-                        )} />
+                        <Copy
+                          className={cn(
+                            "h-3 w-3",
+                            copiedField === "IP Asset ID"
+                              ? "text-green-500"
+                              : "text-muted-foreground",
+                          )}
+                        />
                       </Button>
                     </div>
                   </div>
 
                   {data.tokenId && (
                     <div>
-                      <label className="text-muted-foreground text-xs">NFT Token ID</label>
+                      <span className="text-muted-foreground text-xs">NFT Token ID</span>
                       <div className="flex items-center gap-2">
                         <code className="flex-1 rounded bg-muted px-2 py-1 font-mono text-xs">
                           #{data.tokenId}
@@ -140,10 +144,14 @@ export function RegistrationSuccessModal({
                           onClick={() => handleCopy(data.tokenId!, "Token ID")}
                           className="h-6 w-6 p-0"
                         >
-                          <Copy className={cn(
-                            "h-3 w-3",
-                            copiedField === "Token ID" ? "text-green-500" : "text-muted-foreground"
-                          )} />
+                          <Copy
+                            className={cn(
+                              "h-3 w-3",
+                              copiedField === "Token ID"
+                                ? "text-green-500"
+                                : "text-muted-foreground",
+                            )}
+                          />
                         </Button>
                       </div>
                     </div>
@@ -151,10 +159,10 @@ export function RegistrationSuccessModal({
 
                   {data.licenseTermsIds && data.licenseTermsIds.length > 0 && (
                     <div>
-                      <label className="text-muted-foreground text-xs">License Terms</label>
+                      <span className="text-muted-foreground text-xs">License Terms</span>
                       <div className="flex flex-wrap gap-1">
-                        {data.licenseTermsIds.map((id, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                        {data.licenseTermsIds.map((id) => (
+                          <Badge key={`license-${id}`} variant="secondary" className="text-xs">
                             #{id}
                           </Badge>
                         ))}
@@ -171,7 +179,7 @@ export function RegistrationSuccessModal({
                 <h3 className="mb-3 font-semibold text-sm">Transaction Details</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-muted-foreground text-xs">Transaction Hash</label>
+                    <span className="text-muted-foreground text-xs">Transaction Hash</span>
                     <div className="flex items-center gap-2">
                       <code className="flex-1 rounded bg-muted px-2 py-1 font-mono text-xs">
                         {formatHash(data.transactionHash)}
@@ -182,22 +190,26 @@ export function RegistrationSuccessModal({
                         onClick={() => handleCopy(data.transactionHash, "Transaction Hash")}
                         className="h-6 w-6 p-0"
                       >
-                        <Copy className={cn(
-                          "h-3 w-3",
-                          copiedField === "Transaction Hash" ? "text-green-500" : "text-muted-foreground"
-                        )} />
+                        <Copy
+                          className={cn(
+                            "h-3 w-3",
+                            copiedField === "Transaction Hash"
+                              ? "text-green-500"
+                              : "text-muted-foreground",
+                          )}
+                        />
                       </Button>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-muted-foreground text-xs">Timestamp</label>
+                    <span className="text-muted-foreground text-xs">Timestamp</span>
                     <p className="text-sm">{new Date().toLocaleString()}</p>
                   </div>
 
                   {data.yakoaTokenId && (
                     <div>
-                      <label className="text-muted-foreground text-xs">Yakoa Token ID</label>
+                      <span className="text-muted-foreground text-xs">Yakoa Token ID</span>
                       <code className="block rounded bg-muted px-2 py-1 font-mono text-xs">
                         {data.yakoaTokenId}
                       </code>
@@ -217,19 +229,21 @@ export function RegistrationSuccessModal({
                   Creator{data.creators.length > 1 ? "s" : ""} ({data.creators.length})
                 </h3>
                 <div className="space-y-2">
-                  {data.creators.map((creator, index) => (
-                    <div key={index} className="flex items-center justify-between rounded bg-muted/50 p-2">
+                  {data.creators.map((creator) => (
+                    <div
+                      key={creator.address}
+                      className="flex items-center justify-between rounded bg-muted/50 p-2"
+                    >
                       <div>
                         <p className="font-medium text-sm">{creator.name}</p>
-                        <AddressDisplay
-                          address={creator.address}
-                          className="text-xs"
-                          showCopyButton={false}
-                        />
+                        <p className="text-muted-foreground text-xs">
+                          {creator.address.slice(0, 6)}...{creator.address.slice(-4)}
+                        </p>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {creator.contributionPercent}%
-                      </Badge>
+                      <div className="text-right">
+                        <p className="font-medium text-sm">{creator.contributionPercent}%</p>
+                        <p className="text-muted-foreground text-xs">Contribution</p>
+                      </div>
                     </div>
                   ))}
                 </div>

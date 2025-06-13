@@ -168,7 +168,7 @@ export function useUploadCoverArt() {
           ipfsUrl: string;
           uploadedAt: string;
         }>
-      >("/api/upload/audio", data),
+      >("/api/upload/cover-art", data),
   });
 }
 

@@ -272,20 +272,20 @@ export default function UploadPage() {
             ? await registerDerivativeMutation.mutateAsync({
                 parentIpId: uploadData.remix.parentIpId,
                 licenseTermsId: "1", // Default license terms ID - should be dynamic
-                                  ipMetadata: {
-                    title: uploadData.metadata?.title || "",
-                    description: uploadData.metadata?.description || "",
-                    creators: uploadData.metadata?.creators || [
-                      {
-                        name: "Creator",
-                        address: address,
-                        contributionPercent: 100,
-                      },
-                    ],
-                    image: uploadData.metadata?.imageUrl || uploadData.uploadInfo?.ipfsUrl || "",
-                    mediaUrl: uploadData.uploadInfo?.ipfsUrl,
-                    mediaType: uploadData.metadata?.mediaType || "audio/mpeg",
-                  },
+                ipMetadata: {
+                  title: uploadData.metadata?.title || "",
+                  description: uploadData.metadata?.description || "",
+                  creators: uploadData.metadata?.creators || [
+                    {
+                      name: "Creator",
+                      address: address,
+                      contributionPercent: 100,
+                    },
+                  ],
+                  image: uploadData.metadata?.imageUrl || uploadData.uploadInfo?.ipfsUrl || "",
+                  mediaUrl: uploadData.uploadInfo?.ipfsUrl,
+                  mediaType: uploadData.metadata?.mediaType || "audio/mpeg",
+                },
                 nftMetadata: {
                   name: uploadData.metadata?.title || "Untitled Remix",
                   description: `${uploadData.metadata?.description || "No description"}. This is a remix of "${uploadData.remix.parentTitle}". This NFT represents ownership of the derivative IP Asset.`,

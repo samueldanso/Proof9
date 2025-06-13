@@ -177,6 +177,77 @@ uploadRouter.post(
 )
 
 /**
+ * Upload cover art image
+ */
+uploadRouter.post("/cover-art", zValidator("json", AvatarUploadSchema), async (c) => {
+  try {
+    const { fileName, fileType, fileSize, fileData } = c.req.valid("json")
+
+    // Validate file type - should be images, not audio
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif"
+    ]
+    if (!allowedTypes.includes(fileType)) {
+      return c.json(
+        {
+          success: false,
+          error: "Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.",
+        },
+        400,
+      )
+    }
+
+    // Validate file size (10MB limit for cover art)
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    if (fileSize > maxSize) {
+      return c.json(
+        {
+          success: false,
+          error: "File size too large. Maximum size is 10MB.",
+        },
+        400,
+      )
+    }
+
+    // Convert base64 to buffer
+    const imageBuffer = Buffer.from(fileData, "base64")
+
+    // Generate file hash for verification
+    const fileHash = createHash("sha256").update(imageBuffer).digest("hex")
+
+    // Upload image to IPFS using Pinata
+    const ipfsHash = await uploadBinaryToIPFS(imageBuffer, fileName, fileType)
+    const ipfsUrl = `https://ipfs.io/ipfs/${ipfsHash}`
+
+    return c.json({
+      success: true,
+      data: {
+        fileName,
+        fileType,
+        fileSize,
+        fileHash,
+        ipfsHash,
+        ipfsUrl,
+        uploadedAt: new Date().toISOString(),
+      },
+    })
+  } catch (error: any) {
+    console.error("Cover art upload error:", error)
+    return c.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      500,
+    )
+  }
+})
+
+/**
  * Upload metadata to IPFS
  * Prepares metadata for Story Protocol registration
  */
