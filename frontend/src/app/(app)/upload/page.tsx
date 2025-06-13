@@ -441,7 +441,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4">
+    <div className="mx-auto max-w-4xl space-y-6 px-4">
       {/* Header - Left aligned like library page */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
@@ -461,23 +461,23 @@ export default function UploadPage() {
         </p>
       </div>
 
-      {/* Progress and Content - Full width within container */}
+      {/* Progress and Content - Optimized width for forms */}
       <div className="space-y-6">
         {/* Progress Indicator */}
         <div className="space-y-4">
-          <Progress value={(currentStep / steps.length) * 100} className="h-2 [&>div]:bg-primary" />
+          <Progress value={(currentStep / steps.length) * 100} className="h-2 [&>div]:bg-[#ced925]" />
           <div className="flex justify-between text-sm">
             {steps.map((step) => (
               <div
                 key={step.id}
                 className={`flex flex-col items-center space-y-1 ${
-                  currentStep >= step.id ? "text-primary" : "text-muted-foreground"
+                  currentStep >= step.id ? "text-[#ced925]" : "text-muted-foreground"
                 }`}
               >
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-full font-medium text-xs ${
                     currentStep >= step.id
-                      ? "bg-primary text-black"
+                      ? "bg-[#ced925] text-black"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -490,8 +490,8 @@ export default function UploadPage() {
           </div>
         </div>
 
-        {/* Step Content */}
-        <Card>
+        {/* Step Content - Optimized form container */}
+        <Card className="mx-auto max-w-3xl">
           <CardContent className="p-8">{renderStepContent()}</CardContent>
         </Card>
       </div>

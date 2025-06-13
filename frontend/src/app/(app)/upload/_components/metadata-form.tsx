@@ -489,7 +489,7 @@ export default function MetadataForm({
                     />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-primary">Cover Art Selected</h4>
+                    <h4 className="font-medium text-[#ced925]">Cover Art Selected</h4>
                     <p className="text-muted-foreground text-sm">{formData.coverArt?.name}</p>
                     <Button
                       type="button"
@@ -508,8 +508,8 @@ export default function MetadataForm({
               ) : (
                 // Show upload prompt
                 <div className="flex flex-col items-center justify-center space-y-3 p-8">
-                  <div className="rounded-full bg-primary/10 p-3">
-                    <ImageIcon className="h-6 w-6 text-primary" />
+                  <div className="rounded-full bg-[#ced925]/10 p-3">
+                    <ImageIcon className="h-6 w-6 text-[#ced925]" />
                   </div>
                   <div className="text-center">
                     <h4 className="font-medium">Upload Cover Art</h4>
@@ -591,7 +591,7 @@ export default function MetadataForm({
         </div>
 
         {/* Story Protocol Registration Preview */}
-        <div className="rounded-lg border bg-gradient-to-br from-primary/5 to-primary/10 p-6">
+        <div className="rounded-lg border bg-gradient-to-br from-[#ced925]/5 to-[#ced925]/10 p-6">
           <h3 className="mb-4 font-semibold text-lg">Story Protocol Registration Preview</h3>
 
           <div className="flex items-start space-x-4">
@@ -620,7 +620,7 @@ export default function MetadataForm({
               </div>
 
               <div className="flex items-center space-x-4 text-sm">
-                <span className="rounded-full bg-primary/20 px-2 py-1 text-primary">
+                <span className="rounded-full bg-[#ced925]/20 px-2 py-1 text-[#ced925]">
                   {formData.genre || "Genre"}
                 </span>
                 <span className="text-muted-foreground">
@@ -659,7 +659,7 @@ export default function MetadataForm({
           <Button
             type="submit"
             disabled={!isFormValid()}
-            className="bg-primary hover:bg-primary/90"
+            className="bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50"
           >
             Continue to Registration →
           </Button>

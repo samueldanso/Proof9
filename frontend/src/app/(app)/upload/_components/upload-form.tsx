@@ -145,10 +145,10 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
       <Card
         className={`relative cursor-pointer transition-all duration-200 ${
           selectedFile
-            ? "border-2 border-primary bg-primary/5" // Primary color when file selected
+            ? "border-2 border-[#ced925] bg-[#ced925]/5" // Brand color when file selected
             : dragActive
-              ? "border-primary bg-primary/5"
-              : "border-2 border-dashed hover:border-primary/50 hover:bg-accent/50"
+              ? "border-[#ced925] bg-[#ced925]/5"
+              : "border-2 border-dashed hover:border-[#ced925]/50 hover:bg-accent/50"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -164,43 +164,26 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
         />
 
         {selectedFile ? (
-          // Show preview inside the drop zone when file is selected
+          // Show file info inside the drop zone when file is selected
           <div className="flex flex-col items-center justify-center space-y-4 p-8">
-            <div className="rounded-full bg-primary/20 p-4">
-              <FileAudio className="h-8 w-8 text-primary" />
+            <div className="rounded-full bg-[#ced925]/20 p-4">
+              <FileAudio className="h-8 w-8 text-[#ced925]" />
             </div>
 
             <div className="space-y-3 text-center">
-              <h3 className="font-semibold text-primary">{selectedFile.name}</h3>
+              <h3 className="font-semibold text-[#ced925]">{selectedFile.name}</h3>
               <div className="flex items-center justify-center space-x-4 text-muted-foreground text-sm">
                 <span>{formatFileSize(selectedFile.size)}</span>
                 <span>•</span>
                 <span>{selectedFile.type}</span>
               </div>
-
-              {/* Audio Preview */}
-              <div className="mt-4">
-                <audio controls className="h-10 w-full max-w-sm rounded-lg" preload="metadata">
-                  <source src={URL.createObjectURL(selectedFile)} type={selectedFile.type} />
-                  <track kind="captions" label="Music Preview" default />
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
             </div>
-
-            <Button
-              onClick={handleUpload}
-              disabled={uploadMutation.isPending}
-              className="bg-primary hover:bg-primary/90"
-            >
-              {uploadMutation.isPending ? "Uploading..." : "Continue →"}
-            </Button>
           </div>
         ) : (
           // Show drop zone when no file selected
           <div className="flex flex-col items-center justify-center space-y-4 p-8">
-            <div className="rounded-full bg-primary/10 p-4">
-              <FileAudio className="h-8 w-8 text-primary" />
+            <div className="rounded-full bg-[#ced925]/10 p-4">
+              <FileAudio className="h-8 w-8 text-[#ced925]" />
             </div>
 
             <div className="space-y-2 text-center">
@@ -214,6 +197,44 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
           </div>
         )}
       </Card>
+
+      {/* Audio Preview & Controls - Below the dropzone */}
+      {selectedFile && (
+        <Card className="p-6">
+          <div className="space-y-4">
+            <h4 className="font-medium">Audio Preview</h4>
+
+            {/* Compact Audio Player */}
+            <div className="flex items-center space-x-4">
+              <div className="rounded-lg bg-[#ced925]/10 p-3">
+                <FileAudio className="h-5 w-5 text-[#ced925]" />
+              </div>
+
+              <div className="flex-1">
+                <audio
+                  controls
+                  className="h-10 w-full rounded-lg"
+                  preload="metadata"
+                >
+                  <source src={URL.createObjectURL(selectedFile)} type={selectedFile.type} />
+                  <track kind="captions" label="Music Preview" default />
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            </div>
+
+            {/* Continue Button */}
+            <Button
+              onClick={handleUpload}
+              disabled={uploadMutation.isPending}
+              className="w-full bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50"
+              size="lg"
+            >
+              {uploadMutation.isPending ? "Uploading..." : "Continue →"}
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* Format Guidelines */}
       <div className="rounded-lg border bg-muted/30 p-4">
