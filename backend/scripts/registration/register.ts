@@ -1,4 +1,4 @@
-import { createHash } from "crypto"
+import { createHash } from "node:crypto"
 import { IpMetadata } from "@story-protocol/core-sdk"
 import { client, networkInfo } from "../../utils/config"
 import { uploadJSONToIPFS } from "../../utils/functions/uploadToIpfs"

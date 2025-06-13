@@ -128,6 +128,28 @@ export function useUploadMetadata() {
   });
 }
 
+export function useUploadAvatar() {
+  return useMutation({
+    mutationFn: (data: {
+      fileName: string;
+      fileType: string;
+      fileSize: number;
+      fileData: string;
+    }) =>
+      apiClient.post<
+        ApiResponse<{
+          fileName: string;
+          fileType: string;
+          fileSize: number;
+          fileHash: string;
+          ipfsHash: string;
+          avatarUrl: string;
+          uploadedAt: string;
+        }>
+      >("/api/upload/avatar", data),
+  });
+}
+
 // Registration hooks
 export function useRegisterTrack() {
   return useMutation({
@@ -341,28 +363,7 @@ export function useCreateTrack() {
 // ==========================================
 // ADDITIONAL UPLOAD HOOKS
 // ==========================================
-
-export function useUploadAvatar() {
-  return useMutation({
-    mutationFn: (data: {
-      fileName: string;
-      fileType: string;
-      fileSize: number;
-      fileData: string;
-    }) =>
-      apiClient.post<
-        ApiResponse<{
-          fileName: string;
-          fileType: string;
-          fileSize: number;
-          fileHash: string;
-          ipfsHash: string;
-          avatarUrl: string;
-          uploadedAt: string;
-        }>
-      >("/api/upload/avatar", data),
-  });
-}
+// useUploadAvatar is already defined above in the upload section
 
 // ==========================================
 // ADDITIONAL LICENSE HOOKS

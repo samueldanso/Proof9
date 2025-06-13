@@ -1,4 +1,4 @@
-import { createHash } from "crypto"
+import { createHash } from "node:crypto"
 import { zValidator } from "@hono/zod-validator"
 import { IpMetadata } from "@story-protocol/core-sdk"
 import { Hono } from "hono"

@@ -43,7 +43,10 @@ export default function LibraryPage() {
 
   // Transform licensed tracks for display
   const licensedTracksFormatted = useMemo(() => {
-    return licensedTracks
+    // Ensure licensedTracks is an array and has data property if it's an API response
+    const tracksArray = Array.isArray(licensedTracks) ? licensedTracks : licensedTracks?.data || [];
+
+    return tracksArray
       .filter((license: any) => license.tracks) // Filter first to avoid nulls
       .map((license: any) => ({
         ...transformDbTrackToLegacy(license.tracks as any),
@@ -75,7 +78,7 @@ export default function LibraryPage() {
   };
 
   const handleLike = (trackId: string) => {
-    const track = currentTracks.find((t) => t.id === trackId);
+    const track = currentTracks.find((t: any) => t.id === trackId);
     likeTrackMutation.mutate({ trackId, trackTitle: track?.title });
   };
 
@@ -172,7 +175,7 @@ export default function LibraryPage() {
         ) : (
           // Track grid - 4 columns on large screens, responsive
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {currentTracks.map((track) => (
+            {currentTracks.map((track: any) => (
               <TrackCard
                 key={track.id}
                 track={track}

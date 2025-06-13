@@ -1,4 +1,4 @@
-import { createHash } from "crypto"
+import { createHash } from "node:crypto"
 import yakoaService, { MediaItem } from "../../src/services/yakoa"
 import { account } from "../config"
 
@@ -8,7 +8,7 @@ import { account } from "../config"
 export async function verifyMusicContent(
   title: string,
   description: string,
-  creatorId: string = account.address,
+  creatorId: string,
   mediaUrl: string,
   imageUrl: string,
   metadata: Record<string, any> = {},

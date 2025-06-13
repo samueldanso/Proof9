@@ -1,4 +1,4 @@
-import { createHash } from "crypto"
+import { createHash } from "node:crypto"
 import dotenv from "dotenv"
 import yakoaService from "../../src/services/yakoa"
 
