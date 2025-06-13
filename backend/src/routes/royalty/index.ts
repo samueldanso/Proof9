@@ -4,13 +4,8 @@ import { Hono } from "hono"
 import { Address, parseEther, toHex, zeroAddress } from "viem"
 import { z } from "zod"
 
-import { account, client } from "../../../utils/config"
-import {
-  RoyaltyPolicyLRP,
-  SPGNFTContractAddress,
-  convertRoyaltyPercentToTokens,
-  createCommercialRemixTerms,
-} from "../../../utils/utils"
+import { client } from "../../../utils/config"
+import { SPGNFTContractAddress } from "../../../utils/utils"
 
 // Create router
 const royaltyRouter = new Hono()
@@ -63,19 +58,6 @@ const LicenseRevenueSchema = z.object({
         .optional(),
     })
     .optional(),
-})
-
-// Schema for transferring royalty tokens
-const TransferRoyaltyTokensSchema = z.object({
-  ipId: IpIdSchema,
-  percentToTransfer: z.number().min(0).max(100),
-  targetAddress: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, {
-      message: "Target address must be a valid Ethereum address",
-    })
-    .default(account.address),
-  createIpAsset: z.boolean().default(false),
 })
 
 // Schema for claiming revenue
@@ -233,95 +215,6 @@ royaltyRouter.post(
       })
     } catch (error: any) {
       console.error("License revenue error:", error)
-      return c.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        500,
-      )
-    }
-  },
-)
-
-/**
- * Transfer royalty tokens endpoint
- * Transfers royalty tokens from an IP asset to a target address
- */
-royaltyRouter.post(
-  "/transfer-tokens",
-  zValidator("json", TransferRoyaltyTokensSchema),
-  async (c) => {
-    try {
-      const { ipId, percentToTransfer, targetAddress, createIpAsset } =
-        c.req.valid("json")
-
-      let assetIpId = ipId
-
-      // Create IP asset if requested
-      if (createIpAsset) {
-        // Create a new IP Asset
-        const parentIp =
-          await client.ipAsset.mintAndRegisterIpAssetWithPilTerms({
-            spgNftContract: SPGNFTContractAddress,
-            licenseTermsData: [
-              {
-                terms: createCommercialRemixTerms({
-                  defaultMintingFee: 0,
-                  commercialRevShare: 0,
-                }),
-              },
-            ],
-            txOptions: { waitForTransaction: true },
-          })
-
-        assetIpId = parentIp.ipId as string
-
-        // Mint a license token to trigger IP Royalty Vault deployment
-        await client.license.mintLicenseTokens({
-          licenseTermsId: parentIp.licenseTermsIds?.[0]!,
-          licensorIpId: assetIpId as Address,
-          amount: 1,
-          maxMintingFee: BigInt(0),
-          maxRevenueShare: 100,
-          txOptions: { waitForTransaction: true },
-        })
-      }
-
-      // Get the IP Royalty Vault Address
-      const royaltyVaultAddress = await client.royalty.getRoyaltyVaultAddress(
-        assetIpId as Address,
-      )
-
-      // Calculate tokens to transfer based on percentage
-      const tokenAmount = convertRoyaltyPercentToTokens(percentToTransfer)
-
-      // Transfer royalty tokens
-      const transferRoyaltyTokens = await client.ipAccount.transferErc20({
-        ipId: assetIpId as Address,
-        tokens: [
-          {
-            address: royaltyVaultAddress,
-            amount: tokenAmount,
-            target: targetAddress as Address,
-          },
-        ],
-        txOptions: { waitForTransaction: true },
-      })
-
-      // Return result
-      return c.json({
-        success: true,
-        data: {
-          transactionHash: transferRoyaltyTokens.txHash,
-          ipId: assetIpId,
-          royaltyVaultAddress,
-          tokenAmount,
-          targetAddress,
-        },
-      })
-    } catch (error: any) {
-      console.error("Transfer royalty tokens error:", error)
       return c.json(
         {
           success: false,

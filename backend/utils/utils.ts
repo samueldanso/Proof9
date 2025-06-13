@@ -1,6 +1,5 @@
 import {
   LicenseTerms,
-  LicensingConfig,
   WIP_TOKEN_ADDRESS,
 } from "@story-protocol/core-sdk"
 import dotenv from "dotenv"
@@ -9,12 +8,7 @@ import { networkInfo } from "./config"
 
 dotenv.config()
 
-// Export contract addresses with appropriate defaults based on network
-export const NFTContractAddress: Address =
-  (process.env.NFT_CONTRACT_ADDRESS as Address) ||
-  networkInfo.defaultNFTContractAddress ||
-  zeroAddress
-
+// Export SPG contract address for music registration
 export const SPGNFTContractAddress: Address =
   (process.env.SPG_NFT_CONTRACT_ADDRESS as Address) ||
   networkInfo.defaultSPGNFTContractAddress ||
@@ -74,20 +68,4 @@ export function createCommercialRemixTerms(terms: {
     currency: WIP_TOKEN_ADDRESS,
     uri: "https://github.com/piplabs/pil-document/blob/ad67bb632a310d2557f8abcccd428e4c9c798db1/off-chain-terms/CommercialRemix.json",
   }
-}
-
-export const defaultLicensingConfig: LicensingConfig = {
-  mintingFee: 0n,
-  isSet: false,
-  disabled: false,
-  commercialRevShare: 0,
-  expectGroupRewardPool: zeroAddress,
-  expectMinimumGroupRewardShare: 0,
-  licensingHook: zeroAddress,
-  hookData: "0x",
-}
-
-export function convertRoyaltyPercentToTokens(royaltyPercent: number): number {
-  // there are 100,000,000 tokens total (100, but 6 decimals)
-  return royaltyPercent * 1_000_000
 }

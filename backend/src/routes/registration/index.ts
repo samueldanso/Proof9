@@ -4,11 +4,9 @@ import { IpMetadata } from "@story-protocol/core-sdk"
 import { Hono } from "hono"
 import { z } from "zod"
 
-import { account, client, networkInfo } from "../../../utils/config"
-import { mintNFT } from "../../../utils/functions/mintNFT"
+import { client, networkInfo } from "../../../utils/config"
 import { uploadJSONToIPFS } from "../../../utils/functions/uploadToIpfs"
 import {
-  NFTContractAddress,
   SPGNFTContractAddress,
   createCommercialRemixTerms,
 } from "../../../utils/utils"
@@ -61,8 +59,8 @@ const RegistrationSchema = z.object({
 })
 
 /**
- * Regular registration endpoint
- * Registers IP Asset through Story Protocol's SPG NFT contract
+ * Register music as IP Asset through Story Protocol's SPG NFT contract
+ * This is the recommended approach for music registration
  */
 registrationRouter.post(
   "/register",
@@ -125,91 +123,6 @@ registrationRouter.post(
       })
     } catch (error: any) {
       console.error("Registration error:", error)
-      return c.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        500,
-      )
-    }
-  },
-)
-
-/**
- * Custom registration endpoint
- * Mints NFT first, then registers it as an IP Asset
- */
-registrationRouter.post(
-  "/register-custom",
-  zValidator("json", RegistrationSchema),
-  async (c) => {
-    try {
-      const {
-        ipMetadata: ipMetadataInput,
-        nftMetadata,
-        commercialRemixTerms,
-      } = c.req.valid("json")
-
-      // Format IP metadata according to Story Protocol requirements
-      const ipMetadata: IpMetadata = client.ipAsset.generateIpMetadata({
-        ...ipMetadataInput,
-        createdAt:
-          ipMetadataInput.createdAt || Math.floor(Date.now() / 1000).toString(),
-      } as IpMetadata)
-
-      // Upload metadata to IPFS
-      const ipIpfsHash = await uploadJSONToIPFS(ipMetadata)
-      const ipHash = createHash("sha256")
-        .update(JSON.stringify(ipMetadata))
-        .digest("hex")
-      const nftIpfsHash = await uploadJSONToIPFS(nftMetadata)
-      const nftHash = createHash("sha256")
-        .update(JSON.stringify(nftMetadata))
-        .digest("hex")
-
-      // Mint an NFT
-      const tokenId = await mintNFT(
-        account.address,
-        `https://ipfs.io/ipfs/${nftIpfsHash}`,
-      )
-      if (!tokenId) {
-        throw new Error("Failed to mint NFT")
-      }
-
-      // Register an IP Asset
-      const terms = commercialRemixTerms || {
-        defaultMintingFee: 1,
-        commercialRevShare: 5,
-      }
-      const response = await client.ipAsset.registerIpAndAttachPilTerms({
-        nftContract: NFTContractAddress,
-        tokenId: tokenId,
-        licenseTermsData: [
-          {
-            terms: createCommercialRemixTerms(terms),
-          },
-        ],
-        ipMetadata: {
-          ipMetadataURI: `https://ipfs.io/ipfs/${ipIpfsHash}`,
-          ipMetadataHash: `0x${ipHash}`,
-          nftMetadataURI: `https://ipfs.io/ipfs/${nftIpfsHash}`,
-          nftMetadataHash: `0x${nftHash}`,
-        },
-        txOptions: { waitForTransaction: true },
-      })
-
-      return c.json({
-        success: true,
-        data: {
-          transactionHash: response.txHash,
-          ipId: response.ipId,
-          tokenId: tokenId,
-          explorerUrl: `${networkInfo.protocolExplorer}/ipa/${response.ipId}`,
-        },
-      })
-    } catch (error: any) {
-      console.error("Custom registration error:", error)
       return c.json(
         {
           success: false,

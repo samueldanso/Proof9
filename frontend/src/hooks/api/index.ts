@@ -198,8 +198,6 @@ export function useMintLicense() {
   });
 }
 
-// Search will be moved to social actions since it's a social feature
-
 // Licensed tracks hook (for library)
 export function useUserLicensedTracks(userAddress: string) {
   return useQuery({
@@ -238,17 +236,6 @@ export function useClaimRoyalty() {
       royaltyPolicies?: string[];
       currencyTokens?: string[];
     }) => apiClient.post<ApiResponse<any>>("/api/royalty/claim", data),
-  });
-}
-
-export function useTransferRoyaltyTokens() {
-  return useMutation({
-    mutationFn: (data: {
-      ipId: string;
-      percentToTransfer: number;
-      targetAddress?: string;
-      createIpAsset?: boolean;
-    }) => apiClient.post<ApiResponse<any>>("/api/royalty/transfer-tokens", data),
   });
 }
 
@@ -357,34 +344,6 @@ export function useCreateTrack() {
       verified?: boolean;
       yakoa_token_id?: string;
     }) => apiClient.post<ApiResponse<any>>("/api/tracks", data),
-  });
-}
-
-// ==========================================
-// ADDITIONAL UPLOAD HOOKS
-// ==========================================
-// useUploadAvatar is already defined above in the upload section
-
-// ==========================================
-// ADDITIONAL LICENSE HOOKS
-// ==========================================
-
-export function useCreateOneTimeLicense() {
-  return useMutation({
-    mutationFn: (data: {
-      metadata?: {
-        ipMetadataURI?: string;
-        ipMetadataHash?: string;
-        nftMetadataHash?: string;
-        nftMetadataURI?: string;
-      };
-      commercialRemixTerms?: {
-        commercialRevShare?: number;
-        defaultMintingFee?: number;
-      };
-      licenseTokenLimit?: number;
-      licenseTemplate?: string;
-    }) => apiClient.post<ApiResponse<any>>("/api/licenses/one-time-use", data),
   });
 }
 
