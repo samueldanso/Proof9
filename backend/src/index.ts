@@ -1,6 +1,6 @@
 import { Hono } from "hono"
-import { cors } from "hono/cors"
 import { bodyLimit } from "hono/body-limit"
+import { cors } from "hono/cors"
 import { errorHandler } from "./middleware/error"
 import * as routes from "./routes"
 
