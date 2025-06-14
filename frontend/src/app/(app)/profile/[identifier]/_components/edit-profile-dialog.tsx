@@ -78,10 +78,10 @@ export function EditProfileDialog({
 
       // Use the upload avatar hook
       const result = await uploadAvatarMutation.mutateAsync({
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-        fileData: base64Data,
+        mediaName: file.name,
+        mediaType: file.type,
+        mediaSize: file.size,
+        mediaData: base64Data,
       });
 
       return result.data.avatarUrl;
