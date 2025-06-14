@@ -35,6 +35,8 @@ export function ProfileSetup() {
 
   const uploadAvatar = async (file: File): Promise<string | null> => {
     try {
+      console.log("🖼️ DEBUG: Starting avatar upload for file:", file.name);
+
       // Convert file to base64
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve, reject) => {
@@ -42,6 +44,7 @@ export function ProfileSetup() {
           const result = reader.result as string;
           // Remove data URL prefix to get pure base64
           const base64 = result.split(",")[1];
+          console.log("📝 DEBUG: File converted to base64, length:", base64.length);
           resolve(base64);
         };
         reader.onerror = reject;
@@ -49,6 +52,13 @@ export function ProfileSetup() {
       reader.readAsDataURL(file);
 
       const base64Data = await base64Promise;
+
+      console.log("📤 DEBUG: Uploading avatar with data:", {
+        mediaName: file.name,
+        mediaType: file.type,
+        mediaSize: file.size,
+        base64Length: base64Data.length
+      });
 
       // Use the upload avatar hook
       const result = await uploadAvatarMutation.mutateAsync({
@@ -58,15 +68,23 @@ export function ProfileSetup() {
         mediaData: base64Data,
       });
 
+      console.log("✅ DEBUG: Avatar upload successful:", result);
+      console.log("🔗 DEBUG: Avatar URL:", result.data.avatarUrl);
       return result.data.avatarUrl;
     } catch (error) {
-      console.error("Avatar upload error:", error);
+      console.error("❌ DEBUG: Avatar upload error:", error);
       throw error;
     }
   };
 
   const handleComplete = async () => {
+    console.log("🚀 DEBUG: Starting profile creation process");
+    console.log("👤 DEBUG: User address:", address);
+    console.log("📝 DEBUG: Display name:", displayName.trim());
+    console.log("🖼️ DEBUG: Avatar file selected:", !!avatarFile);
+
     if (!displayName.trim() || !address) {
+      console.error("❌ DEBUG: Missing required data - displayName or address");
       toast.error("Please enter a display name");
       return;
     }
@@ -76,9 +94,19 @@ export function ProfileSetup() {
 
       // Upload avatar if user selected one
       if (avatarFile) {
+        console.log("📤 DEBUG: Uploading avatar...");
         toast.info("Uploading avatar...");
         avatarUrl = await uploadAvatar(avatarFile);
+        console.log("✅ DEBUG: Avatar uploaded, URL:", avatarUrl);
+      } else {
+        console.log("⏭️ DEBUG: No avatar file selected, skipping upload");
       }
+
+      console.log("👤 DEBUG: Creating profile with data:", {
+        address,
+        display_name: displayName.trim(),
+        avatar_url: avatarUrl || "null"
+      });
 
       // Use the create profile hook
       const response = await createProfileMutation.mutateAsync({
@@ -87,16 +115,21 @@ export function ProfileSetup() {
         avatar_url: avatarUrl || undefined,
       });
 
+      console.log("📋 DEBUG: Profile creation response:", response);
+
       if (response.success) {
+        console.log("🎉 DEBUG: Profile created successfully!");
         toast.success("Profile created successfully!");
         // Small delay to show the toast before reload
         setTimeout(() => {
           window.location.reload();
         }, 1000);
       } else {
+        console.error("❌ DEBUG: Profile creation failed:", response.error);
         toast.error(response.error || "Failed to create profile");
       }
     } catch (error) {
+      console.error("💥 DEBUG: Profile creation error:", error);
       toast.error("Failed to create profile. Please try again.");
     }
   };
