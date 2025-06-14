@@ -10,7 +10,7 @@ import { SPGNFTContractAddress } from "../../../utils/utils"
 
 const derivativeRouter = new Hono()
 
-// Schema for registering a derivative (remix/cover)
+// Register derivative schema
 const RegisterDerivativeSchema = z.object({
   parentIpId: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
     message: "Parent IP ID must be a valid Ethereum address",

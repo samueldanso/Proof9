@@ -16,6 +16,7 @@ import yakoaService, {
 
 const verificationRouter = new Hono()
 
+// Media item schema
 const MediaItemSchema = z.object({
   media_id: z.string().min(1, "Media ID is required"),
   url: z.string().url("Must be a valid URL - IPFS URLs are recommended"),
@@ -38,6 +39,7 @@ const MediaItemSchema = z.object({
     .optional(),
 })
 
+// Verify music schema
 const VerifyMusicSchema = z.object({
   tokenId: z.string().optional(),
   contractAddress: z
@@ -75,10 +77,12 @@ const VerifyMusicSchema = z.object({
     .optional(),
 })
 
+// Token ID schema
 const TokenIdSchema = z.object({
   tokenId: z.string(),
 })
 
+// Authorization schema
 const AuthorizationSchema = z.object({
   tokenId: z.string(),
   brandId: z.string().optional(),
@@ -89,7 +93,7 @@ const AuthorizationSchema = z.object({
 
 /**
  * Verify sound content with Yakoa
- * This endpoint registers a token with Yakoa for content authentication
+ * This API endpoint registers a token with Yakoa for content authentication
  */
 verificationRouter.post(
   "/verify-music",
@@ -188,7 +192,7 @@ verificationRouter.post(
 
 /**
  * Get verification status
- * This endpoint retrieves the verification status of a token
+ * This API endpoint retrieves the verification status of a token
  */
 verificationRouter.get(
   "/status/:tokenId",
@@ -234,7 +238,7 @@ verificationRouter.get(
 
 /**
  * Create brand authorization
- * This endpoint creates or updates a brand authorization for a token
+ * This API endpoint creates or updates a brand authorization for a token
  */
 verificationRouter.post(
   "/authorize",

@@ -13,9 +13,8 @@ import {
 
 const registrationRouter = new Hono()
 
-// Story Protocol music registration schema
+// Music registration schema
 const MusicRegistrationSchema = z.object({
-  // IP Metadata (Story Protocol IPA Standard)
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
 
@@ -40,11 +39,9 @@ const MusicRegistrationSchema = z.object({
     )
     .min(1, "At least one creator is required"),
 
-  // Story Protocol image.* fields
   image: z.string().url("Invalid image URL"),
   imageHash: z.string().min(1, "Image hash is required"),
 
-  // Story Protocol media.* fields
   mediaUrl: z.string().url("Invalid media URL"),
   mediaHash: z.string().min(1, "Media hash is required"),
   mediaType: z.string().min(1, "Media type is required"),
@@ -70,7 +67,7 @@ const MusicRegistrationSchema = z.object({
     .optional(),
 })
 
-// Register music as IP Asset following Story Protocol pattern
+// Register music as IP Asset
 registrationRouter.post(
   "/register",
   zValidator("json", MusicRegistrationSchema),

@@ -3,12 +3,10 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { supabase } from "../../lib/supabase"
 
-// Create router
 const tracksRouter = new Hono()
 
-// Story Protocol Track Creation Schema - EXACT NAMING ONLY
+// Track Creation Schema
 const CreateTrackSchema = z.object({
-  // Story Protocol IPA Standard
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   creators: z.array(
@@ -28,21 +26,17 @@ const CreateTrackSchema = z.object({
     }),
   ),
 
-  // Story Protocol image.* fields
   image: z.string().url().optional(),
   imageHash: z.string().optional(),
 
-  // Story Protocol media.* fields
   mediaUrl: z.string().url().optional(),
   mediaHash: z.string().optional(),
   mediaType: z.string().optional(),
 
-  // Additional metadata
   genre: z.string().optional(),
   tags: z.array(z.string()).optional(),
   duration: z.string().optional(),
 
-  // Story Protocol data
   ipId: z.string().optional(),
   tokenId: z.string().optional(),
   transactionHash: z.string().optional(),
@@ -71,7 +65,7 @@ const TracksQuerySchema = z.object({
 })
 
 /**
- * Create a new track - Story Protocol format
+ * Create a new track
  */
 tracksRouter.post("/", zValidator("json", CreateTrackSchema), async (c) => {
   try {
@@ -85,20 +79,17 @@ tracksRouter.post("/", zValidator("json", CreateTrackSchema), async (c) => {
       .eq("address", primaryCreator.address)
       .single()
 
-    // Insert track into Supabase using Story Protocol naming
+    // Insert track into Supabase
     const { data: track, error } = await supabase
       .from("tracks")
       .insert({
-        // Story Protocol IPA Standard
         title: trackData.title,
         description: trackData.description,
         creators: trackData.creators,
 
-        // Story Protocol image.* fields
         image: trackData.image,
         imageHash: trackData.imageHash,
 
-        // Story Protocol media.* fields
         mediaUrl: trackData.mediaUrl,
         mediaHash: trackData.mediaHash,
         mediaType: trackData.mediaType,
@@ -168,7 +159,7 @@ tracksRouter.post("/", zValidator("json", CreateTrackSchema), async (c) => {
 })
 
 /**
- * Get tracks for discovery feed - STORY PROTOCOL FORMAT ONLY
+ * Get tracks for discovery feed
  */
 tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
   try {
@@ -479,7 +470,7 @@ tracksRouter.get("/:id", async (c) => {
 })
 
 /**
- * Get trending tracks for sidebar - STORY PROTOCOL FORMAT ONLY
+ * Get trending tracks for sidebar
  */
 tracksRouter.get("/trending/sidebar", async (c) => {
   try {

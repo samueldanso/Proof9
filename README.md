@@ -6,7 +6,7 @@ Proof9 is a sound rights platform where music creators protect, license, and mon
 
 ## Problem
 
-Creators of music, voice, and sound struggle to prove ownership, protect their work, and monetize it effectively. Licensing is complicated, piracy is rampant, and current systems lack transparency, especially for independent artists.
+Musuc creators struggle to prove ownership, protect their work, and monetize it effectively. Licensing is complicated, piracy is rampant, and current systems lack transparency, especially for independent artists.
 
 ## Solution
 
@@ -20,9 +20,11 @@ Proof9 is a sound rights platform that gives creators the tools to protect their
 
 -   **📜 Smart licensing** — Set clear usage terms and license your sound for B2B or creator use with traceable permissions.
 
-**💸 Automated royalties** — Earn automatically when your sound is licensed and used, tracked and enforced by smart contracts.
+**💸 Automated royalties** — Earn automatically when your sound is licensed and used, remix tracked and enforced by smart contracts.
 
-** 🤝 Real fan connection** — Share exclusive drops, updates, and build community relationships via Tomo-powered messaging and profiles.
+** 🤝 Social Profiles & Real fan connection** — Share exclusive drops, updates, and build community relationships via social profiles.
+
+** Onboarding with Tomo Wallet ** - Login or Conect
 
 ## How it Works
 
@@ -40,7 +42,7 @@ Proof9 is a sound rights platform that gives creators the tools to protect their
 1. **Sign up & explore verified sound**
 2. **View license terms & purchase usage rights**
 3. **Use the sound confidently & track ownership**
-4. **Support creators and access exclusive drops**
+4. **Support and connect with your favorite creators and access exclusive drops**
 
 ## Tech Stack
 
@@ -70,22 +72,26 @@ Proof9 is a sound rights platform that gives creators the tools to protect their
 
 ## Story Protocol Integration
 
-Proof9 utilizes Story Protocol for on-chain IP registration and licensing:
+Proof9 utilizes Story Protocol for on-chain sound IP registration and smart licensing & royalty distribution:
 
--   **IP Asset Registration**: `/api/registration/register` and `/api/registration/register-custom` - Register music as IP assets with commercial remix terms and royalty sharing
--   **License Token Minting**: `/api/licenses/mint` - Create transferable license tokens for commercial use
--   **Limited License Creation**: `/api/licenses/one-time-use` - Generate IP assets with constrained licensing (token limits via hooks)
--   **Royalty Management**: `/api/royalty/pay`, `/api/royalty/claim`, and `/api/royalty/transfer` - Revenue distribution and collection between IP owners
--   **IPFS Metadata Storage**: All IP and NFT metadata uploaded to IPFS with proper hashing for blockchain verification
+### API Endpoints
+
+-   **Sound IP Registration**: `POST /api/registration/register` - Register music as IP assets with commercial remix terms and royalty sharing
+-   **License Token Minting**: `POST /api/licenses/mint` - Create transferable license tokens for commercial use
+-   **Royalty Management**: `POST /api/royalty/pay`, `POST /api/royalty/claim` - Revenue distribution and collection
+-   **Derivative management**:
 
 ## Yakoa Integration
 
-Proof9 integrates Yakoa for basic music content verification:
+Proof9 integrates Yakoa for sound content verification:
 
--   **Content Registration**: `/api/verification/verify-music` - Register music tokens with Yakoa's verification service
--   **Status Monitoring**: `/api/verification/status/:tokenId` - Check verification status and infringement detection results
--   **Brand Authorization**: `/api/verification/authorize` - Manage brand permissions for licensed content
--   **Pre-Registration Verification**: Verify content authenticity before Story Protocol IP registration
+### API Endpoints
+
+-   **Content Registration**: `POST /api/verification/verify-music` - Register music tokens with Yakoa's verification service
+-   **Status Monitoring**: `GET /api/verification/status/:tokenId` - Check verification status and infringement detection results
+-   **Brand Authorization**: `POST /api/verification/authorize` - Manage brand permissions for licensed content
+
+## Architecture
 
 ## 📦 Project Structure
 
@@ -136,7 +142,6 @@ YAKOA_SUBDOMAIN=your_yakoa_subdomain
 YAKOA_NETWORK=your_yakoa_network
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-PORT=3001
 
 ```
 
@@ -173,6 +178,10 @@ Deploy the frontend repository to [Vercel](https://vercel.com)
 ### Backend API (Bun) on Render
 
 Deploy the backend repository web service on [Render](https://render.com)
+
+## Roadmap
+
+-   [ ] Implement AI Metadata genereration
 
 ## Contributing
 

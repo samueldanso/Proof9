@@ -1,4 +1,4 @@
-// Export all route modules using the cleaner export * pattern
+// Export all route modules
 export * from "./registration"
 export * from "./licenses"
 export * from "./royalty"

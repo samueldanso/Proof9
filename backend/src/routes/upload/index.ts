@@ -7,23 +7,22 @@ import {
   uploadJSONToIPFS,
 } from "../../../utils/functions/uploadToIpfs"
 
-// Create router
 const uploadRouter = new Hono()
 
-// Story Protocol naming - Media upload schema
+// Media upload schema
 const MediaUploadSchema = z.object({
   mediaName: z.string(),
   mediaType: z.string(),
   mediaSize: z.number(),
-  mediaData: z.string(), // Base64 encoded media content
+  mediaData: z.string(),
 })
 
-// Story Protocol naming - Image upload schema
+// Image upload schema
 const ImageUploadSchema = z.object({
   imageName: z.string(),
   imageType: z.string(),
   imageSize: z.number(),
-  imageData: z.string(), // Base64 encoded image content
+  imageData: z.string(),
 })
 
 // Metadata upload schema
@@ -36,8 +35,7 @@ const MetadataUploadSchema = z.object({
 })
 
 /**
- * Generate content hash using Story Protocol's recommended approach
- * Story uses SHA-256 hash of file content, returned as hex string with 0x prefix
+ * Generate content hash using SHA-256 hash of file content, returned as hex string with 0x prefix
  */
 function generateContentHash(content: Buffer): string {
   const hash = createHash("sha256").update(content).digest("hex")
@@ -46,7 +44,7 @@ function generateContentHash(content: Buffer): string {
 
 /**
  * Upload media file (audio)
- * Returns mediaUrl and mediaHash following Story Protocol naming
+ * Returns mediaUrl and mediaHash
  */
 uploadRouter.post(
   "/audio",
@@ -88,7 +86,7 @@ uploadRouter.post(
       // Convert base64 to buffer
       const mediaBuffer = Buffer.from(mediaData, "base64")
 
-      // Generate Story Protocol compliant content hash
+      // Generate content hash
       const mediaHash = generateContentHash(mediaBuffer)
 
       // Upload media to IPFS using Pinata
@@ -105,7 +103,6 @@ uploadRouter.post(
           mediaName,
           mediaType,
           mediaSize,
-          // Story Protocol naming ONLY
           mediaUrl,
           mediaHash,
           uploadedAt: new Date().toISOString(),
@@ -167,7 +164,7 @@ uploadRouter.post(
       // Convert base64 to buffer
       const imageBuffer = Buffer.from(mediaData, "base64")
 
-      // Generate Story Protocol compliant content hash
+      // Generate content hash
       const imageHash = generateContentHash(imageBuffer)
 
       // Upload image to IPFS using Pinata
@@ -206,7 +203,7 @@ uploadRouter.post(
 
 /**
  * Upload cover art image
- * Returns image and imageHash following Story Protocol naming
+ * Returns image and imageHash
  */
 uploadRouter.post(
   "/cover-art",
@@ -266,7 +263,6 @@ uploadRouter.post(
           imageName,
           imageType,
           imageSize,
-          // Story Protocol naming ONLY
           image,
           imageHash,
           uploadedAt: new Date().toISOString(),
@@ -287,7 +283,6 @@ uploadRouter.post(
 
 /**
  * Upload metadata to IPFS
- * Prepares metadata for Story Protocol registration
  */
 uploadRouter.post(
   "/metadata",
@@ -296,17 +291,17 @@ uploadRouter.post(
     try {
       const metadata = c.req.valid("json")
 
-      // Create Story Protocol compatible metadata
+      // Create metadata
       const ipMetadata = {
         title: metadata.title,
         description: metadata.description,
         genre: metadata.genre,
         tags: metadata.tags,
         duration: metadata.duration,
-        createdAt: Math.floor(Date.now() / 1000).toString(), // Unix timestamp as string
+        createdAt: Math.floor(Date.now() / 1000).toString(),
       }
 
-      // Generate metadata hash using Story Protocol approach
+      // Generate metadata hash
       const metadataHash = createHash("sha256")
         .update(JSON.stringify(ipMetadata))
         .digest("hex")

@@ -9,7 +9,6 @@ import {
 } from "../../../utils/username"
 import { supabase } from "../../lib/supabase"
 
-// Create router
 const usersRouter = new Hono()
 
 // Address validation schema

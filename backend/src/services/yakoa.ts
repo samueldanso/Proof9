@@ -1,11 +1,16 @@
+// Yakoa API service
+
 import dotenv from "dotenv"
 
 dotenv.config()
 
+// Yakoa API configuration
 const YAKOA_API_KEY = process.env.YAKOA_API_KEY || ""
 const YAKOA_SUBDOMAIN = process.env.YAKOA_SUBDOMAIN || "docs-demo"
 const YAKOA_NETWORK = process.env.YAKOA_NETWORK || "docs-demo"
 const YAKOA_BASE_URL = `https://${YAKOA_SUBDOMAIN}.ip-api-sandbox.yakoa.io/${YAKOA_NETWORK}`
+
+// Yakoa API types
 export type TrustedPlatformTrustReason = {
   type: "trusted_platform"
   platform_name: string
@@ -109,6 +114,7 @@ export type YakoaAuthorization = {
   }
 }
 
+// Validate API key
 const validateApiKey = (): void => {
   if (!YAKOA_API_KEY) {
     throw new Error("YAKOA_API_KEY is required in .env file")
@@ -120,7 +126,10 @@ async function yakoaFetch<T>(
 ): Promise<T> {
   validateApiKey()
 
+  // Build the URL
   const url = `${YAKOA_BASE_URL}${endpoint}`
+
+  // Build the headers
   const headers = {
     "Content-Type": "application/json",
     accept: "application/json",
