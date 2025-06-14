@@ -63,6 +63,20 @@ export interface ImageUploadResponse {
   error?: string;
 }
 
+// Avatar upload response - matches backend /upload/avatar endpoint
+export interface AvatarUploadResponse {
+  success: boolean;
+  data: {
+    mediaName: string;
+    mediaType: string;
+    mediaSize: number;
+    avatarUrl: string;
+    imageHash: string;
+    uploadedAt: string;
+  };
+  error?: string;
+}
+
 // Story Protocol IP Metadata (IPA Standard)
 export interface StoryIPMetadata {
   title: string;

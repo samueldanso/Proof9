@@ -1,6 +1,7 @@
 // Story Protocol API types (organized by domain)
 import type { RegistrationRequest, RegistrationResponse } from "@/types/registration";
 import type {
+  AvatarUploadResponse,
   ImageUploadRequest,
   ImageUploadResponse,
   MediaUploadRequest,
@@ -142,7 +143,7 @@ export function useUploadMetadata() {
 export function useUploadAvatar() {
   return useMutation({
     mutationFn: async (data: MediaUploadRequest) => {
-      const response = await apiClient.post<ApiResponse<any>>("/upload/avatar", data);
+      const response = await apiClient.post<AvatarUploadResponse>("/upload/avatar", data);
       return response;
     },
   });
