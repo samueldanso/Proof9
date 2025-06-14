@@ -91,7 +91,11 @@ export function ProfileSetup() {
       await createProfileMutation.mutateAsync(profileData);
 
       toast.success("Profile created successfully!");
-      onComplete();
+
+      // Small delay to show the toast before reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Profile creation error:", error);
       toast.error("Failed to create profile. Please try again.");
