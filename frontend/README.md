@@ -1,1 +1,1 @@
-# Proof9 - Music Creators IP Protection Platform
+# Proof9 Frontend - Music Creators IP Protection Platform

@@ -1,15 +1,14 @@
-// Story Protocol upload types
 // Maps to backend /api/upload/* routes
 
-// Story Protocol Upload Types - EXACT NAMING ONLY
+// Upload Types
 
-// Story Protocol media upload result
+// Media upload result
 export interface MediaUploadResult {
   mediaName: string;
   mediaType: string;
   mediaSize: number;
-  mediaUrl: string; // Story Protocol mediaUrl field
-  mediaHash: string; // Story Protocol mediaHash field
+  mediaUrl: string;
+  mediaHash: string;
   uploadedAt: string;
 }
 
@@ -18,8 +17,8 @@ export interface ImageUploadResult {
   imageName: string;
   imageType: string;
   imageSize: number;
-  image: string; // Story Protocol image field
-  imageHash: string; // Story Protocol imageHash field
+  image: string;
+  imageHash: string;
   uploadedAt: string;
 }
 
@@ -27,14 +26,14 @@ export interface MediaUploadRequest {
   mediaName: string;
   mediaType: string;
   mediaSize: number;
-  mediaData: string; // Base64 encoded
+  mediaData: string;
 }
 
 export interface ImageUploadRequest {
   imageName: string;
   imageType: string;
   imageSize: number;
-  imageData: string; // Base64 encoded
+  imageData: string;
 }
 
 export interface MediaUploadResponse {

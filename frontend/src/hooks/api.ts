@@ -1,4 +1,3 @@
-// Story Protocol API types (organized by domain)
 import type { RegistrationRequest, RegistrationResponse } from "@/types/registration";
 import type {
   AvatarUploadResponse,
@@ -8,11 +7,10 @@ import type {
   MediaUploadResponse,
 } from "@/types/upload";
 import type { VerificationRequest, VerificationResponse } from "@/types/verification";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "../lib/api/client";
 
-// Track type from correct location
 import type { Track } from "@/types/track";
-
-// API Response types - moved from api.ts since they're only used here
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -43,11 +41,6 @@ interface UserTracksResponse {
   count: number;
 }
 
-// React Query and API client
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "../lib/api/client";
-
-// Track hooks - Story Protocol format
 interface TracksParams {
   tab?: "latest" | "following" | "trending";
   user_address?: string;
@@ -121,7 +114,7 @@ export function useUserTracks(address: string) {
   });
 }
 
-// Upload hooks - Story Protocol naming
+// Upload hooks
 export function useUploadMedia() {
   return useMutation({
     mutationFn: async (data: MediaUploadRequest) => {
@@ -158,7 +151,7 @@ export function useUploadImage() {
   });
 }
 
-// Registration hooks - Story Protocol
+// Registration hooks
 export function useRegisterTrack() {
   const queryClient = useQueryClient();
 
