@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { useTracks } from "@/hooks/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSearchUsers } from "@/hooks/use-social-actions";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
+import type { Track } from "@/types/track";
+
 import { getAvatarUrl } from "@/lib/utils/avatar";
 import { getCoverUrl } from "@/lib/utils/cover";
 import { Music, Search, User, Verified } from "lucide-react";
@@ -24,18 +25,18 @@ export const SearchBar = () => {
 
   // Search for users and tracks
   const { data: searchUsers = [], isLoading: isLoadingUsers } = useSearchUsers(debouncedQuery);
-  const { data: tracksResponse, isLoading: isLoadingTracks } = useTracks("following");
+  const { data: tracksResponse, isLoading: isLoadingTracks } = useTracks({ limit: 20 });
 
   // Filter tracks based on search query
   const searchTracks = useMemo(() => {
     if (!debouncedQuery.trim() || !tracksResponse?.data?.tracks) return [];
 
-    const tracks = tracksResponse.data.tracks.map(transformDbTrackToLegacy);
+    const tracks: Track[] = tracksResponse.data.tracks;
     return tracks
       .filter(
         (track) =>
           track.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-          track.artist.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+          track.creators?.[0]?.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
           track.genre?.toLowerCase().includes(debouncedQuery.toLowerCase()),
       )
       .slice(0, 5); // Limit to 5 results
@@ -182,7 +183,7 @@ export const SearchBar = () => {
                       className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-muted/50"
                     >
                       <img
-                        src={getCoverUrl(track.imageUrl)}
+                        src={getCoverUrl(track.image)}
                         alt=""
                         className="h-8 w-8 rounded bg-muted object-cover"
                       />
@@ -194,7 +195,7 @@ export const SearchBar = () => {
                           {track.verified && <Verified className="h-3 w-3 text-blue-500" />}
                         </div>
                         <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                          <span>by {track.artist}</span>
+                          <span>by {track.creators?.[0]?.name || "Unknown Artist"}</span>
                           {track.genre && (
                             <>
                               <span>•</span>

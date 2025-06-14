@@ -10,21 +10,9 @@ import { Slider } from "@/components/ui/slider";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
 import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
+import type { Track } from "@/types/track";
 import { Loader2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { useState } from "react";
-
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  artistAddress: string;
-  duration: string;
-  imageUrl?: string;
-  audioUrl?: string;
-  isLiked?: boolean;
-  genre?: string;
-  artistAvatarUrl?: string;
-}
 
 interface MusicPlayerProps {
   track: Track;
@@ -50,7 +38,7 @@ export function MusicPlayer({
   const [volume, setVolume] = useState(75);
 
   // Use real audio player
-  console.log("MusicPlayer - Track audioUrl:", track.audioUrl);
+  console.log("MusicPlayer - Track mediaUrl:", track.mediaUrl);
 
   const {
     isPlaying: audioIsPlaying,
@@ -65,14 +53,14 @@ export function MusicPlayer({
     formatTime,
     progress,
   } = useAudioPlayer({
-    src: track.audioUrl,
+    src: track.mediaUrl,
     volume: volume / 100,
     onEnd: () => {
       onPause();
     },
     onError: (error) => {
       console.error("Audio playback error:", error);
-      console.error("Failed audioUrl:", track.audioUrl);
+      console.error("Failed mediaUrl:", track.mediaUrl);
     },
   });
 
@@ -112,7 +100,7 @@ export function MusicPlayer({
           {/* Track Cover */}
           <div className="size-14 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
             <img
-              src={getCoverUrl(track.imageUrl, track.genre)}
+              src={getCoverUrl(track.image, track.genre)}
               alt={track.title}
               className="size-full object-cover"
               onError={(e) => {
@@ -137,10 +125,13 @@ export function MusicPlayer({
             <div className="truncate font-semibold text-base">{track.title}</div>
             <div className="mt-1 flex items-center gap-2">
               <Avatar className="size-5">
-                <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} />
-                <AvatarFallback className="text-xs">{getUserInitials(track.artist)}</AvatarFallback>
+                <AvatarFallback className="text-xs">
+                  {getUserInitials(track.creators?.[0]?.name || "Unknown")}
+                </AvatarFallback>
               </Avatar>
-              <span className="truncate text-muted-foreground text-sm">{track.artist}</span>
+              <span className="truncate text-muted-foreground text-sm">
+                {track.creators?.[0]?.name || "Unknown Artist"}
+              </span>
             </div>
           </div>
         </div>
@@ -206,11 +197,7 @@ export function MusicPlayer({
               className="size-8 p-0"
               onClick={() => onLike?.(track.id)}
             >
-              {track.isLiked ? (
-                <IconHeartFill className="size-4 text-red-500" />
-              ) : (
-                <IconHeart className="size-4" />
-              )}
+              <IconHeart className="size-4" />
             </Button>
 
             <Button

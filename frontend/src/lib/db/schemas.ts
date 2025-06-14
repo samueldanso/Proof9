@@ -45,7 +45,7 @@ export interface Database {
           ip_id: string | null;
           transaction_hash: string | null;
           token_id: string | null;
-          license_terms_ids: number[] | null;
+          license_terms_ids: string[] | null;
           title: string;
           description: string | null;
           genre: string | null;
@@ -66,9 +66,12 @@ export interface Database {
           nft_metadata_ipfs_url: string | null;
           ip_metadata_hash: string | null;
           nft_metadata_hash: string | null;
-          image_url: string | null;
+          image: string | null;
           image_hash: string | null;
+          media_url: string | null;
           media_hash: string | null;
+          media_type: string | null;
+          image_url: string | null;
           yakoa_token_id: string | null;
           yakoa_status: string | null;
           yakoa_confidence: number | null;
@@ -96,7 +99,7 @@ export interface Database {
           ip_id?: string | null;
           transaction_hash?: string | null;
           token_id?: string | null;
-          license_terms_ids?: number[] | null;
+          license_terms_ids?: string[] | null;
           title: string;
           description?: string | null;
           genre?: string | null;
@@ -117,9 +120,12 @@ export interface Database {
           nft_metadata_ipfs_url?: string | null;
           ip_metadata_hash?: string | null;
           nft_metadata_hash?: string | null;
-          image_url?: string | null;
+          image?: string | null;
           image_hash?: string | null;
+          media_url?: string | null;
           media_hash?: string | null;
+          media_type?: string | null;
+          image_url?: string | null;
           yakoa_token_id?: string | null;
           yakoa_status?: string | null;
           yakoa_confidence?: number | null;
@@ -143,7 +149,7 @@ export interface Database {
           ip_id?: string | null;
           transaction_hash?: string | null;
           token_id?: string | null;
-          license_terms_ids?: number[] | null;
+          license_terms_ids?: string[] | null;
           title?: string;
           description?: string | null;
           genre?: string | null;
@@ -163,9 +169,12 @@ export interface Database {
           nft_metadata_ipfs_url?: string | null;
           ip_metadata_hash?: string | null;
           nft_metadata_hash?: string | null;
-          image_url?: string | null;
+          image?: string | null;
           image_hash?: string | null;
+          media_url?: string | null;
           media_hash?: string | null;
+          media_type?: string | null;
+          image_url?: string | null;
           yakoa_token_id?: string | null;
           yakoa_status?: string | null;
           yakoa_confidence?: number | null;

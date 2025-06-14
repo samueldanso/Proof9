@@ -145,7 +145,9 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
               <div key={license.id} className="relative">
                 <div
                   className={`flex items-start space-x-3 rounded-lg border p-4 transition-all ${
-                    formData.type === license.id ? "border-[#ced925] bg-[#ced925]/5" : "border-border"
+                    formData.type === license.id
+                      ? "border-[#ced925] bg-[#ced925]/5"
+                      : "border-border"
                   }`}
                 >
                   <RadioGroupItem value={license.id} className="mt-1" />
@@ -340,7 +342,10 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
             ← Back
           </Button>
 
-          <Button type="submit" className="flex-1 bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50">
+          <Button
+            type="submit"
+            className="flex-1 bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50"
+          >
             Continue →
           </Button>
         </div>

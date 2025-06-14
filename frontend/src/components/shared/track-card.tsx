@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
-import type { LegacyTrack } from "@/types/track";
+import type { Track } from "@/types/track";
 import { Pause, Play } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,8 +33,8 @@ function formatTrackDate(dateString?: string): string {
 }
 
 interface TrackCardProps {
-  track: LegacyTrack;
-  onPlay?: (track: LegacyTrack) => void;
+  track: Track;
+  onPlay?: (track: Track) => void;
   onLike?: (trackId: string) => void;
   onComment?: (trackId: string) => void;
   onShare?: (trackId: string) => void;
@@ -56,6 +56,10 @@ export function TrackCard({
   index,
 }: TrackCardProps) {
   const router = useRouter();
+
+  // Helper functions to get artist info from Story Protocol creators array
+  const getArtistName = () => track.creators?.[0]?.name || "";
+  const getArtistAddress = () => track.creators?.[0]?.address || "";
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -79,10 +83,10 @@ export function TrackCard({
               {index !== undefined ? index + 1 : "—"}
             </div>
 
-            {/* Track Cover */}
+            {/* Track Cover - Story Protocol image field */}
             <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-800">
               <img
-                src={getCoverUrl(track.imageUrl, track.genre)}
+                src={getCoverUrl(track.image, track.genre)}
                 alt={track.title}
                 className="h-full w-full object-cover"
                 onError={(e) => {
@@ -118,7 +122,7 @@ export function TrackCard({
             <div className="min-w-0 flex-1">
               <h3 className="line-clamp-1 font-semibold text-base leading-tight">{track.title}</h3>
               <div className="flex items-center gap-3 text-muted-foreground text-sm">
-                <span className="font-medium">{track.plays.toLocaleString()} plays</span>
+                <span className="font-medium">{(track.plays || 0).toLocaleString()} plays</span>
                 {track.duration && (
                   <>
                     <span>•</span>
@@ -146,9 +150,9 @@ export function TrackCard({
             <div className="flex items-center">
               <TrackActions
                 trackId={track.id}
-                likes={track.likes}
-                comments={track.comments}
-                isLiked={track.isLiked}
+                likes={track.likes || 0}
+                comments={track.comments || 0}
+                isLiked={false} // This would come from social actions hook
                 onLike={onLike}
                 onComment={onComment}
                 onShare={onShare}
@@ -172,7 +176,7 @@ export function TrackCard({
           {/* Album Art with Play Button - Square aspect ratio for grid */}
           <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-neutral-200 dark:bg-neutral-800">
             <img
-              src={getCoverUrl(track.imageUrl, track.genre)}
+              src={getCoverUrl(track.image, track.genre)}
               alt={track.title}
               className="h-full w-full object-cover"
               onError={(e) => {
@@ -226,28 +230,28 @@ export function TrackCard({
             <div className="space-y-1">
               <h3 className="line-clamp-2 font-bold text-base leading-tight">{track.title}</h3>
 
-              {/* Artist info - Bigger and more prominent */}
+              {/* Artist info - Using Story Protocol creators array */}
               {showArtist && (
                 <div className="flex items-center gap-2">
                   <Avatar className="h-5 w-5">
-                    <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} alt={track.artist} />
+                    <AvatarImage src={track.creatorAvatarUrl} />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {getUserInitials(track.artist)}
+                      {getUserInitials(getArtistName())}
                     </AvatarFallback>
                   </Avatar>
                   <Link
-                    href={`/profile/${track.artistUsername || track.artistAddress}`}
+                    href={`/profile/${track.creatorUsername || getArtistAddress()}`}
                     className="line-clamp-1 font-medium text-muted-foreground text-sm hover:text-foreground hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {track.artist}
+                    {getArtistName()}
                   </Link>
                 </div>
               )}
 
               {/* Stats - More prominent */}
               <div className="flex items-center gap-3 text-muted-foreground text-sm">
-                <span className="font-medium">{track.plays.toLocaleString()} plays</span>
+                <span className="font-medium">{(track.plays || 0).toLocaleString()} plays</span>
                 {track.createdAt && (
                   <>
                     <span>•</span>
@@ -261,9 +265,9 @@ export function TrackCard({
             <div className="flex items-center justify-between pt-1">
               <TrackActions
                 trackId={track.id}
-                likes={track.likes}
-                comments={track.comments}
-                isLiked={track.isLiked}
+                likes={track.likes || 0}
+                comments={track.comments || 0}
+                isLiked={false} // This would come from social actions hook
                 onLike={onLike}
                 onComment={onComment}
                 onShare={onShare}

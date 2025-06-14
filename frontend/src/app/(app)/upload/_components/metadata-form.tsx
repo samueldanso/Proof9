@@ -6,20 +6,20 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useUploadCoverArt, useUser } from "@/hooks/api";
+import { useUploadImage, useUser } from "@/hooks/api";
 import { ImageIcon, Plus, Upload, X } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
 
-// Story Protocol compliant metadata interface
+// Story Protocol compliant metadata interface - EXACT NAMING ONLY
 interface MetadataFormData {
-  // === IP METADATA (Story Protocol IPA Standard) ===
-  // Basic IP info
+  // === Story Protocol IPA Standard ===
   title: string;
   description: string;
 
-  // Creator info (Story Protocol creators array)
+  // Story Protocol creators array
   creators: Array<{
     name: string;
     address: string;
@@ -31,36 +31,42 @@ interface MetadataFormData {
     }>;
   }>;
 
-  // Cover art (Story Protocol image.* fields)
-  coverArt?: File;
-  imageUrl?: string;
+  // Story Protocol image.* fields
+  image?: string;
   imageHash?: string;
 
-  // Audio file (Story Protocol media.* fields - checked for infringement)
+  // Story Protocol media.* fields
   mediaUrl?: string;
   mediaHash?: string;
   mediaType?: string;
 
-  // === NFT METADATA (ERC-721 Standard) ===
-  // NFT display info
-  nftName?: string; // Can be different from IP title
-  nftDescription?: string; // Can be different from IP description
+  // === Additional Metadata ===
+  genre: string;
+  tags: string[];
+  duration?: string;
 
-  // NFT attributes for marketplaces
+  // === NFT Metadata (ERC-721 Standard) ===
+  nftName?: string;
+  nftDescription?: string;
   attributes?: Array<{
     key: string;
     value: string;
   }>;
-
-  // === ADDITIONAL METADATA (Platform-specific) ===
-  genre: string;
-  tags: string[];
-  duration?: string;
 }
 
 interface MetadataFormProps {
   initialData?: MetadataFormData;
-  audioFile?: File; // Pass audio file to auto-detect media type
+  mediaFile?: File;
+  imageFile?: File;
+  mediaResult?: {
+    mediaUrl: string;
+    mediaHash: string;
+    mediaType: string;
+  };
+  imageResult?: {
+    image: string;
+    imageHash: string;
+  };
   onSubmit: (metadata: MetadataFormData) => void;
   onNext: () => void;
   onBack: () => void;
@@ -103,14 +109,17 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 export default function MetadataForm({
   initialData,
-  audioFile,
+  mediaFile,
+  imageFile,
+  mediaResult,
+  imageResult,
   onSubmit,
   onNext,
   onBack,
 }: MetadataFormProps) {
   const { address } = useAccount();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadCoverArtMutation = useUploadCoverArt();
+  const uploadImageMutation = useUploadImage();
 
   // Fetch user profile to auto-populate creator name
   const { data: userResponse } = useUser(address || "");
@@ -124,24 +133,21 @@ export default function MetadataForm({
     // Auto-fill creator info from wallet and profile
     creators: initialData?.creators || [
       {
-        name: userData?.displayName || "", // Auto-populate from user profile
+        name: userData?.displayName || "",
         address: address || "",
         contributionPercent: 100,
       },
     ],
-    // Cover art
-    coverArt: initialData?.coverArt,
-    imageUrl: initialData?.imageUrl,
-    imageHash: initialData?.imageHash,
-    // Auto-detect media type from audio file
-    mediaType: initialData?.mediaType || audioFile?.type || "",
+    // Story Protocol fields from upload results
+    image: initialData?.image || imageResult?.image,
+    imageHash: initialData?.imageHash || imageResult?.imageHash,
+    mediaUrl: initialData?.mediaUrl || mediaResult?.mediaUrl,
+    mediaHash: initialData?.mediaHash || mediaResult?.mediaHash,
+    mediaType: initialData?.mediaType || mediaResult?.mediaType || mediaFile?.type || "",
     // NFT metadata
     nftName: initialData?.nftName,
     nftDescription: initialData?.nftDescription,
     attributes: initialData?.attributes || [],
-    // Audio file
-    mediaUrl: initialData?.mediaUrl,
-    mediaHash: initialData?.mediaHash,
   });
 
   // Auto-populate creator name when user data loads
@@ -216,8 +222,13 @@ export default function MetadataForm({
     ) {
       newErrors.creators = "Creator address and contribution percent are required";
     }
-    if (!formData.coverArt && !formData.imageUrl) {
-      newErrors.coverArt = "Cover art is required for IP registration";
+
+    // Check Story Protocol media fields
+    if (!formData.image && !imageResult?.image) {
+      newErrors.coverArt = "Cover art is required - please go back and upload an image";
+    }
+    if (!formData.mediaUrl && !mediaResult?.mediaUrl) {
+      newErrors.media = "Audio file is required - please go back and upload audio";
     }
 
     setErrors(newErrors);
@@ -228,38 +239,17 @@ export default function MetadataForm({
     e.preventDefault();
 
     if (validateForm()) {
-      // If cover art was uploaded but not processed, process it now
-      if (formData.coverArt && !formData.imageUrl) {
-        setIsUploadingCover(true);
-        try {
-          // Convert file to base64
-          const fileData = await fileToBase64(formData.coverArt);
+      // Use Story Protocol naming from upload results
+      const finalData = {
+        ...formData,
+        image: formData.image || imageResult?.image,
+        imageHash: formData.imageHash || imageResult?.imageHash,
+        mediaUrl: formData.mediaUrl || mediaResult?.mediaUrl,
+        mediaHash: formData.mediaHash || mediaResult?.mediaHash,
+        mediaType: formData.mediaType || mediaResult?.mediaType || mediaFile?.type,
+      };
 
-          // Upload to IPFS using the hook
-          const result = await uploadCoverArtMutation.mutateAsync({
-            fileName: formData.coverArt.name,
-            fileType: formData.coverArt.type,
-            fileSize: formData.coverArt.size,
-            fileData: fileData,
-          });
-
-          const updatedData = {
-            ...formData,
-            imageUrl: result.data.ipfsUrl,
-            imageHash: result.data.fileHash,
-          };
-          setFormData(updatedData);
-          onSubmit(updatedData);
-        } catch (error: any) {
-          console.error("Cover art upload error:", error);
-          toast.error(error.message || "Failed to upload cover art");
-          setIsUploadingCover(false);
-          return;
-        }
-        setIsUploadingCover(false);
-      } else {
-        onSubmit(formData);
-      }
+      onSubmit(finalData);
     }
   };
 
@@ -300,7 +290,8 @@ export default function MetadataForm({
       formData.genre &&
       formData.creators[0]?.name.trim() &&
       formData.creators[0]?.address &&
-      formData.coverArt
+      (formData.image || imageResult?.image) && // Story Protocol image field
+      (formData.mediaUrl || mediaResult?.mediaUrl) // Story Protocol mediaUrl field
     );
   };
 
@@ -314,6 +305,46 @@ export default function MetadataForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Media Preview from Upload Step */}
+        {(mediaFile || imageFile) && (
+          <div className="rounded-lg border bg-gradient-to-br from-[#ced925]/5 to-[#ced925]/10 p-6">
+            <h3 className="mb-4 font-semibold">📁 Uploaded Files</h3>
+
+            <div className="flex items-start space-x-4">
+              {/* Cover Art Preview - Story Protocol image field */}
+              <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
+                {imageResult?.image ? (
+                  <img
+                    src={imageResult.image}
+                    alt="Cover preview"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+
+              {/* Media Info - Story Protocol mediaUrl field */}
+              <div className="flex-1 space-y-2">
+                <div>
+                  <h4 className="font-medium">{mediaFile?.name || "Audio File"}</h4>
+                  <p className="text-muted-foreground text-sm">
+                    {mediaFile && `${(mediaFile.size / (1024 * 1024)).toFixed(2)} MB`} •{" "}
+                    {mediaResult?.mediaType || mediaFile?.type}
+                  </p>
+                </div>
+
+                <div className="text-muted-foreground text-xs">
+                  ✓ Media URL: {mediaResult?.mediaUrl ? "Ready" : "Missing"}
+                  <br />✓ Image URL: {imageResult?.image ? "Ready" : "Missing"}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Basic Track Information */}
         <div className="space-y-6">
           <div className="border-b pb-2">
@@ -371,7 +402,7 @@ export default function MetadataForm({
           </div>
         </div>
 
-        {/* Creator Information */}
+        {/* Story Protocol Creator Information */}
         <div className="space-y-6">
           <div className="border-b pb-2">
             <h3 className="font-semibold text-lg">Creator Information</h3>
@@ -448,81 +479,6 @@ export default function MetadataForm({
           </div>
         </div>
 
-        {/* Cover Art & Media */}
-        <div className="space-y-6">
-          <div className="border-b pb-2">
-            <h3 className="font-semibold text-lg">Cover Art & Media</h3>
-            <p className="text-muted-foreground text-sm">
-              Required for Story Protocol registration
-            </p>
-          </div>
-
-          {/* Cover Art */}
-          <div className="space-y-2">
-            <Label htmlFor="coverArt">Cover Art *</Label>
-
-            {/* Cover Art Upload Area */}
-            <div
-              className={`relative cursor-pointer rounded-lg border-2 border-dashed transition-all duration-200 ${
-                formData.coverArt || coverPreview
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/30 hover:border-primary/50 hover:bg-accent/50"
-              }`}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleCoverArtSelect}
-                className="hidden"
-              />
-
-              {coverPreview ? (
-                // Show cover art preview
-                <div className="flex items-center space-x-4 p-4">
-                  <div className="relative h-20 w-20 overflow-hidden rounded-lg">
-                    <img
-                      src={coverPreview}
-                      alt="Cover art preview"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-[#ced925]">Cover Art Selected</h4>
-                    <p className="text-muted-foreground text-sm">{formData.coverArt?.name}</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        fileInputRef.current?.click();
-                      }}
-                    >
-                      Change Cover Art
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                // Show upload prompt
-                <div className="flex flex-col items-center justify-center space-y-3 p-8">
-                  <div className="rounded-full bg-[#ced925]/10 p-3">
-                    <ImageIcon className="h-6 w-6 text-[#ced925]" />
-                  </div>
-                  <div className="text-center">
-                    <h4 className="font-medium">Upload Cover Art</h4>
-                    <p className="text-muted-foreground text-sm">Click to select an image file</p>
-                  </div>
-                  <div className="text-muted-foreground text-xs">PNG, JPG, WebP • Max 10MB</div>
-                </div>
-              )}
-            </div>
-            {errors.coverArt && <p className="text-red-500 text-sm">{errors.coverArt}</p>}
-          </div>
-        </div>
-
         {/* Tags & Additional Info */}
         <div className="space-y-6">
           <div className="border-b pb-2">
@@ -571,35 +527,44 @@ export default function MetadataForm({
           </div>
         </div>
 
-        {/* Technical Information */}
+        {/* Story Protocol Technical Information - Read Only Preview */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-lg">Technical Information</h3>
+          <h3 className="font-semibold text-lg">Story Protocol Technical Information</h3>
 
-          {/* Media Type (Auto-detected) */}
-          <div className="space-y-2">
-            <Label>Media Type</Label>
-            <Input
-              value={formData.mediaType}
-              readOnly
-              className="bg-muted"
-              placeholder="Auto-detected from audio file"
-            />
-            <p className="text-muted-foreground text-xs">
-              Automatically detected from your uploaded audio file
-            </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Media Type */}
+            <div className="space-y-2">
+              <Label>Media Type</Label>
+              <Input
+                value={formData.mediaType || "Not detected"}
+                readOnly
+                className="bg-muted"
+                placeholder="Auto-detected from uploaded file"
+              />
+            </div>
+
+            {/* Content Verification */}
+            <div className="space-y-2">
+              <Label>Content Verification</Label>
+              <Input
+                value={formData.mediaHash ? "✓ Ready for Story Protocol" : "⚠ Missing hash"}
+                readOnly
+                className="bg-muted"
+              />
+            </div>
           </div>
         </div>
 
         {/* Story Protocol Registration Preview */}
         <div className="rounded-lg border bg-gradient-to-br from-[#ced925]/5 to-[#ced925]/10 p-6">
-          <h3 className="mb-4 font-semibold text-lg">Story Protocol Registration Preview</h3>
+          <h3 className="mb-4 font-semibold text-lg">📜 Story Protocol Registration Preview</h3>
 
           <div className="flex items-start space-x-4">
-            {/* Cover Art Preview */}
+            {/* Cover Art Preview - Story Protocol image field */}
             <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-              {coverPreview ? (
+              {formData.image || imageResult?.image ? (
                 <img
-                  src={coverPreview}
+                  src={formData.image || imageResult?.image}
                   alt="Cover preview"
                   className="h-full w-full object-cover"
                 />
@@ -650,6 +615,24 @@ export default function MetadataForm({
           </div>
         </div>
 
+        {/* Validation Errors */}
+        {(errors.coverArt || errors.media) && (
+          <div className="rounded-lg border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div>
+                <h4 className="font-medium text-red-800 dark:text-red-200">Missing Upload Data</h4>
+                {errors.coverArt && (
+                  <p className="text-red-700 text-sm dark:text-red-300">{errors.coverArt}</p>
+                )}
+                {errors.media && (
+                  <p className="text-red-700 text-sm dark:text-red-300">{errors.media}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="flex items-center justify-between border-t pt-6">
           <Button type="button" variant="outline" onClick={onBack}>
@@ -661,7 +644,7 @@ export default function MetadataForm({
             disabled={!isFormValid()}
             className="bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50"
           >
-            Continue to Registration →
+            Continue to License →
           </Button>
         </div>
       </form>

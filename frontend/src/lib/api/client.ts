@@ -1,12 +1,5 @@
 import { env } from "@/env";
 
-// Enhanced response wrapper for better error handling
-interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  error?: string;
-}
-
 export class ApiClient {
   private baseUrl: string;
 
@@ -26,21 +19,11 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({
-        success: false,
-        error: "Network error",
-      }));
+      const errorData = await response.json().catch(() => ({ error: "Network error" }));
       throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 
-    const result = await response.json();
-
-    // Handle backend API response format
-    if (result.success === false) {
-      throw new Error(result.error || "API request failed");
-    }
-
-    return result;
+    return response.json();
   }
 
   // GET request

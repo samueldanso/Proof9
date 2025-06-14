@@ -1,10 +1,8 @@
 "use client";
 
 import { TrackCard } from "@/components/shared/track-card";
-import { useUser, useUserTracks } from "@/hooks/api";
-import { useTracks } from "@/hooks/api";
+import { useTracks, useUser, useUserTracks } from "@/hooks/api";
 import { useAddComment, useLikeTrack } from "@/hooks/use-social-actions";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -22,17 +20,15 @@ export function TrackList() {
   );
   const userTrackIds = userTracksResponse?.data?.tracks || [];
 
-  // Get all tracks to filter by user's tracks
-  const { data: allTracksResponse, isLoading: isLoadingAllTracks } = useTracks("latest");
+  // Get all tracks to filter by user's tracks - using correct TracksParams
+  const { data: allTracksResponse, isLoading: isLoadingAllTracks } = useTracks({
+    tab: "latest",
+    limit: 50, // Get more tracks to filter from
+  });
   const allTracks = allTracksResponse?.data?.tracks || [];
 
-  // Filter tracks to only show user's tracks and transform them
-  const userTracks = allTracks
-    .filter((track) => userTrackIds.includes(track.id))
-    .map((track) => ({
-      ...transformDbTrackToLegacy(track as any),
-      artistUsername: (track as any).artistUsername, // Pass through the username
-    }));
+  // Filter tracks to only show user's tracks - already in Story Protocol format
+  const userTracks = allTracks.filter((track) => userTrackIds.includes(track.id));
 
   const isLoading = isLoadingUserTracks || isLoadingAllTracks;
 

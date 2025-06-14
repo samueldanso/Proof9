@@ -1,201 +1,240 @@
 "use client";
 
-import { MusicPlayer } from "@/components/shared/music-player";
-import { TrackCard } from "@/components/shared/track-card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTracks } from "@/hooks/api";
-import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
-import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import type { Track } from "@/types/track";
+import { Heart, Play, User, Verified } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { useAccount } from "wagmi";
-import FeedTabs from "./_components/feed-tabs";
-import GenreFilter from "./_components/genre-filter";
-import TrendingBanner from "./_components/trending-banner";
+
+const GENRES = [
+  "All",
+  "Electronic",
+  "Hip Hop",
+  "Pop",
+  "Rock",
+  "Jazz",
+  "Classical",
+  "R&B",
+  "Country",
+  "Folk",
+  "Blues",
+  "Reggae",
+  "Punk",
+  "Metal",
+  "Alternative",
+  "Indie",
+  "World",
+  "Other",
+];
 
 export default function DiscoverPage() {
-  const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState<string>(
-    tabParam === "latest" || tabParam === "following" || tabParam === "trending"
-      ? tabParam
-      : "latest",
-  );
-
-  // Genre filter state
-  const [activeGenre, setActiveGenre] = useState<string | null>(null);
-
-  // Music player state
-  const [currentTrack, setCurrentTrack] = useState<any>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  // User authentication
   const { address } = useAccount();
+  const [activeTab, setActiveTab] = useState<"latest" | "following" | "trending">("latest");
+  const [selectedGenre, setSelectedGenre] = useState("All");
 
-  // Load tracks based on active tab and genre filter
+  // Fetch tracks using Story Protocol format
   const {
     data: tracksResponse,
     isLoading,
     error,
-  } = useTracks(activeTab, address || undefined, activeGenre || undefined);
-  const dbTracks = tracksResponse?.data?.tracks || [];
+  } = useTracks({
+    tab: activeTab,
+    user_address: address,
+    genre: selectedGenre === "All" ? undefined : selectedGenre,
+  });
 
-  // Load user's liked tracks to determine isLiked status
-  const { data: userLikes = [] } = useUserLikes();
-  const likedTrackIds = useMemo(() => {
-    return new Set(userLikes.map((like) => like.track_id));
-  }, [userLikes]);
+  const tracks = tracksResponse?.data?.tracks || [];
 
-  // Transform database tracks to legacy format with real liked status
-  const tracks = useMemo(() => {
-    return dbTracks.map((dbTrack) => ({
-      ...transformDbTrackToLegacy(dbTrack),
-      isLiked: address ? likedTrackIds.has(dbTrack.id) : false,
-    }));
-  }, [dbTracks, likedTrackIds, address]);
-
-  // Social actions hooks
-  const likeTrackMutation = useLikeTrack();
-  const addCommentMutation = useAddComment();
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    const url = new URL(window.location.href);
-    url.searchParams.set("tab", tab);
-    window.history.pushState({}, "", url);
+  const formatDuration = (duration: string) => {
+    if (!duration || duration === "0:00") return "3:24"; // Default duration
+    return duration;
   };
 
-  const handleGenreChange = (genre: string | null) => {
-    setActiveGenre(genre);
-  };
-
-  const handlePlay = (track: any) => {
-    console.log("handlePlay - Track:", track.title);
-    console.log("handlePlay - AudioUrl:", track.audioUrl);
-
-    if (currentTrack?.id === track.id) {
-      setIsPlaying(!isPlaying);
-    } else {
-      setCurrentTrack(track);
-      setIsPlaying(true);
+  const formatPlays = (plays: number) => {
+    if (plays >= 1000000) {
+      return `${(plays / 1000000).toFixed(1)}M`;
     }
-  };
-
-  const handleLike = (trackId: string) => {
-    const track = tracks.find((t) => t.id === trackId);
-    likeTrackMutation.mutate({ trackId, trackTitle: track?.title });
-  };
-
-  const handleComment = (trackId: string) => {
-    // For now, we'll navigate to track detail page for commenting
-    // In the future, we could open a comment modal here
-    window.location.href = `/track/${trackId}#comments`;
-  };
-
-  const handleShare = (trackId: string) => {
-    const shareUrl = `${window.location.origin}/track/${trackId}`;
-    if (navigator.share) {
-      navigator.share({
-        title: "Check out this track",
-        url: shareUrl,
-      });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      toast.success("Track link copied to clipboard!");
+    if (plays >= 1000) {
+      return `${(plays / 1000).toFixed(1)}K`;
     }
+    return plays.toString();
   };
 
-  const handlePlayerClose = () => {
-    setCurrentTrack(null);
-    setIsPlaying(false);
+  const getArtistName = (track: Track) => {
+    // Use Story Protocol creators array
+    return track.creators?.[0]?.name || "Unknown Artist";
   };
+
+  const getArtistAddress = (track: Track) => {
+    // Use Story Protocol creators array
+    return track.creators?.[0]?.address || "";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <div className="h-8 w-48 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-96 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="grid gap-4">
+            <div className="h-20 animate-pulse rounded-lg bg-muted" />
+            <div className="h-20 animate-pulse rounded-lg bg-muted" />
+            <div className="h-20 animate-pulse rounded-lg bg-muted" />
+            <div className="h-20 animate-pulse rounded-lg bg-muted" />
+            <div className="h-20 animate-pulse rounded-lg bg-muted" />
+            <div className="h-20 animate-pulse rounded-lg bg-muted" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-center">
-        <h3 className="mb-3 font-bold text-xl">Failed to load tracks</h3>
-        <p className="text-muted-foreground">Please try again later</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h2 className="font-bold text-2xl">Error loading tracks</h2>
+          <p className="text-muted-foreground">Please try again later</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-6">
-      {/* Trending Banner - Full width aligned with tabs */}
-      <div className="mx-auto max-w-7xl px-4">
-        <TrendingBanner onExploreClick={() => handleTabChange("trending")} />
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="space-y-2">
+          <h1 className="font-bold text-3xl">Discover Music</h1>
+          <p className="text-muted-foreground">
+            Explore verified tracks protected by Story Protocol
+          </p>
+        </div>
 
-      {/* Feed Tabs */}
-      <div className="mx-auto max-w-7xl px-4">
-        <FeedTabs activeTab={activeTab} onTabChange={handleTabChange} />
-      </div>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="latest">Latest</TabsTrigger>
+            <TabsTrigger value="following">Following</TabsTrigger>
+            <TabsTrigger value="trending">Trending</TabsTrigger>
+          </TabsList>
 
-      {/* Genre Filter */}
-      <div className="mx-auto max-w-7xl px-4">
-        <GenreFilter activeGenre={activeGenre} onGenreChange={handleGenreChange} />
-      </div>
+          {/* Genre Filter */}
+          <div className="mt-6">
+            <div className="flex flex-wrap gap-2">
+              {GENRES.map((genre) => (
+                <Button
+                  key={genre}
+                  variant={selectedGenre === genre ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedGenre(genre)}
+                  className="text-xs"
+                >
+                  {genre}
+                </Button>
+              ))}
+            </div>
+          </div>
 
-      {/* Track Feed - Grid Layout */}
-      <div className="mx-auto max-w-7xl px-4">
-        {isLoading ? (
-          // Loading state - Grid skeleton
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="mb-4 aspect-square w-full rounded-xl bg-muted" />
-                <div className="mb-2 h-5 rounded bg-muted" />
-                <div className="mb-2 h-4 w-3/4 rounded bg-muted" />
-                <div className="h-3 w-1/2 rounded bg-muted" />
+          <TabsContent value={activeTab} className="space-y-6">
+            {tracks.length === 0 ? (
+              <div className="py-12 text-center">
+                <h3 className="font-semibold text-lg">No tracks found</h3>
+                <p className="text-muted-foreground">
+                  {activeTab === "following"
+                    ? "Follow some artists to see their tracks here"
+                    : "Try adjusting your filters or check back later"}
+                </p>
               </div>
-            ))}
-          </div>
-        ) : tracks.length === 0 ? (
-          // Empty state
-          <div className="flex flex-col items-center justify-center p-8 text-center">
-            <h3 className="mb-3 font-bold text-xl">No tracks found</h3>
-            <p className="text-muted-foreground">
-              {activeTab === "latest"
-                ? "No new tracks uploaded yet"
-                : activeTab === "following"
-                  ? "No tracks from creators you follow yet"
-                  : activeTab === "trending"
-                    ? "No trending tracks available yet"
-                    : "No tracks available yet"}
-            </p>
-          </div>
-        ) : (
-          // Track grid - Up to 5 columns on very large screens, responsive
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-            {tracks.map((track) => (
-              <TrackCard
-                key={track.id}
-                track={track}
-                onPlay={handlePlay}
-                onLike={handleLike}
-                onComment={handleComment}
-                onShare={handleShare}
-                isPlaying={currentTrack?.id === track.id && isPlaying}
-                variant="feed"
-              />
-            ))}
-          </div>
-        )}
-      </div>
+            ) : (
+              <div className="grid gap-4">
+                {tracks.map((track) => (
+                  <Card key={track.id} className="p-4 transition-shadow hover:shadow-md">
+                    <div className="flex items-center space-x-4">
+                      {/* Cover Art - Story Protocol image field */}
+                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
+                        {track.image ? (
+                          <img
+                            src={track.image}
+                            alt={track.title}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <Play className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity hover:opacity-100">
+                          <Play className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
 
-      {/* Music Player */}
-      {currentTrack && (
-        <MusicPlayer
-          track={currentTrack}
-          isPlaying={isPlaying}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onClose={handlePlayerClose}
-          onLike={handleLike}
-          onComment={handleComment}
-          onShare={handleShare}
-        />
-      )}
+                      {/* Track Info */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center space-x-2">
+                          <Link
+                            href={`/track/${track.id}`}
+                            className="truncate font-semibold text-lg hover:underline"
+                          >
+                            {track.title}
+                          </Link>
+                          {track.verified && (
+                            <Verified className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                          )}
+                        </div>
+
+                        <div className="flex items-center space-x-2 text-muted-foreground">
+                          <Link
+                            href={`/profile/${getArtistAddress(track)}`}
+                            className="flex items-center space-x-1 hover:underline"
+                          >
+                            <User className="h-4 w-4" />
+                            <span>{getArtistName(track)}</span>
+                          </Link>
+                          <span>•</span>
+                          <span>{formatDuration(track.duration || "")}</span>
+                          {track.genre && (
+                            <>
+                              <span>•</span>
+                              <span className="rounded bg-muted px-2 py-1 text-xs">
+                                {track.genre}
+                              </span>
+                            </>
+                          )}
+                        </div>
+
+                        {track.description && (
+                          <p className="mt-1 line-clamp-1 text-muted-foreground text-sm">
+                            {track.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex items-center space-x-4 text-muted-foreground text-sm">
+                        <div className="flex items-center space-x-1">
+                          <Play className="h-4 w-4" />
+                          <span>{formatPlays(track.plays || 0)}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Heart className="h-4 w-4" />
+                          <span>{track.likes || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
