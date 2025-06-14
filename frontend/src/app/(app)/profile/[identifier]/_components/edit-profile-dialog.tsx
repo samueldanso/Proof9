@@ -111,7 +111,7 @@ export function EditProfileDialog({
         address,
         display_name: displayName.trim(),
         username: username.trim() || undefined,
-        avatar_url: avatarUrl,
+        avatar_url: avatarUrl || undefined,
       });
 
       if (response.success) {
