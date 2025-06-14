@@ -11,9 +11,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: " Proof9 – Protect, License & Monetize Your Sound",
+  title: "Proof9 – Prove, License & Earn from Your Sound",
   description:
-    "Proof9 is a sound rights platform where creators protect their IP, license it for use, monetize their work, and connect with fans.",
+    "Proof9 is a sound rights platform where sound and music creators protect their IP, license it for use, earn from their work, and connect with fans.",
   icons: [{ rel: "icon", url: "/favicon.svg" }],
 };
 

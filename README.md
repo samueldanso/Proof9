@@ -1,6 +1,6 @@
 ![Proof9 Banner](banner.png)
 
-# Proof9 — Protect, license, and monetize your sound, on Story
+# Proof9 — Protect, license, and earn from your sound, on Story
 
 Proof9 is a sound rights platform where music creators protect, license, and monetize their sound IP through on-chain ownership, AI-powered originality verification, and real social connection with their fans and audience — powered by Story Protocol, Yakoa, and Tomo.
 

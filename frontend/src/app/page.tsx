@@ -55,17 +55,15 @@ export default function Home() {
               <h1 className="max-w-4xl pt-20 font-bold text-4xl text-foreground tracking-tight md:text-5xl lg:text-6xl">
                 Prove your music is yours. <br />
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Get paid when it's used.
+                  Get paid when it's used. Connect with fans.
                 </span>
               </h1>
 
               {/* Subheadline */}
               <p className="mt-10 max-w-2xl text-lg text-muted-foreground leading-relaxed">
-                The first platform that uses{" "}
-                <span className="font-semibold text-foreground">AI verification</span> and{" "}
-                <span className="font-semibold text-foreground">blockchain ownership</span> to help
-                music creators protect their work, license it easily, and earn automatically when
-                it's used.
+                Protect your sound with AI verification, prove your rights, license it globally, earn
+                automatically, and build your fanbase — all in one place designed for independent
+                creators.
               </p>
 
               {/* Trust indicators */}
