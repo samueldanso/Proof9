@@ -93,7 +93,7 @@ export function ProfileSetupDialog({
       const response = await createProfileMutation.mutateAsync({
         address: userAddress,
         display_name: displayName.trim(),
-        avatar_url: avatarUrl,
+        avatar_url: avatarUrl || undefined,
       });
 
       if (response.success) {

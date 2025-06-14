@@ -84,7 +84,7 @@ export function ProfileSetup() {
       const response = await createProfileMutation.mutateAsync({
         address,
         display_name: displayName.trim(),
-        avatar_url: avatarUrl,
+        avatar_url: avatarUrl || undefined,
       });
 
       if (response.success) {
