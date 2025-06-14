@@ -52,7 +52,7 @@ export default function Home() {
             {/* Hero section */}
             <div className="flex flex-col items-center text-center">
               {/* Headline */}
-              <h1 className="max-w-4xl pt-20 font-bold text-4xl text-foreground tracking-tight md:text-5xl lg:text-6xl">
+              <h1 className="max-w-4xl pt-20 font-bold text-4xl text-foreground tracking-tight leading-tight md:text-5xl lg:text-6xl md:leading-tight lg:leading-tight">
                 Prove your music is yours. <br />
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Get paid. Connect with fans.
