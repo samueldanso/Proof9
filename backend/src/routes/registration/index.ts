@@ -13,53 +13,64 @@ import {
 
 const registrationRouter = new Hono()
 
-// Story Protocol compliant schema
-// Based on: https://docs.story.foundation/developers/tutorials/how-to-register-music-on-story
+// Story Protocol music registration schema
 const MusicRegistrationSchema = z.object({
-  // === IP METADATA (Story Protocol IPA Standard) ===
+  // IP Metadata (Story Protocol IPA Standard)
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
 
-  // Story Protocol creators array
-  creators: z.array(z.object({
-    name: z.string().min(1, "Creator name is required"),
-    address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
-    contributionPercent: z.number().int().min(1).max(100),
-    description: z.string().optional(),
-    socialMedia: z.array(z.object({
-      platform: z.string(),
-      url: z.string().url(),
-    })).optional(),
-  })).min(1, "At least one creator is required"),
+  creators: z
+    .array(
+      z.object({
+        name: z.string().min(1, "Creator name is required"),
+        address: z
+          .string()
+          .regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
+        contributionPercent: z.number().int().min(1).max(100),
+        description: z.string().optional(),
+        socialMedia: z
+          .array(
+            z.object({
+              platform: z.string(),
+              url: z.string().url(),
+            }),
+          )
+          .optional(),
+      }),
+    )
+    .min(1, "At least one creator is required"),
 
-  // Cover art (Story Protocol image.* fields)
-  imageUrl: z.string().url("Invalid image URL"),
+  // Story Protocol image.* fields
+  image: z.string().url("Invalid image URL"),
   imageHash: z.string().min(1, "Image hash is required"),
 
-  // Audio file (Story Protocol media.* fields)
+  // Story Protocol media.* fields
   mediaUrl: z.string().url("Invalid media URL"),
   mediaHash: z.string().min(1, "Media hash is required"),
-  mediaType: z.string().min(1, "Media type is required"), // e.g., "audio/mpeg"
+  mediaType: z.string().min(1, "Media type is required"),
 
-  // === NFT METADATA (ERC-721 Standard) ===
+  // NFT Metadata (ERC-721 Standard)
   nftName: z.string().optional(),
   nftDescription: z.string().optional(),
-  attributes: z.array(z.object({
-    key: z.string(),
-    value: z.string(),
-  })).optional(),
+  attributes: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      }),
+    )
+    .optional(),
 
-  // === LICENSE TERMS ===
-  commercialRemixTerms: z.object({
-    defaultMintingFee: z.number().default(1),
-    commercialRevShare: z.number().int().min(0).max(100).default(5),
-  }).optional(),
+  // License Terms
+  commercialRemixTerms: z
+    .object({
+      defaultMintingFee: z.number().default(1),
+      commercialRevShare: z.number().int().min(0).max(100).default(5),
+    })
+    .optional(),
 })
 
-/**
- * Register music as IP Asset following Story Protocol's exact music tutorial pattern
- * Docs: https://docs.story.foundation/developers/tutorials/how-to-register-music-on-story
- */
+// Register music as IP Asset following Story Protocol pattern
 registrationRouter.post(
   "/register",
   zValidator("json", MusicRegistrationSchema),
@@ -67,12 +78,12 @@ registrationRouter.post(
     try {
       const requestData = c.req.valid("json")
 
-      // 1. Set up IP Metadata following Story Protocol's exact pattern
+      // Set up IP Metadata
       const ipMetadata: IpMetadata = client.ipAsset.generateIpMetadata({
         title: requestData.title,
         description: requestData.description,
-        createdAt: Math.floor(Date.now() / 1000).toString(), // Unix timestamp as string
-        creators: requestData.creators.map(creator => ({
+        createdAt: Math.floor(Date.now() / 1000).toString(),
+        creators: requestData.creators.map((creator) => ({
           name: creator.name,
           address: creator.address as `0x${string}`,
           contributionPercent: creator.contributionPercent,
@@ -80,20 +91,26 @@ registrationRouter.post(
           ...(creator.socialMedia && { socialMedia: creator.socialMedia }),
         })),
         // Cover art (image.* fields)
-        image: requestData.imageUrl,
-        imageHash: (requestData.imageHash.startsWith('0x') ? requestData.imageHash : `0x${requestData.imageHash}`) as `0x${string}`,
-        // Audio file (media.* fields - checked for infringement by Story Attestation Service)
+        image: requestData.image,
+        imageHash: (requestData.imageHash.startsWith("0x")
+          ? requestData.imageHash
+          : `0x${requestData.imageHash}`) as `0x${string}`,
+        // Audio file (media.* fields - checked for infringement)
         mediaUrl: requestData.mediaUrl,
-        mediaHash: (requestData.mediaHash.startsWith('0x') ? requestData.mediaHash : `0x${requestData.mediaHash}`) as `0x${string}`,
+        mediaHash: (requestData.mediaHash.startsWith("0x")
+          ? requestData.mediaHash
+          : `0x${requestData.mediaHash}`) as `0x${string}`,
         mediaType: requestData.mediaType,
       })
 
-      // 2. Set up NFT Metadata following ERC-721 standard
+      // Set up NFT Metadata
       const nftMetadata = {
         name: requestData.nftName || requestData.title,
-        description: requestData.nftDescription || `${requestData.description} This NFT represents ownership of the IP Asset.`,
-        image: requestData.imageUrl, // Cover image
-        animation_url: requestData.mediaUrl, // Audio file
+        description:
+          requestData.nftDescription ||
+          `${requestData.description} This NFT represents ownership of the IP Asset.`,
+        image: requestData.image,
+        animation_url: requestData.mediaUrl,
         attributes: requestData.attributes || [
           {
             key: "Platform",
@@ -114,7 +131,7 @@ registrationRouter.post(
         ],
       }
 
-      // 3. Upload IP and NFT Metadata to IPFS
+      // Upload IP and NFT Metadata to IPFS
       const ipIpfsHash = await uploadJSONToIPFS(ipMetadata)
       const ipHash = createHash("sha256")
         .update(JSON.stringify(ipMetadata))
@@ -124,7 +141,7 @@ registrationRouter.post(
         .update(JSON.stringify(nftMetadata))
         .digest("hex")
 
-      // 4. Register the NFT as an IP Asset with PIL Terms
+      // Register the NFT as an IP Asset with PIL Terms
       const commercialTerms = requestData.commercialRemixTerms || {
         defaultMintingFee: 1,
         commercialRevShare: 5,
@@ -151,6 +168,9 @@ registrationRouter.post(
         "IPA ID": response.ipId,
         "License Terms IDs": response.licenseTermsIds,
       })
+      console.log(
+        `View on the explorer: ${networkInfo.protocolExplorer}/ipa/${response.ipId}`,
+      )
 
       return c.json({
         success: true,
@@ -158,7 +178,8 @@ registrationRouter.post(
           transactionHash: response.txHash,
           ipId: response.ipId,
           tokenId: response.tokenId?.toString(),
-          licenseTermsIds: response.licenseTermsIds?.map((id) => id.toString()) || [],
+          licenseTermsIds:
+            response.licenseTermsIds?.map((id) => id.toString()) || [],
           explorerUrl: `${networkInfo.protocolExplorer}/ipa/${response.ipId}`,
           ipMetadata,
           nftMetadata,

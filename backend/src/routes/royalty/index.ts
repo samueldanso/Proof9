@@ -4,7 +4,7 @@ import { Hono } from "hono"
 import { Address, parseEther, toHex, zeroAddress } from "viem"
 import { z } from "zod"
 
-import { client } from "../../../utils/config"
+import { client, networkInfo } from "../../../utils/config"
 import { SPGNFTContractAddress } from "../../../utils/utils"
 
 // Create router
@@ -81,6 +81,16 @@ royaltyRouter.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
         },
         txOptions: { waitForTransaction: true },
       })
+
+      console.log("Derivative IP Asset created for royalty payment:", {
+        "Transaction Hash": childIp.txHash,
+        "IPA ID": childIp.ipId,
+        "Parent IPA ID": parentIpId,
+        "License Terms ID": licenseTermsId,
+      })
+      console.log(
+        `View on the explorer: ${networkInfo.protocolExplorer}/ipa/${childIp.ipId}`,
+      )
 
       derivativeIpId = childIp.ipId as string
     }

@@ -85,6 +85,16 @@ derivativeRouter.post(
         txOptions: { waitForTransaction: true },
       })
 
+      console.log("Derivative IP Asset registered:", {
+        "Transaction Hash": response.txHash,
+        "IPA ID": response.ipId,
+        "Parent IPA ID": parentIpId,
+        "License Terms ID": licenseTermsId,
+      })
+      console.log(
+        `View on the explorer: ${networkInfo.protocolExplorer}/ipa/${response.ipId}`,
+      )
+
       return c.json({
         success: true,
         data: {
