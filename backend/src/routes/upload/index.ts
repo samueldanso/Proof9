@@ -132,15 +132,7 @@ uploadRouter.post(
   zValidator("json", MediaUploadSchema),
   async (c) => {
     try {
-      console.log("🖼️ BACKEND DEBUG: Avatar upload endpoint hit");
       const { mediaName, mediaType, mediaSize, mediaData } = c.req.valid("json")
-
-      console.log("📝 BACKEND DEBUG: Received upload data:", {
-        mediaName,
-        mediaType,
-        mediaSize,
-        base64Length: mediaData?.length || 0
-      });
 
       // Validate file type
       const allowedTypes = [
@@ -150,7 +142,6 @@ uploadRouter.post(
         "image/webp",
       ]
       if (!allowedTypes.includes(mediaType)) {
-        console.error("❌ BACKEND DEBUG: Invalid file type:", mediaType);
         return c.json(
           {
             success: false,
@@ -164,7 +155,6 @@ uploadRouter.post(
       // Validate file size (5MB limit for avatars)
       const maxSize = 5 * 1024 * 1024 // 5MB
       if (mediaSize > maxSize) {
-        console.error("❌ BACKEND DEBUG: File too large:", mediaSize, "bytes");
         return c.json(
           {
             success: false,
@@ -174,28 +164,22 @@ uploadRouter.post(
         )
       }
 
-      console.log("✅ BACKEND DEBUG: Validation passed, converting base64 to buffer");
       // Convert base64 to buffer
       const imageBuffer = Buffer.from(mediaData, "base64")
-      console.log("📦 BACKEND DEBUG: Buffer created, size:", imageBuffer.length, "bytes");
 
       // Generate Story Protocol compliant content hash
       const imageHash = generateContentHash(imageBuffer)
-      console.log("🔗 BACKEND DEBUG: Generated content hash:", imageHash);
 
-      console.log("☁️ BACKEND DEBUG: Starting IPFS upload to Pinata...");
       // Upload image to IPFS using Pinata
       const ipfsHash = await uploadBinaryToIPFS(
         imageBuffer,
         mediaName,
         mediaType,
       )
-      console.log("📤 BACKEND DEBUG: IPFS upload successful, hash:", ipfsHash);
 
       const avatarUrl = `https://ipfs.io/ipfs/${ipfsHash}`
-      console.log("🌐 BACKEND DEBUG: Final avatar URL:", avatarUrl);
 
-      const responseData = {
+      return c.json({
         success: true,
         data: {
           mediaName,
@@ -206,13 +190,9 @@ uploadRouter.post(
           imageHash,
           uploadedAt: new Date().toISOString(),
         },
-      };
-
-      console.log("🎉 BACKEND DEBUG: Sending successful response:", responseData);
-      return c.json(responseData)
+      })
     } catch (error: any) {
-      console.error("💥 BACKEND DEBUG: Avatar upload error:", error);
-      console.error("💥 BACKEND DEBUG: Error stack:", error.stack);
+      console.error("Avatar upload error:", error)
       return c.json(
         {
           success: false,
