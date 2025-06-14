@@ -244,7 +244,7 @@ export function usePayRoyalty() {
 export function useClaimRoyalty() {
   return useMutation({
     mutationFn: async (data: {
-      ipId: string;
+      ancestorIpId: string;
       claimer: string;
     }) => {
       const response = await apiClient.post<ApiResponse<any>>("/royalty/claim", data);
