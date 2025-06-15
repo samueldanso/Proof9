@@ -278,7 +278,7 @@ Proof9/
 
 1. Connect your repository to [Vercel](https://vercel.com)
 2. Configure environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+3. Deploy on push to main branch
 
 ### Backend API (Bun) on Railway
 
