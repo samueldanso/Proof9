@@ -1,5 +1,6 @@
 "use client";
 
+import { AudioTest } from "@/components/shared/audio-test";
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
 import { useTracks } from "@/hooks/api";
@@ -126,6 +127,20 @@ function DiscoverContent() {
 
         {/* Genre Filter - Beautiful chip design */}
         <GenreFilter activeGenre={selectedGenre} onGenreChange={setSelectedGenre} />
+
+        {/* Audio Debug Section - Temporary */}
+        {tracks.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">🔧 Audio Debug Test</h3>
+            {tracks.slice(0, 1).map((track) => (
+              <AudioTest
+                key={`test-${track.id}`}
+                audioUrl={track.mediaUrl || ""}
+                title={track.title}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Tab Content */}
         <div className="space-y-6">

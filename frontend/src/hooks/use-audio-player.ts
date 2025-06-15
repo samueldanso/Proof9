@@ -22,17 +22,23 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
   // Initialize audio when src changes
   useEffect(() => {
     console.log("🎵 useAudioPlayer - src changed:", src);
-    console.log("🎵 useAudioPlayer - src type:", typeof src);
-    console.log("🎵 useAudioPlayer - src length:", src?.length);
 
     if (!src) {
       console.log("❌ useAudioPlayer - No src provided");
       return;
     }
 
-    // Fix IPFS URLs
+    // Fix IPFS URLs and get multiple gateway options
     const fixedSrc = fixIpfsUrl(src);
     console.log("🔧 useAudioPlayer - Fixed URL:", { original: src, fixed: fixedSrc });
+
+    // Try different IPFS gateways if the primary fails
+    const alternativeUrls = [
+      fixedSrc,
+      fixedSrc.replace('ipfs.io', 'gateway.pinata.cloud'),
+      fixedSrc.replace('ipfs.io', 'cloudflare-ipfs.com'),
+      fixedSrc.replace('ipfs.io', 'dweb.link')
+    ].filter(url => url !== fixedSrc).slice(0, 2); // Get 2 alternatives
 
     // Validate src URL
     try {
@@ -57,9 +63,10 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
     console.log("🎵 useAudioPlayer - Creating new Howl instance with src:", fixedSrc);
 
-    // Create new Howl instance
+    // Create new Howl instance with format specification and multiple sources
     const sound = new Howl({
-      src: [fixedSrc],
+      src: [fixedSrc, ...alternativeUrls],
+      format: ['mp3', 'mpeg', 'wav', 'flac', 'm4a'], // Explicitly specify supported formats
       html5: true, // Use HTML5 Audio for better streaming
       preload: "metadata", // Only preload metadata for faster loading
       volume: volume,
@@ -152,26 +159,17 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     }
   }, [volume]);
 
-  const play = useCallback(() => {
-    console.log("▶️ useAudioPlayer - Play button clicked");
-    console.log("🎵 useAudioPlayer - Current src:", src);
-    console.log("🎵 useAudioPlayer - IsLoading:", isLoading);
-    console.log("🎵 useAudioPlayer - HasError:", !!error);
-
+    const play = useCallback(() => {
     if (soundRef.current && !isLoading) {
       try {
-        console.log("✅ useAudioPlayer - Attempting to play");
+        console.log("▶️ Playing audio:", src);
         soundRef.current.play();
       } catch (error) {
-        console.error("❌ useAudioPlayer - Play error:", error);
+        console.error("❌ Play error:", error);
         setError("Failed to play audio");
       }
     } else {
-      console.log("❌ useAudioPlayer - Cannot play:", {
-        hasSound: !!soundRef.current,
-        isLoading,
-        error
-      });
+      console.log("❌ Cannot play - loading or no sound:", { isLoading, hasError: !!error });
     }
   }, [isLoading, error, src]);
 
