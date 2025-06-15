@@ -8,23 +8,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
+import { useIsTrackLiked } from "@/hooks/use-social-actions";
 import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
+import type { Track } from "@/types/track";
 import { Loader2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { useState } from "react";
-
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  artistAddress: string;
-  duration: string;
-  imageUrl?: string;
-  audioUrl?: string;
-  isLiked?: boolean;
-  genre?: string;
-  artistAvatarUrl?: string;
-}
+import { useAccount } from "wagmi";
 
 interface MusicPlayerProps {
   track: Track;
@@ -48,9 +38,11 @@ export function MusicPlayer({
   onShare,
 }: MusicPlayerProps) {
   const [volume, setVolume] = useState(75);
+  const { address } = useAccount();
 
-  // Use real audio player
-  console.log("MusicPlayer - Track audioUrl:", track.audioUrl);
+  // Check if current user has liked this track
+  const { data: isLikedData } = useIsTrackLiked(track.id);
+  const isLiked = isLikedData?.isLiked || false;
 
   const {
     isPlaying: audioIsPlaying,
@@ -65,20 +57,12 @@ export function MusicPlayer({
     formatTime,
     progress,
   } = useAudioPlayer({
-    src: track.audioUrl,
+    src: track.mediaUrl,
     volume: volume / 100,
     onEnd: () => {
       onPause();
     },
-    onError: (error) => {
-      console.error("Audio playback error:", error);
-      console.error("Failed audioUrl:", track.audioUrl);
-    },
   });
-
-  console.log("MusicPlayer - Error:", error);
-  console.log("MusicPlayer - IsLoading:", isLoading);
-  console.log("MusicPlayer - Duration:", duration);
 
   // Sync external play/pause state with audio
   const handlePlayPause = () => {
@@ -112,7 +96,7 @@ export function MusicPlayer({
           {/* Track Cover */}
           <div className="size-14 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
             <img
-              src={getCoverUrl(track.imageUrl, track.genre)}
+              src={getCoverUrl(track.image, track.genre)}
               alt={track.title}
               className="size-full object-cover"
               onError={(e) => {
@@ -137,10 +121,13 @@ export function MusicPlayer({
             <div className="truncate font-semibold text-base">{track.title}</div>
             <div className="mt-1 flex items-center gap-2">
               <Avatar className="size-5">
-                <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} />
-                <AvatarFallback className="text-xs">{getUserInitials(track.artist)}</AvatarFallback>
+                <AvatarFallback className="text-xs">
+                  {getUserInitials(track.creators?.[0]?.name || "Unknown")}
+                </AvatarFallback>
               </Avatar>
-              <span className="truncate text-muted-foreground text-sm">{track.artist}</span>
+              <span className="truncate text-muted-foreground text-sm">
+                {track.creators?.[0]?.name || "Unknown Artist"}
+              </span>
             </div>
           </div>
         </div>
@@ -203,32 +190,32 @@ export function MusicPlayer({
             <Button
               variant="ghost"
               size="sm"
-              className="size-8 p-0"
+              className="size-8 p-0 hover:bg-[#ced925]/10"
               onClick={() => onLike?.(track.id)}
             >
-              {track.isLiked ? (
-                <IconHeartFill className="size-4 text-red-500" />
+              {isLiked ? (
+                <IconHeartFill className="size-4 text-[#ced925]" />
               ) : (
-                <IconHeart className="size-4" />
+                <IconHeart className="size-4 text-muted-foreground hover:text-[#ced925]" />
               )}
             </Button>
 
             <Button
               variant="ghost"
               size="sm"
-              className="size-8 p-0"
+              className="size-8 p-0 hover:bg-[#ced925]/10"
               onClick={() => onComment?.(track.id)}
             >
-              <IconBubble className="size-4" />
+              <IconBubble className="size-4 text-muted-foreground hover:text-[#ced925]" />
             </Button>
 
             <Button
               variant="ghost"
               size="sm"
-              className="size-8 p-0"
+              className="size-8 p-0 hover:bg-[#ced925]/10"
               onClick={() => onShare?.(track.id)}
             >
-              <IconShare className="size-4" />
+              <IconShare className="size-4 text-muted-foreground hover:text-[#ced925]" />
             </Button>
           </div>
 

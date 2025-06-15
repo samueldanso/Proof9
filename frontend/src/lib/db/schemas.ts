@@ -1,4 +1,17 @@
 // Complete Database schema for type safety
+
+// Creator interface for Story Protocol compliance
+export interface Creator {
+  name: string;
+  address: string;
+  contributionPercent: number;
+  description?: string;
+  socialMedia?: Array<{
+    platform: string;
+    url: string;
+  }>;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -32,7 +45,7 @@ export interface Database {
           ip_id: string | null;
           transaction_hash: string | null;
           token_id: string | null;
-          license_terms_ids: number[] | null;
+          license_terms_ids: string[] | null;
           title: string;
           description: string | null;
           genre: string | null;
@@ -40,6 +53,7 @@ export interface Database {
           duration: string | null;
           artist_address: string;
           artist_name: string | null;
+          creators: Creator[] | null;
           file_name: string | null;
           file_type: string | null;
           file_size: number | null;
@@ -48,6 +62,15 @@ export interface Database {
           ipfs_url: string | null;
           metadata_ipfs_hash: string | null;
           metadata_ipfs_url: string | null;
+          nft_metadata_ipfs_hash: string | null;
+          nft_metadata_ipfs_url: string | null;
+          ip_metadata_hash: string | null;
+          nft_metadata_hash: string | null;
+          image: string | null;
+          image_hash: string | null;
+          media_url: string | null;
+          media_hash: string | null;
+          media_type: string | null;
           image_url: string | null;
           yakoa_token_id: string | null;
           yakoa_status: string | null;
@@ -76,7 +99,7 @@ export interface Database {
           ip_id?: string | null;
           transaction_hash?: string | null;
           token_id?: string | null;
-          license_terms_ids?: number[] | null;
+          license_terms_ids?: string[] | null;
           title: string;
           description?: string | null;
           genre?: string | null;
@@ -84,6 +107,7 @@ export interface Database {
           duration?: string | null;
           artist_address: string;
           artist_name?: string | null;
+          creators?: Creator[] | null;
           file_name?: string | null;
           file_type?: string | null;
           file_size?: number | null;
@@ -92,6 +116,15 @@ export interface Database {
           ipfs_url?: string | null;
           metadata_ipfs_hash?: string | null;
           metadata_ipfs_url?: string | null;
+          nft_metadata_ipfs_hash?: string | null;
+          nft_metadata_ipfs_url?: string | null;
+          ip_metadata_hash?: string | null;
+          nft_metadata_hash?: string | null;
+          image?: string | null;
+          image_hash?: string | null;
+          media_url?: string | null;
+          media_hash?: string | null;
+          media_type?: string | null;
           image_url?: string | null;
           yakoa_token_id?: string | null;
           yakoa_status?: string | null;
@@ -116,13 +149,14 @@ export interface Database {
           ip_id?: string | null;
           transaction_hash?: string | null;
           token_id?: string | null;
-          license_terms_ids?: number[] | null;
+          license_terms_ids?: string[] | null;
           title?: string;
           description?: string | null;
           genre?: string | null;
           tags?: string[] | null;
           duration?: string | null;
           artist_name?: string | null;
+          creators?: Creator[] | null;
           file_name?: string | null;
           file_type?: string | null;
           file_size?: number | null;
@@ -131,6 +165,15 @@ export interface Database {
           ipfs_url?: string | null;
           metadata_ipfs_hash?: string | null;
           metadata_ipfs_url?: string | null;
+          nft_metadata_ipfs_hash?: string | null;
+          nft_metadata_ipfs_url?: string | null;
+          ip_metadata_hash?: string | null;
+          nft_metadata_hash?: string | null;
+          image?: string | null;
+          image_hash?: string | null;
+          media_url?: string | null;
+          media_hash?: string | null;
+          media_type?: string | null;
           image_url?: string | null;
           yakoa_token_id?: string | null;
           yakoa_status?: string | null;

@@ -4,13 +4,13 @@ import { Hono } from "hono"
 import { Address, toHex } from "viem"
 import { z } from "zod"
 
-import { client } from "../../../utils/config"
+import { client, networkInfo } from "../../../utils/config"
 import { uploadJSONToIPFS } from "../../../utils/functions/uploadToIpfs"
 import { SPGNFTContractAddress } from "../../../utils/utils"
 
 const derivativeRouter = new Hono()
 
-// Schema for registering a derivative (remix/cover)
+// Register derivative schema
 const RegisterDerivativeSchema = z.object({
   parentIpId: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
     message: "Parent IP ID must be a valid Ethereum address",
@@ -85,6 +85,16 @@ derivativeRouter.post(
         txOptions: { waitForTransaction: true },
       })
 
+      console.log("Derivative IP Asset registered:", {
+        "Transaction Hash": response.txHash,
+        "IPA ID": response.ipId,
+        "Parent IPA ID": parentIpId,
+        "License Terms ID": licenseTermsId,
+      })
+      console.log(
+        `View on the explorer: ${networkInfo.protocolExplorer}/ipa/${response.ipId}`,
+      )
+
       return c.json({
         success: true,
         data: {
@@ -97,7 +107,7 @@ derivativeRouter.post(
           nftMetadataHash: nftHash,
           ipMetadataURI: `https://gateway.pinata.cloud/ipfs/${ipIpfsHash}`,
           nftMetadataURI: `https://gateway.pinata.cloud/ipfs/${nftIpfsHash}`,
-          explorerUrl: `https://aeneid.storyscan.xyz/ipa/${response.ipId}`,
+          explorerUrl: `${networkInfo.protocolExplorer}/ipa/${response.ipId}`,
         },
       })
     } catch (error) {

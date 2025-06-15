@@ -27,10 +27,10 @@ app.route("/api/registration", routes.registrationRouter)
 app.route("/api/licenses", routes.licensesRouter)
 app.route("/api/royalty", routes.royaltyRouter)
 app.route("/api/verification", routes.verificationRouter)
+app.route("/api/derivative", routes.derivativeRouter)
 app.route("/api/tracks", routes.tracksRouter)
 app.route("/api/users", routes.usersRouter)
 app.route("/api/upload", routes.uploadRouter)
-app.route("/api/derivative", routes.derivativeRouter)
 
 const port = process.env.PORT || 3001
 console.log(`🚀 Server running on port ${port}`)

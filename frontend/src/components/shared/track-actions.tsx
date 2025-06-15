@@ -97,15 +97,17 @@ export function TrackActions({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex h-8 items-center gap-1.5 px-2 hover:bg-red-50 dark:hover:bg-red-950/20"
+                className="flex h-8 items-center gap-1.5 px-2 hover:bg-[#ced925]/10 dark:hover:bg-[#ced925]/10"
                 onClick={handleLike}
               >
                 {isLiked ? (
-                  <IconHeartFill className="h-4 w-4 text-red-500" />
+                  <IconHeartFill className="h-4 w-4 text-[#ced925]" />
                 ) : (
-                  <IconHeart className="h-4 w-4 hover:text-red-500" />
+                  <IconHeart className="h-4 w-4 text-muted-foreground hover:text-[#ced925]" />
                 )}
-                <span className="font-medium text-sm">{likes}</span>
+                <span className={`font-medium text-sm ${isLiked ? "text-[#ced925]" : ""}`}>
+                  {likes}
+                </span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -119,10 +121,10 @@ export function TrackActions({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex h-8 items-center gap-1.5 px-2"
+                className="flex h-8 items-center gap-1.5 px-2 hover:bg-[#ced925]/10 dark:hover:bg-[#ced925]/10"
                 onClick={handleComment}
               >
-                <IconBubble className="h-4 w-4" />
+                <IconBubble className="h-4 w-4 text-muted-foreground hover:text-[#ced925]" />
                 <span className="font-medium text-sm">{comments}</span>
               </Button>
             </TooltipTrigger>
@@ -194,15 +196,17 @@ export function TrackActions({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex h-auto items-center gap-2 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/20"
+                className="flex h-auto items-center gap-2 px-3 py-2 hover:bg-[#ced925]/10 dark:hover:bg-[#ced925]/10"
                 onClick={handleLike}
               >
                 {isLiked ? (
-                  <IconHeartFill className="h-5 w-5 text-red-500" />
+                  <IconHeartFill className="h-5 w-5 text-[#ced925]" />
                 ) : (
-                  <IconHeart className="h-5 w-5 hover:text-red-500" />
+                  <IconHeart className="h-5 w-5 text-muted-foreground hover:text-[#ced925]" />
                 )}
-                <span className="font-medium text-sm">{likes}</span>
+                <span className={`font-medium text-sm ${isLiked ? "text-[#ced925]" : ""}`}>
+                  {likes}
+                </span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -216,10 +220,10 @@ export function TrackActions({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex h-auto items-center gap-2 px-3 py-2"
+                className="flex h-auto items-center gap-2 px-3 py-2 hover:bg-[#ced925]/10 dark:hover:bg-[#ced925]/10"
                 onClick={handleComment}
               >
-                <IconBubble className="h-5 w-5" />
+                <IconBubble className="h-5 w-5 text-muted-foreground hover:text-[#ced925]" />
                 <span className="font-medium text-sm">{comments}</span>
               </Button>
             </TooltipTrigger>

@@ -1,443 +1,331 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { env } from "@/env";
-import { useCreateTrack, useRegisterDerivative, useRegisterTrack } from "@/hooks/api";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import type { ImageUploadResponse, MediaUploadResponse } from "@/types/upload";
+import { CheckCircle, FileAudio, ImageIcon, Music, Shield, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { useAccount } from "wagmi";
 import LicenseForm from "./_components/license-form";
 import MetadataForm from "./_components/metadata-form";
 import UploadForm from "./_components/upload-form";
 import UploadProgress from "./_components/upload-progress";
 
-// Import the complete YakoaResult type
+// Story Protocol metadata interface - EXACT NAMING ONLY
+interface StoryProtocolMetadata {
+  // Story Protocol IPA Standard
+  title: string;
+  description: string;
+  creators: Array<{
+    name: string;
+    address: string;
+    contributionPercent: number;
+    description?: string;
+    socialMedia?: Array<{
+      platform: string;
+      url: string;
+    }>;
+  }>;
+
+  // Story Protocol image.* fields
+  image?: string;
+  imageHash?: string;
+
+  // Story Protocol media.* fields
+  mediaUrl?: string;
+  mediaHash?: string;
+  mediaType?: string;
+
+  // Additional metadata
+  genre: string;
+  tags: string[];
+  duration?: string;
+
+  // NFT metadata
+  nftName?: string;
+  nftDescription?: string;
+  attributes?: Array<{
+    key: string;
+    value: string;
+  }>;
+}
+
+interface LicenseTerms {
+  type: string;
+  price: string;
+  usage: string;
+  territory: string;
+}
+
 interface YakoaResult {
   verified: boolean;
   confidence: number;
   originality: string;
   tokenId?: string;
   details?: string;
-  infringementDetails?: {
-    status: string;
-    result: string;
-    externalInfringements: Array<{
-      brand_id: string;
-      brand_name: string;
-      confidence: number;
-      authorized: boolean;
-    }>;
-    inNetworkInfringements: Array<{
-      token_id: string;
-      confidence: number;
-      licensed: boolean;
-    }>;
-  };
 }
 
-interface UploadData {
-  file?: File;
-  uploadInfo?: {
-    ipfsHash: string;
-    ipfsUrl: string;
-    fileHash: string;
-  };
-  metadata?: {
-    title: string;
-    description: string;
-    genre: string;
-    tags: string[];
-  };
-  license?: {
-    type: string;
-    price: string;
-    usage: string;
-    territory: string;
-  };
-  yakoa?: YakoaResult; // Use the complete YakoaResult type
-  remix?: {
-    isRemix: boolean;
-    parentTrackId?: string;
-    parentIpId?: string;
-    parentTitle?: string;
-  };
-}
-
-const steps = [
-  { id: 1, title: "Upload", description: "Select your audio file" },
-  { id: 2, title: "Details", description: "Add track information" },
-  { id: 3, title: "License", description: "Set usage terms" },
-  { id: 4, title: "Verify & Register", description: "AI check & blockchain" },
-];
+type UploadStep = "upload" | "metadata" | "verification" | "license" | "complete";
 
 export default function UploadPage() {
-  const { address } = useAccount();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [uploadData, setUploadData] = useState<UploadData>({});
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentStep, setCurrentStep] = useState<UploadStep>("upload");
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Use hooks for API calls
-  const createTrackMutation = useCreateTrack();
-  const registerTrackMutation = useRegisterTrack();
-  const registerDerivativeMutation = useRegisterDerivative();
+  // Story Protocol upload data
+  const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [mediaUploadResult, setMediaUploadResult] = useState<MediaUploadResponse | null>(null);
+  const [imageUploadResult, setImageUploadResult] = useState<ImageUploadResponse | null>(null);
 
-  // Check for remix parameters on mount
-  useEffect(() => {
-    const isRemix = searchParams.get("remix") === "true";
-    if (isRemix) {
-      const parentTrackId = searchParams.get("parentTrackId");
-      const parentIpId = searchParams.get("parentIpId");
-      const parentTitle = searchParams.get("parentTitle");
+  // Story Protocol metadata
+  const [metadata, setMetadata] = useState<StoryProtocolMetadata | null>(null);
+  const [licenseTerms, setLicenseTerms] = useState<LicenseTerms | null>(null);
+  const [yakoaResult, setYakoaResult] = useState<YakoaResult | null>(null);
 
-      setUploadData((prev) => ({
-        ...prev,
-        remix: {
-          isRemix: true,
-          parentTrackId: parentTrackId || undefined,
-          parentIpId: parentIpId || undefined,
-          parentTitle: parentTitle || undefined,
-        },
-      }));
-    }
-  }, [searchParams]);
+  const steps = [
+    { id: "upload", title: "Upload Files", icon: Upload },
+    { id: "metadata", title: "Track Details", icon: FileAudio },
+    { id: "verification", title: "AI Verification", icon: CheckCircle },
+    { id: "license", title: "License Terms", icon: ImageIcon },
+    { id: "complete", title: "Complete", icon: CheckCircle },
+  ];
 
-  const updateUploadData = (stepData: Partial<UploadData>) => {
-    setUploadData((prev) => ({ ...prev, ...stepData }));
+  const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
+
+  const handleFilesSelect = (
+    mediaFile: File,
+    imageFile: File,
+    uploadData: {
+      mediaResult: MediaUploadResponse;
+      imageResult: ImageUploadResponse;
+    },
+  ) => {
+    setSelectedMediaFile(mediaFile);
+    setSelectedImageFile(imageFile);
+    setMediaUploadResult(uploadData.mediaResult);
+    setImageUploadResult(uploadData.imageResult);
+    setCurrentStep("metadata");
+    toast.success("Files uploaded successfully!");
   };
 
-  const nextStep = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
-    }
+  const handleMetadataSubmit = (metadataData: StoryProtocolMetadata) => {
+    setMetadata(metadataData);
+    setCurrentStep("verification");
+    toast.success("Metadata saved!");
   };
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+  const handleVerificationComplete = (result: YakoaResult) => {
+    setYakoaResult(result);
+    setCurrentStep("license");
+    toast.success("Verification complete!");
   };
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <UploadForm
-            onFileSelect={(file, uploadData) => {
-              updateUploadData({ file, uploadInfo: uploadData });
-              nextStep();
-            }}
-            onNext={nextStep}
-          />
-        );
-      case 2:
-        return (
-          <MetadataForm
-            initialData={uploadData.metadata}
-            onSubmit={(metadata) => {
-              updateUploadData({ metadata });
-              nextStep();
-            }}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
-      case 3:
-        return (
-          <LicenseForm
-            initialData={uploadData.license}
-            onSubmit={(license) => {
-              updateUploadData({ license });
-              nextStep();
-            }}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
-      case 4:
-        return (
-          <UploadProgress
-            file={uploadData.file}
-            uploadInfo={uploadData.uploadInfo}
-            metadata={uploadData.metadata}
-            license={uploadData.license}
-            onVerificationComplete={(yakoaResult) => {
-              updateUploadData({ yakoa: yakoaResult });
-              // After verification, proceed to final registration
-              handleFinalRegistration();
-            }}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
-      default:
-        return null;
+  const handleLicenseSubmit = (license: LicenseTerms) => {
+    setLicenseTerms(license);
+    setCurrentStep("complete");
+    toast.success("Upload process complete!");
+  };
+
+  const handleStepClick = (stepId: string) => {
+    const stepIndex = steps.findIndex((step) => step.id === stepId);
+    if (stepIndex <= currentStepIndex) {
+      setCurrentStep(stepId as UploadStep);
     }
   };
 
-  const handleFinalRegistration = async () => {
-    if (!address) {
-      toast.error("Please connect your wallet first");
-      return;
+  const handleNext = () => {
+    const nextIndex = currentStepIndex + 1;
+    if (nextIndex < steps.length) {
+      setCurrentStep(steps[nextIndex].id as UploadStep);
     }
+  };
 
-    setIsProcessing(true);
-
-    try {
-      // Step 1: Create track in database using hook
-      const trackResult = await createTrackMutation.mutateAsync({
-        title: uploadData.metadata?.title || "",
-        description: uploadData.metadata?.description,
-        genre: uploadData.metadata?.genre,
-        tags: uploadData.metadata?.tags,
-        artist_address: address,
-        ipfs_hash: uploadData.uploadInfo?.ipfsHash,
-        ipfs_url: uploadData.uploadInfo?.ipfsUrl,
-        file_hash: uploadData.uploadInfo?.fileHash,
-        verified: uploadData.yakoa?.verified || false,
-      });
-
-      if (!trackResult.success) {
-        throw new Error("Failed to create track");
-      }
-
-      // Invalidate discovery feed queries to show new track
-      queryClient.invalidateQueries({ queryKey: ["tracks"] });
-      queryClient.invalidateQueries({ queryKey: ["user", address, "tracks"] });
-
-      // Step 2: Register with Story Protocol
-      if (uploadData.yakoa?.verified) {
-        console.log("🚀 Starting Story Protocol registration...");
-
-        // Convert license form data to Story Protocol terms
-        const { convertLicenseFormToStoryTerms, getLicenseSummary } = await import(
-          "@/lib/utils/story-protocol"
-        );
-        const storyLicenseTerms = uploadData.license
-          ? convertLicenseFormToStoryTerms(uploadData.license)
-          : null;
-
-        console.log(
-          "🎵 License Terms:",
-          storyLicenseTerms ? getLicenseSummary(uploadData.license!) : "No license terms",
-        );
-
-        // Choose registration method based on whether this is a remix
-        const registrationResult =
-          uploadData.remix?.isRemix && uploadData.remix.parentIpId
-            ? await registerDerivativeMutation.mutateAsync({
-                parentIpId: uploadData.remix.parentIpId,
-                licenseTermsId: "1", // Default license terms ID - should be dynamic
-                ipMetadata: {
-                  title: uploadData.metadata?.title || "",
-                  description: uploadData.metadata?.description || "",
-                  creators: [
-                    {
-                      name: "Creator",
-                      address: address,
-                      contributionPercent: 100,
-                    },
-                  ],
-                  image: uploadData.uploadInfo?.ipfsUrl || "",
-                  mediaUrl: uploadData.uploadInfo?.ipfsUrl,
-                  mediaType: "audio/mpeg",
-                },
-                nftMetadata: {
-                  name: uploadData.metadata?.title || "Untitled Remix",
-                  description: `${uploadData.metadata?.description || "No description"}. This is a remix of "${uploadData.remix.parentTitle}". This NFT represents ownership of the derivative IP Asset.`,
-                  image: uploadData.uploadInfo?.ipfsUrl || "",
-                  attributes: [
-                    {
-                      key: "Type",
-                      value: "Remix",
-                    },
-                    {
-                      key: "Parent Track",
-                      value: uploadData.remix.parentTitle || "Unknown",
-                    },
-                    {
-                      key: "Parent IP ID",
-                      value: uploadData.remix.parentIpId,
-                    },
-                    {
-                      key: "Yakoa Verified",
-                      value: uploadData.yakoa?.verified ? "Yes" : "No",
-                    },
-                    {
-                      key: "Genre",
-                      value: uploadData.metadata?.genre || "Unknown",
-                    },
-                    {
-                      key: "Platform",
-                      value: "Proof9",
-                    },
-                    ...(uploadData.metadata?.tags?.map((tag) => ({
-                      key: "Tag",
-                      value: tag,
-                    })) || []),
-                  ],
-                },
-              })
-            : await registerTrackMutation.mutateAsync({
-                ipMetadata: {
-                  title: uploadData.metadata?.title || "",
-                  description: uploadData.metadata?.description || "",
-                  creators: [
-                    {
-                      name: "Creator",
-                      address: address,
-                      contributionPercent: 100,
-                    },
-                  ],
-                  image: uploadData.uploadInfo?.ipfsUrl || "",
-                  mediaUrl: uploadData.uploadInfo?.ipfsUrl,
-                  mediaType: "audio/mpeg", // Specific media type as per tutorial
-                },
-                nftMetadata: {
-                  name: uploadData.metadata?.title || "Untitled Track",
-                  description: `${uploadData.metadata?.description || "No description"}. This NFT represents ownership of the IP Asset.`,
-                  image: uploadData.uploadInfo?.ipfsUrl || "",
-                  attributes: [
-                    {
-                      key: "Yakoa Verified",
-                      value: uploadData.yakoa?.verified ? "Yes" : "No",
-                    },
-                    {
-                      key: "Yakoa Token ID",
-                      value: uploadData.yakoa?.tokenId || "Unknown",
-                    },
-                    {
-                      key: "Genre",
-                      value: uploadData.metadata?.genre || "Unknown",
-                    },
-                    {
-                      key: "License Type",
-                      value: uploadData.license?.type || "Unknown",
-                    },
-                    {
-                      key: "License Price",
-                      value: uploadData.license?.price
-                        ? `${uploadData.license.price} USD`
-                        : "Unknown",
-                    },
-                    {
-                      key: "Revenue Share",
-                      value: storyLicenseTerms
-                        ? `${storyLicenseTerms.commercialRevShare}%`
-                        : "Unknown",
-                    },
-                    {
-                      key: "Platform",
-                      value: "Proof9",
-                    },
-                    ...(uploadData.metadata?.tags?.map((tag) => ({
-                      key: "Tag",
-                      value: tag,
-                    })) || []),
-                  ],
-                },
-                // Add real Story Protocol license terms
-                commercialRemixTerms: storyLicenseTerms
-                  ? {
-                      defaultMintingFee: Number(storyLicenseTerms.defaultMintingFee) / 10 ** 18, // Convert back to number for API
-                      commercialRevShare: storyLicenseTerms.commercialRevShare,
-                    }
-                  : undefined,
-              });
-
-        console.log("📋 Story Protocol result:", registrationResult);
-
-        if (registrationResult.success) {
-          const successMessage = uploadData.remix?.isRemix
-            ? "Remix registered successfully on Story Protocol!"
-            : "Track registered successfully on Story Protocol!";
-          toast.success(successMessage);
-          console.log("✅ Story Protocol registration:", registrationResult.data);
-        } else {
-          console.error("❌ Story Protocol error:", registrationResult.error);
-          const errorMessage = uploadData.remix?.isRemix
-            ? `Remix registration failed: ${registrationResult.error}`
-            : `Story Protocol registration failed: ${registrationResult.error}`;
-          toast.error(errorMessage);
-        }
-      } else {
-        console.log("⚠️ Skipping Story Protocol registration - content not verified");
-        toast.info(
-          "Track uploaded successfully (Story Protocol registration skipped for unverified content)",
-        );
-      }
-
-      const finalSuccessMessage = uploadData.remix?.isRemix
-        ? "Remix uploaded successfully!"
-        : "Track uploaded successfully!";
-      toast.success(finalSuccessMessage);
-      router.push(`/profile/${address}`);
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      toast.error("Failed to register track. Please try again.");
-    } finally {
-      setIsProcessing(false);
+  const handleBack = () => {
+    const prevIndex = currentStepIndex - 1;
+    if (prevIndex >= 0) {
+      setCurrentStep(steps[prevIndex].id as UploadStep);
     }
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4">
-      {/* Header - Left aligned like library page */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <h1 className="font-bold text-3xl">
-            {uploadData.remix?.isRemix ? "Create Remix" : "Upload Your Sound"}
-          </h1>
-          {uploadData.remix?.isRemix && (
-            <div className="rounded-full bg-purple-100 px-3 py-1 font-medium text-purple-800 text-sm dark:bg-purple-900 dark:text-purple-200">
-              Remix
-            </div>
-          )}
+    <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="space-y-2 text-center">
+          <h1 className="font-bold text-3xl">Upload Your Track</h1>
+          <p className="text-muted-foreground">
+            Protect your music with Story Protocol and verify authenticity with AI
+          </p>
         </div>
-        <p className="text-muted-foreground">
-          {uploadData.remix?.isRemix
-            ? `Creating a remix of "${uploadData.remix.parentTitle || "Unknown Track"}"`
-            : "Protect your IP with AI verification and blockchain registration"}
-        </p>
-      </div>
 
-      {/* Progress and Content - Full width within container */}
-      <div className="space-y-6">
-        {/* Progress Indicator */}
-        <div className="space-y-4">
-          <Progress value={(currentStep / steps.length) * 100} className="h-2 [&>div]:bg-primary" />
-          <div className="flex justify-between text-sm">
-            {steps.map((step) => (
-              <div
-                key={step.id}
-                className={`flex flex-col items-center space-y-1 ${
-                  currentStep >= step.id ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full font-medium text-xs ${
-                    currentStep >= step.id
-                      ? "bg-primary text-black"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {step.id}
+        {/* Progress Steps */}
+        <div className="relative">
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => {
+              const isActive = step.id === currentStep;
+              const isCompleted = index < currentStepIndex;
+              const isClickable = index <= currentStepIndex;
+
+              return (
+                <div key={step.id} className="flex flex-col items-center space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => isClickable && handleStepClick(step.id)}
+                    disabled={!isClickable}
+                    className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all ${
+                      isActive
+                        ? "border-[#ced925] bg-[#ced925] text-black"
+                        : isCompleted
+                          ? "border-green-500 bg-green-500 text-white"
+                          : "border-muted bg-background text-muted-foreground"
+                    } ${isClickable ? "cursor-pointer hover:scale-105" : "cursor-not-allowed"}`}
+                  >
+                    <step.icon className="h-5 w-5" />
+                  </button>
+                  <span
+                    className={`font-medium text-sm ${
+                      isActive
+                        ? "text-[#ced925]"
+                        : isCompleted
+                          ? "text-green-600"
+                          : "text-muted-foreground"
+                    }`}
+                  >
+                    {step.title}
+                  </span>
                 </div>
-                <span className="font-medium">{step.title}</span>
-                <span className="text-xs">{step.description}</span>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+
+          {/* Progress Line */}
+          <div className="-z-10 absolute top-6 right-6 left-6 h-0.5 bg-muted">
+            <div
+              className="h-full bg-[#ced925] transition-all duration-500"
+              style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
+            />
           </div>
         </div>
 
         {/* Step Content */}
-        <Card>
-          <CardContent className="p-8">{renderStepContent()}</CardContent>
+        <Card className="p-8">
+          {currentStep === "upload" && (
+            <UploadForm onFilesSelect={handleFilesSelect} onNext={handleNext} />
+          )}
+
+          {currentStep === "metadata" && (
+            <MetadataForm
+              mediaFile={selectedMediaFile || undefined}
+              imageFile={selectedImageFile || undefined}
+              mediaResult={
+                mediaUploadResult?.data
+                  ? {
+                      mediaUrl: mediaUploadResult.data.mediaUrl,
+                      mediaHash: mediaUploadResult.data.mediaHash,
+                      mediaType: mediaUploadResult.data.mediaType,
+                    }
+                  : undefined
+              }
+              imageResult={
+                imageUploadResult?.data
+                  ? {
+                      image: imageUploadResult.data.image,
+                      imageHash: imageUploadResult.data.imageHash,
+                    }
+                  : undefined
+              }
+              onSubmit={handleMetadataSubmit}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
+          )}
+
+          {currentStep === "verification" && (
+            <UploadProgress
+              file={selectedMediaFile || undefined}
+              uploadInfo={
+                mediaUploadResult?.data
+                  ? {
+                      ipfsHash: mediaUploadResult.data.mediaHash,
+                      ipfsUrl: mediaUploadResult.data.mediaUrl,
+                      fileHash: mediaUploadResult.data.mediaHash,
+                    }
+                  : undefined
+              }
+              metadata={
+                metadata
+                  ? {
+                      title: metadata.title,
+                      description: metadata.description,
+                      genre: metadata.genre,
+                      tags: metadata.tags,
+                    }
+                  : undefined
+              }
+              license={licenseTerms || undefined}
+              onVerificationComplete={handleVerificationComplete}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
+          )}
+
+          {currentStep === "license" && (
+            <LicenseForm onSubmit={handleLicenseSubmit} onNext={handleNext} onBack={handleBack} />
+          )}
+
+          {currentStep === "complete" && (
+            <div className="space-y-6 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+
+              <div className="space-y-2">
+                <h2 className="font-bold text-2xl">Upload Complete!</h2>
+                <p className="text-muted-foreground">
+                  Your track has been successfully uploaded and protected with Story Protocol
+                </p>
+              </div>
+
+              {/* Story Protocol Summary */}
+              <Card className="p-6 text-left">
+                <h3 className="mb-4 font-semibold text-lg">Story Protocol Registration Summary</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Track Title:</span>
+                    <span className="font-medium">{metadata?.title}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Creator:</span>
+                    <span className="font-medium">{metadata?.creators[0]?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Media URL:</span>
+                    <span className="break-all font-mono text-xs">{metadata?.mediaUrl}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Image URL:</span>
+                    <span className="break-all font-mono text-xs">{metadata?.image}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Verification Status:</span>
+                    <span className={yakoaResult?.verified ? "text-green-600" : "text-yellow-600"}>
+                      {yakoaResult?.verified ? "✓ Verified" : "⚠ Review Required"}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="flex justify-center gap-4">
+                <Button onClick={() => router.push("/discover")}>Explore Tracks</Button>
+                <Button variant="outline" onClick={() => router.push("/library")}>
+                  View Library
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </div>

@@ -50,14 +50,14 @@ export function ProfileSetup() {
 
       const base64Data = await base64Promise;
 
-      // Use the upload avatar hook
-      const result = await uploadAvatarMutation.mutateAsync({
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-        fileData: base64Data,
-      });
+      const uploadData = {
+        mediaName: file.name,
+        mediaType: file.type,
+        mediaSize: file.size,
+        mediaData: base64Data,
+      };
 
+      const result = await uploadAvatarMutation.mutateAsync(uploadData);
       return result.data.avatarUrl;
     } catch (error) {
       console.error("Avatar upload error:", error);
@@ -80,23 +80,24 @@ export function ProfileSetup() {
         avatarUrl = await uploadAvatar(avatarFile);
       }
 
-      // Use the create profile hook
-      const response = await createProfileMutation.mutateAsync({
+      // Create profile
+      toast.info("Creating profile...");
+      const profileData = {
         address,
         display_name: displayName.trim(),
-        avatar_url: avatarUrl,
-      });
+        ...(avatarUrl && { avatar_url: avatarUrl }),
+      };
 
-      if (response.success) {
-        toast.success("Profile created successfully!");
-        // Small delay to show the toast before reload
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } else {
-        toast.error(response.error || "Failed to create profile");
-      }
+      await createProfileMutation.mutateAsync(profileData);
+
+      toast.success("Profile created successfully!");
+
+      // Small delay to show the toast before reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
+      console.error("Profile creation error:", error);
       toast.error("Failed to create profile. Please try again.");
     }
   };

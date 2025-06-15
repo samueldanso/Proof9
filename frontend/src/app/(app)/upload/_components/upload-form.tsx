@@ -2,25 +2,37 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useUploadAudio } from "@/hooks/api";
-import { FileAudio, Music, Upload } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useUploadImage, useUploadMedia } from "@/hooks/api";
+import type { ImageUploadResponse, MediaUploadResponse } from "@/types/upload";
+import { FileAudio, ImageIcon, Music, Upload } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface UploadFormProps {
-  onFileSelect: (
-    file: File,
-    uploadData: { ipfsHash: string; ipfsUrl: string; fileHash: string },
+  onFilesSelect: (
+    mediaFile: File,
+    imageFile: File,
+    uploadData: {
+      mediaResult: MediaUploadResponse;
+      imageResult: ImageUploadResponse;
+    },
   ) => void;
   onNext: () => void;
 }
 
-export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
+export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // ✅ Use React Query hook (consistent with profile pattern)
-  const uploadMutation = useUploadAudio();
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // API hooks - Story Protocol naming
+  const uploadMediaMutation = useUploadMedia();
+  const uploadImageMutation = useUploadImage();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -38,20 +50,32 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
     setDragActive(false);
 
     if (e.dataTransfer.files?.[0]) {
-      handleFiles(e.dataTransfer.files);
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("audio/")) {
+        handleMediaFile(file);
+      } else if (file.type.startsWith("image/")) {
+        handleImageFile(file);
+      } else {
+        toast.error("Please drop an audio or image file");
+      }
     }
   }, []);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     if (e.target.files?.[0]) {
-      handleFiles(e.target.files);
+      handleMediaFile(e.target.files[0]);
     }
   }, []);
 
-  const handleFiles = (files: FileList) => {
-    const file = files[0];
+  const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (e.target.files?.[0]) {
+      handleImageFile(e.target.files[0]);
+    }
+  }, []);
 
+  const handleMediaFile = (file: File) => {
     // Check if it's an audio file
     if (!file.type.startsWith("audio/")) {
       toast.error("Please select an audio file (MP3, WAV, FLAC, etc.)");
@@ -60,11 +84,32 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
 
     // Check file size (max 100MB)
     if (file.size > 100 * 1024 * 1024) {
-      toast.error("File size must be less than 100MB");
+      toast.error("Audio file size must be less than 100MB");
       return;
     }
 
-    setSelectedFile(file);
+    setSelectedMedia(file);
+    toast.success("Audio file selected");
+  };
+
+  const handleImageFile = (file: File) => {
+    // Check if it's an image file
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file (JPG, PNG, WebP, etc.)");
+      return;
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image size must be less than 10MB");
+      return;
+    }
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+    setSelectedImage(file);
+    toast.success("Cover image selected");
   };
 
   // Convert file to base64
@@ -74,7 +119,7 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
       reader.readAsDataURL(file);
       reader.onload = () => {
         const base64 = reader.result as string;
-        // Remove data:audio/xxx;base64, prefix
+        // Remove data:xxx;base64, prefix
         const base64Data = base64.split(",")[1];
         resolve(base64Data);
       };
@@ -83,31 +128,48 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedMedia || !selectedImage) {
+      toast.error("Please select both audio file and cover image");
+      return;
+    }
+
+    setIsUploading(true);
 
     try {
-      // Convert file to base64
-      const fileData = await fileToBase64(selectedFile);
+      // Convert files to base64
+      const mediaData = await fileToBase64(selectedMedia);
+      const imageData = await fileToBase64(selectedImage);
 
-      // ✅ Use React Query mutation (consistent with profile pattern)
-      const result = await uploadMutation.mutateAsync({
-        fileName: selectedFile.name,
-        fileType: selectedFile.type,
-        fileSize: selectedFile.size,
-        fileData: fileData,
-      });
+      // Upload both files in parallel using Story Protocol naming
+      const [mediaResult, imageResult] = await Promise.all([
+        uploadMediaMutation.mutateAsync({
+          mediaName: selectedMedia.name,
+          mediaType: selectedMedia.type,
+          mediaSize: selectedMedia.size,
+          mediaData: mediaData,
+        }),
+        uploadImageMutation.mutateAsync({
+          imageName: selectedImage.name,
+          imageType: selectedImage.type,
+          imageSize: selectedImage.size,
+          imageData: imageData,
+        }),
+      ]);
 
-      toast.success("File uploaded successfully!");
+      toast.success("Files uploaded successfully!");
 
-      // Pass both file and upload data to parent
-      onFileSelect(selectedFile, {
-        ipfsHash: result.data.ipfsHash,
-        ipfsUrl: result.data.ipfsUrl,
-        fileHash: result.data.fileHash,
-      });
+      // Pass files and results with Story Protocol naming
+      if (mediaResult.data && imageResult.data) {
+        onFilesSelect(selectedMedia, selectedImage, {
+          mediaResult: mediaResult,
+          imageResult: imageResult,
+        });
+      }
     } catch (error: any) {
       console.error("Upload error:", error);
       toast.error(error.message || "Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -119,34 +181,25 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
     return Number.parseFloat((bytes / k ** i).toFixed(2)) + " " + sizes[i];
   };
 
-  const getAudioDuration = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const audio = new Audio();
-      audio.onloadedmetadata = () => {
-        const duration = audio.duration;
-        const minutes = Math.floor(duration / 60);
-        const seconds = Math.floor(duration % 60);
-        resolve(`${minutes}:${seconds.toString().padStart(2, "0")}`);
-      };
-      audio.src = URL.createObjectURL(file);
-    });
-  };
+  const canUpload = selectedMedia && selectedImage && !isUploading;
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="font-bold text-2xl">Upload Your Audio</h2>
+        <h2 className="font-bold text-2xl">Upload Your Media</h2>
         <p className="text-muted-foreground">
-          Select your audio file to begin the protection process
+          Select your audio file and cover image to begin the protection process
         </p>
       </div>
 
-      {/* File Upload Area */}
+      {/* File Upload Area - More Compact */}
       <Card
         className={`relative cursor-pointer transition-all duration-200 ${
-          dragActive
-            ? "border-primary bg-primary/5"
-            : "border-2 border-dashed hover:border-primary/50 hover:bg-accent/50"
+          selectedMedia && selectedImage
+            ? "border-2 border-[#ced925] bg-[#ced925]/5"
+            : dragActive
+              ? "border-[#ced925] bg-[#ced925]/5"
+              : "border-2 border-dashed hover:border-[#ced925]/50 hover:bg-accent/50"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -154,66 +207,150 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
         onDrop={handleDrop}
       >
         <input
+          ref={mediaInputRef}
           type="file"
           accept="audio/*"
-          onChange={handleChange}
-          className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-          disabled={uploadMutation.isPending}
+          onChange={handleMediaChange}
+          className="hidden"
+          disabled={isUploading}
+        />
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="hidden"
+          disabled={isUploading}
         />
 
-        <div className="flex flex-col items-center justify-center space-y-4 p-8">
-          <div className="rounded-full bg-primary/10 p-4">
-            <FileAudio className="h-8 w-8 text-primary" />
-          </div>
-
-          <div className="space-y-2 text-center">
-            <h3 className="font-semibold">Drop your audio file here</h3>
-            <p className="text-muted-foreground text-sm">or click to browse your files</p>
-          </div>
-
-          <div className="text-muted-foreground text-xs">
-            Supports: MP3, WAV, FLAC, AAC • Max size: 100MB
-          </div>
-        </div>
-      </Card>
-
-      {/* Selected File Preview */}
-      {selectedFile && (
-        <Card className="p-4">
-          <div className="flex items-center space-x-4">
-            <div className="rounded-lg bg-primary/10 p-3">
-              <FileAudio className="h-6 w-6 text-primary" />
-            </div>
-
-            <div className="flex-1 space-y-2">
-              <h4 className="font-medium">{selectedFile.name}</h4>
-              <div className="flex items-center space-x-4 text-muted-foreground text-sm">
-                <span>{formatFileSize(selectedFile.size)}</span>
-                <span>•</span>
-                <span>{selectedFile.type}</span>
+        {selectedMedia && selectedImage ? (
+          // Show both files selected
+          <div className="p-6">
+            <div className="flex items-center justify-center space-x-6">
+              {/* Audio File */}
+              <div className="flex flex-col items-center space-y-3">
+                <div className="rounded-full bg-[#ced925]/20 p-3">
+                  <FileAudio className="h-6 w-6 text-[#ced925]" />
+                </div>
+                <div className="text-center">
+                  <h4 className="font-medium text-sm">{selectedMedia.name}</h4>
+                  <p className="text-muted-foreground text-xs">
+                    {formatFileSize(selectedMedia.size)} • {selectedMedia.type.split("/")[1]}
+                  </p>
+                </div>
               </div>
 
-              {/* Audio Preview */}
-              <div className="mt-2">
-                <audio
-                  controls
-                  className="h-8 w-full"
-                  style={{ maxWidth: "300px" }}
-                  preload="metadata"
+              {/* Cover Image */}
+              <div className="flex flex-col items-center space-y-3">
+                <div className="h-16 w-16 overflow-hidden rounded-lg">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Cover preview"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-[#ced925]/10">
+                      <ImageIcon className="h-6 w-6 text-[#ced925]" />
+                    </div>
+                  )}
+                </div>
+                <div className="text-center">
+                  <h4 className="font-medium text-sm">{selectedImage.name}</h4>
+                  <p className="text-muted-foreground text-xs">
+                    {formatFileSize(selectedImage.size)} • {selectedImage.type.split("/")[1]}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Show upload prompt
+          <div className="p-6">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="rounded-full bg-[#ced925]/10 p-3">
+                  <FileAudio className="h-6 w-6 text-[#ced925]" />
+                </div>
+                <div className="rounded-full bg-[#ced925]/10 p-3">
+                  <ImageIcon className="h-6 w-6 text-[#ced925]" />
+                </div>
+              </div>
+
+              <div className="space-y-2 text-center">
+                <h3 className="font-semibold">Upload Audio + Cover Image</h3>
+                <p className="text-muted-foreground text-sm">
+                  Drop your files here or click to browse
+                </p>
+              </div>
+
+              <div className="flex space-x-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => mediaInputRef.current?.click()}
+                  disabled={isUploading}
                 >
-                  <source src={URL.createObjectURL(selectedFile)} type={selectedFile.type} />
+                  <FileAudio className="mr-2 h-4 w-4" />
+                  Select Audio
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  Select Image
+                </Button>
+              </div>
+
+              <div className="text-muted-foreground text-xs">
+                Audio: MP3, WAV, FLAC • Max 100MB | Image: JPG, PNG, WebP • Max 10MB
+              </div>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* Preview & Controls */}
+      {selectedMedia && selectedImage && (
+        <Card className="p-6">
+          <div className="space-y-4">
+            <h4 className="font-medium">Media Preview</h4>
+
+            <div className="flex items-start space-x-4">
+              {/* Cover Art */}
+              <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Cover art" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-muted">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+
+              {/* Audio Player */}
+              <div className="flex-1">
+                <audio controls className="w-full" preload="metadata">
+                  <source src={URL.createObjectURL(selectedMedia)} type={selectedMedia.type} />
                   <track kind="captions" label="Music Preview" default />
                   Your browser does not support the audio element.
                 </audio>
               </div>
             </div>
 
+            {/* Continue Button */}
             <Button
               onClick={handleUpload}
-              disabled={uploadMutation.isPending}
-              className="bg-primary hover:bg-primary/90"
+              disabled={!canUpload}
+              className="w-full bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50"
+              size="lg"
             >
-              {uploadMutation.isPending ? "Uploading..." : "Continue →"}
+              {isUploading ? "Uploading..." : "Continue →"}
             </Button>
           </div>
         </Card>
@@ -223,14 +360,28 @@ export default function UploadForm({ onFileSelect, onNext }: UploadFormProps) {
       <div className="rounded-lg border bg-muted/30 p-4">
         <h4 className="mb-3 flex items-center gap-2 font-medium">
           <Music className="h-4 w-4" />
-          Audio Guidelines
+          Upload Guidelines
         </h4>
-        <ul className="space-y-1 text-muted-foreground text-sm">
-          <li>• High quality audio (44.1kHz or higher recommended)</li>
-          <li>• Original compositions only</li>
-          <li>• Clear, uncompressed audio preferred</li>
-          <li>• Ensure you own full rights to the recording</li>
-        </ul>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div>
+            <h5 className="font-medium text-sm">Audio Requirements</h5>
+            <ul className="mt-1 space-y-1 text-muted-foreground text-xs">
+              <li>• High quality (44.1kHz+)</li>
+              <li>• Original compositions only</li>
+              <li>• MP3, WAV, FLAC formats</li>
+              <li>• Maximum 100MB</li>
+            </ul>
+          </div>
+          <div>
+            <h5 className="font-medium text-sm">Cover Art Requirements</h5>
+            <ul className="mt-1 space-y-1 text-muted-foreground text-xs">
+              <li>• Square aspect ratio preferred</li>
+              <li>• High resolution (1000x1000+)</li>
+              <li>• JPG, PNG, WebP formats</li>
+              <li>• Maximum 10MB</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

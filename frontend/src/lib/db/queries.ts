@@ -69,7 +69,7 @@ export const trackQueries = {
   },
 
   /**
-   * Create new track
+   * Create new track with Story Protocol fields
    */
   create: async (trackData: Partial<Track>) => {
     const { data, error } = await supabase.from("tracks").insert(trackData).select().single();
@@ -79,7 +79,7 @@ export const trackQueries = {
   },
 
   /**
-   * Update track
+   * Update track with Story Protocol fields
    */
   update: async (trackId: string, updates: Partial<Track>) => {
     const { data, error } = await supabase
@@ -182,7 +182,7 @@ export const socialQueries = {
     },
 
     /**
-     * Get user's liked tracks
+     * Get user's liked tracks with Story Protocol fields
      */
     getUserLiked: async (userAddress: string) => {
       const { data, error } = await supabase
@@ -190,7 +190,34 @@ export const socialQueries = {
         .select(
           `
           track_id,
-          tracks:track_id (*)
+          tracks:track_id (
+            id,
+            title,
+            description,
+            creators,
+            image,
+            image_hash,
+            media_url,
+            media_hash,
+            media_type,
+            genre,
+            tags,
+            duration,
+            plays,
+            likes_count,
+            comments_count,
+            ip_id,
+            token_id,
+            transaction_hash,
+            license_terms_ids,
+            verified,
+            yakoa_token_id,
+            created_at,
+            artist_address,
+            artist_name,
+            image_url,
+            ipfs_url
+          )
         `,
         )
         .eq("user_address", userAddress);
@@ -361,7 +388,7 @@ export const monetizationQueries = {
     },
 
     /**
-     * Get user's license purchases
+     * Get user's license purchases with Story Protocol track fields
      */
     getForUser: async (userAddress: string) => {
       const { data, error } = await supabase
@@ -369,7 +396,34 @@ export const monetizationQueries = {
         .select(
           `
           *,
-          tracks:track_id (*)
+          tracks:track_id (
+            id,
+            title,
+            description,
+            creators,
+            image,
+            image_hash,
+            media_url,
+            media_hash,
+            media_type,
+            genre,
+            tags,
+            duration,
+            plays,
+            likes_count,
+            comments_count,
+            ip_id,
+            token_id,
+            transaction_hash,
+            license_terms_ids,
+            verified,
+            yakoa_token_id,
+            created_at,
+            artist_address,
+            artist_name,
+            image_url,
+            ipfs_url
+          )
         `,
         )
         .eq("buyer_address", userAddress)

@@ -1,12 +1,5 @@
 import { env } from "@/env";
 
-// Enhanced response wrapper for better error handling
-interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  error?: string;
-}
-
 export class ApiClient {
   private baseUrl: string;
 
@@ -26,42 +19,34 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({
-        success: false,
-        error: "Network error",
-      }));
-      throw new Error(errorData.error || `HTTP ${response.status}`);
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
-
-    // Handle backend API response format
-    if (result.success === false) {
-      throw new Error(result.error || "API request failed");
-    }
-
-    return result;
+    return response.json();
   }
 
-  // GET request
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "GET" });
+  async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
-  // POST request
-  async post<T>(endpoint: string, data?: any): Promise<T> {
+  async post<T>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
+      ...options,
       method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
+      ...(data && { body: JSON.stringify(data) }),
     });
   }
 
-  // PUT request
-  async put<T>(endpoint: string, data?: any): Promise<T> {
+  async put<T>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
+      ...options,
       method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
+      ...(data && { body: JSON.stringify(data) }),
     });
+  }
+
+  async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }
 }
 

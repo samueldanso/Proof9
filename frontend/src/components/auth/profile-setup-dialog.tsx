@@ -61,10 +61,10 @@ export function ProfileSetupDialog({
 
       // Use the upload avatar hook
       const result = await uploadAvatarMutation.mutateAsync({
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-        fileData: base64Data,
+        mediaName: file.name,
+        mediaType: file.type,
+        mediaSize: file.size,
+        mediaData: base64Data,
       });
 
       return result.data.avatarUrl;
@@ -93,7 +93,7 @@ export function ProfileSetupDialog({
       const response = await createProfileMutation.mutateAsync({
         address: userAddress,
         display_name: displayName.trim(),
-        avatar_url: avatarUrl,
+        avatar_url: avatarUrl || undefined,
       });
 
       if (response.success) {

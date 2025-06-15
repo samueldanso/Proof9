@@ -1,12 +1,14 @@
 "use client";
 
+type TabType = "latest" | "following" | "trending";
+
 interface FeedTabsProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+  activeTab: TabType;
+  onTabChange: (tab: TabType) => void;
 }
 
 export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
-  const tabs = [
+  const tabs: { key: TabType; label: string }[] = [
     { key: "latest", label: "Latest" },
     { key: "following", label: "Following" },
     { key: "trending", label: "Trending" },

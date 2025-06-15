@@ -151,15 +151,15 @@ export function AppHeader() {
   return (
     <header className="flex h-14 w-full items-center bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       {/* Left: Empty space for balance */}
-      <div className="w-24" />
+      <div className="w-16" />
 
-      {/* Center: Search Bar - Properly constrained */}
-      <div className="mx-4 max-w-xl flex-1">
+      {/* Center: Search Bar - Properly sized like social apps */}
+      <div className="mx-6 max-w-sm flex-1">
         <SearchBar />
       </div>
 
-      {/* Right: Upload, Notifications & Profile Avatar - More space */}
-      <div className="flex w-40 items-center justify-end gap-2">
+      {/* Right: Upload, Notifications & Profile Avatar - Pushed to extreme right */}
+      <div className="flex flex-1 items-center justify-end gap-3">
         <UploadButton />
         <NotificationsButton />
         <UserProfileAvatar />

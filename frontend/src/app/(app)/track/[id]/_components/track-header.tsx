@@ -13,7 +13,7 @@ interface Track {
   artist: string;
   artistAddress: string;
   artistUsername?: string; // Add this field
-  artistAvatarUrl?: string;
+  // artistAvatarUrl removed - using creators array instead
   duration: string;
   plays: number;
   verified: boolean;
@@ -58,7 +58,7 @@ export default function TrackHeader({ track }: TrackHeaderProps) {
       {/* Artist Info */}
       <div className="flex items-center gap-3">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={getAvatarUrl(track.artistAvatarUrl)} alt={track.artist} />
+          {/* Avatar removed - using creators array instead */}
           <AvatarFallback className="bg-primary text-primary-foreground">
             {getUserInitials(track.artist)}
           </AvatarFallback>

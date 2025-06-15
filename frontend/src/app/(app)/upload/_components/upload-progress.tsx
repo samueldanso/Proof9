@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useUploadAudio, useVerificationStatus, useVerifyTrack } from "@/hooks/api";
+import { useUploadMedia, useVerificationStatus, useVerifyTrack } from "@/hooks/api";
 import { AlertTriangle, Brain, CheckCircle, FileAudio, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -105,7 +105,7 @@ export default function UploadProgress({
   const { address: connectedAddress } = useAccount();
 
   // API hooks
-  const uploadAudio = useUploadAudio();
+  const uploadMedia = useUploadMedia();
   const verifyTrack = useVerifyTrack();
   const { data: verificationStatus, refetch: refetchStatus } = useVerificationStatus(tokenId || "");
 
@@ -159,7 +159,7 @@ export default function UploadProgress({
         setProgress(65);
         const verificationResult = await verifyTrack.mutateAsync(verificationData);
 
-        if (verificationResult.success) {
+        if (verificationResult.success && verificationResult.data) {
           setTokenId(verificationResult.data.tokenId);
           setProgress(80);
           await pollVerificationStatus(verificationResult.data.tokenId);
@@ -208,102 +208,108 @@ export default function UploadProgress({
       try {
         const statusResult = await refetchStatus();
 
-        if (statusResult.data?.success && statusResult.data?.data?.verificationStatus?.length > 0) {
-          const mediaStatus = statusResult.data.data.verificationStatus[0];
-          const infringementsResult = statusResult.data.data.infringementsResult;
-
+        if (statusResult.data?.success && statusResult.data?.data) {
+          const verificationData = statusResult.data.data;
           if (
-            mediaStatus.fetchStatus === "succeeded" &&
-            (infringementsResult?.status === "succeeded" ||
-              infringementsResult?.status === "completed")
+            verificationData.verificationStatus &&
+            verificationData.verificationStatus.length > 0
           ) {
-            setProgress(100);
-            setStage("complete");
+            const mediaStatus = verificationData.verificationStatus[0];
+            const infringementsResult = verificationData.infringementsResult;
 
-            const hasExternalInfringements =
-              infringementsResult?.externalInfringements &&
-              infringementsResult.externalInfringements.length > 0;
-            const hasNetworkInfringements =
-              infringementsResult?.inNetworkInfringements &&
-              infringementsResult.inNetworkInfringements.length > 0;
-            const hasInfringements = hasExternalInfringements || hasNetworkInfringements;
-            const wasNotChecked = infringementsResult?.result === "not_checked";
+            if (
+              mediaStatus.fetchStatus === "succeeded" &&
+              (infringementsResult?.status === "succeeded" ||
+                infringementsResult?.status === "completed")
+            ) {
+              setProgress(100);
+              setStage("complete");
 
-            const confidence = hasInfringements
-              ? Math.max(
-                  ...[
-                    ...(infringementsResult.externalInfringements?.map(
-                      (inf: {
-                        brand_id: string;
-                        brand_name: string;
-                        confidence: number;
-                        authorized: boolean;
-                      }) => inf.confidence,
-                    ) || []),
-                    ...(infringementsResult.inNetworkInfringements?.map(
-                      (inf: {
-                        token_id: string;
-                        confidence: number;
-                        licensed: boolean;
-                      }) => inf.confidence,
-                    ) || []),
-                  ],
-                )
-              : wasNotChecked
-                ? 95
-                : 90;
+              const hasExternalInfringements =
+                infringementsResult?.externalInfringements &&
+                infringementsResult.externalInfringements.length > 0;
+              const hasNetworkInfringements =
+                infringementsResult?.inNetworkInfringements &&
+                infringementsResult.inNetworkInfringements.length > 0;
+              const hasInfringements = hasExternalInfringements || hasNetworkInfringements;
+              const wasNotChecked = infringementsResult?.result === "not_checked";
 
-            const result: YakoaResult = {
-              verified: !hasInfringements,
-              confidence: confidence,
-              originality: wasNotChecked
-                ? "Trusted platform content - comprehensive check bypassed"
-                : hasInfringements
-                  ? hasExternalInfringements
-                    ? "External brand IP detected"
-                    : "Network content match found"
-                  : "Original content verified",
-              tokenId: tokenId,
-              details: wasNotChecked
-                ? "Content marked as trusted platform - Yakoa bypassed comprehensive infringement analysis"
-                : hasInfringements
-                  ? `Found ${
-                      (infringementsResult.externalInfringements?.length || 0) +
-                      (infringementsResult.inNetworkInfringements?.length || 0)
-                    } potential matches${
-                      hasExternalInfringements
-                        ? ` (${infringementsResult.externalInfringements
-                            ?.map((inf) => inf.brand_name)
-                            .join(", ")})`
-                        : ""
-                    }`
-                  : "No infringement detected - content appears original",
-              infringementDetails: {
-                status: infringementsResult?.status || "unknown",
-                result: infringementsResult?.result || "unknown",
-                externalInfringements: infringementsResult?.externalInfringements || [],
-                inNetworkInfringements: infringementsResult?.inNetworkInfringements || [],
-              },
-            };
+              const confidence = hasInfringements
+                ? Math.max(
+                    ...[
+                      ...(infringementsResult.externalInfringements?.map(
+                        (inf: {
+                          brand_id: string;
+                          brand_name: string;
+                          confidence: number;
+                          authorized: boolean;
+                        }) => inf.confidence,
+                      ) || []),
+                      ...(infringementsResult.inNetworkInfringements?.map(
+                        (inf: {
+                          token_id: string;
+                          confidence: number;
+                          licensed: boolean;
+                        }) => inf.confidence,
+                      ) || []),
+                    ],
+                  )
+                : wasNotChecked
+                  ? 95
+                  : 90;
 
-            setYakoaResult(result);
-            return;
-          }
+              const result: YakoaResult = {
+                verified: !hasInfringements,
+                confidence: confidence,
+                originality: wasNotChecked
+                  ? "Trusted platform content - comprehensive check bypassed"
+                  : hasInfringements
+                    ? hasExternalInfringements
+                      ? "External brand IP detected"
+                      : "Network content match found"
+                    : "Original content verified",
+                tokenId: tokenId,
+                details: wasNotChecked
+                  ? "Content marked as trusted platform - Yakoa bypassed comprehensive infringement analysis"
+                  : hasInfringements
+                    ? `Found ${
+                        (infringementsResult.externalInfringements?.length || 0) +
+                        (infringementsResult.inNetworkInfringements?.length || 0)
+                      } potential matches${
+                        hasExternalInfringements
+                          ? ` (${infringementsResult.externalInfringements
+                              ?.map((inf: ExternalInfringement) => inf.brand_name)
+                              .join(", ")})`
+                          : ""
+                      }`
+                    : "No infringement detected - content appears original",
+                infringementDetails: {
+                  status: infringementsResult?.status || "unknown",
+                  result: infringementsResult?.result || "unknown",
+                  externalInfringements: infringementsResult?.externalInfringements || [],
+                  inNetworkInfringements: infringementsResult?.inNetworkInfringements || [],
+                },
+              };
 
-          if (
-            mediaStatus.fetchStatus === "failed" ||
-            mediaStatus.fetchStatus === "hash_mismatch" ||
-            infringementsResult?.status === "failed"
-          ) {
-            let errorMessage = "Verification failed on Yakoa service";
-
-            if (mediaStatus.fetchStatus === "hash_mismatch") {
-              errorMessage = "Content hash mismatch - file may have been modified during upload";
-            } else {
-              errorMessage += `: ${mediaStatus.fetchStatus || infringementsResult?.status}`;
+              setYakoaResult(result);
+              return;
             }
 
-            throw new Error(errorMessage);
+            if (
+              mediaStatus.fetchStatus === "failed" ||
+              mediaStatus.fetchStatus === "hash_mismatch" ||
+              infringementsResult?.status === "failed"
+            ) {
+              let errorMessage = "Verification failed on Yakoa service";
+
+              if (mediaStatus.fetchStatus === "hash_mismatch") {
+                errorMessage = "Content hash mismatch - file may have been modified during upload";
+              } else {
+                errorMessage += `: ${mediaStatus.fetchStatus || infringementsResult?.status}`;
+              }
+
+              throw new Error(errorMessage);
+            }
           }
         }
 

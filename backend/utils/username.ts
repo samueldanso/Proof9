@@ -4,7 +4,6 @@
 
 /**
  * Generate URL-safe username from display name
- * "Samuel Danso" -> "samueldanso"
  * "Music Maker!" -> "musicmaker"
  * "DJ-K3N" -> "djk3n"
  */

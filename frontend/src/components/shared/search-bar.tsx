@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { useTracks } from "@/hooks/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSearchUsers } from "@/hooks/use-social-actions";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
+import type { Track } from "@/types/track";
+
 import { getAvatarUrl } from "@/lib/utils/avatar";
 import { getCoverUrl } from "@/lib/utils/cover";
 import { Music, Search, User, Verified } from "lucide-react";
@@ -24,18 +25,18 @@ export const SearchBar = () => {
 
   // Search for users and tracks
   const { data: searchUsers = [], isLoading: isLoadingUsers } = useSearchUsers(debouncedQuery);
-  const { data: tracksResponse, isLoading: isLoadingTracks } = useTracks("following");
+  const { data: tracksResponse, isLoading: isLoadingTracks } = useTracks({ limit: 20 });
 
   // Filter tracks based on search query
   const searchTracks = useMemo(() => {
     if (!debouncedQuery.trim() || !tracksResponse?.data?.tracks) return [];
 
-    const tracks = tracksResponse.data.tracks.map(transformDbTrackToLegacy);
+    const tracks: Track[] = tracksResponse.data.tracks;
     return tracks
       .filter(
         (track) =>
           track.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-          track.artist.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+          track.creators?.[0]?.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
           track.genre?.toLowerCase().includes(debouncedQuery.toLowerCase()),
       )
       .slice(0, 5); // Limit to 5 results
@@ -121,7 +122,7 @@ export const SearchBar = () => {
   ] as const;
 
   return (
-    <div className="relative w-full max-w-6xl">
+    <div className="relative w-full">
       <Search className="-translate-y-1/2 absolute top-1/2 left-4 h-4 w-4 text-muted-foreground" />
       <Input
         ref={inputRef}
@@ -131,7 +132,7 @@ export const SearchBar = () => {
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onFocus={() => query.trim().length > 0 && setIsOpen(true)}
-        className="h-9 w-full rounded-full border-none bg-muted/50 pr-4 pl-11 focus:bg-background focus:ring-2 focus:ring-ring"
+        className="h-10 w-full rounded-full border-none bg-muted/50 pr-4 pl-11 focus:bg-background focus:ring-2 focus:ring-ring"
       />
 
       {/* Search Results Dropdown */}
@@ -182,7 +183,7 @@ export const SearchBar = () => {
                       className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-muted/50"
                     >
                       <img
-                        src={getCoverUrl(track.imageUrl)}
+                        src={getCoverUrl(track.image)}
                         alt=""
                         className="h-8 w-8 rounded bg-muted object-cover"
                       />
@@ -194,7 +195,7 @@ export const SearchBar = () => {
                           {track.verified && <Verified className="h-3 w-3 text-blue-500" />}
                         </div>
                         <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                          <span>by {track.artist}</span>
+                          <span>by {track.creators?.[0]?.name || "Unknown Artist"}</span>
                           {track.genre && (
                             <>
                               <span>•</span>

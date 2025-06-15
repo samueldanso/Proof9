@@ -4,18 +4,17 @@ import { Hono } from "hono"
 import { Address, parseEther, toHex, zeroAddress } from "viem"
 import { z } from "zod"
 
-import { client } from "../../../utils/config"
+import { client, networkInfo } from "../../../utils/config"
 import { SPGNFTContractAddress } from "../../../utils/utils"
 
-// Create router
 const royaltyRouter = new Hono()
 
-// Common schema for IP IDs
+// IP ID schema
 const IpIdSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
   message: "IP ID must be a valid Ethereum address",
 })
 
-// Schema for paying revenue
+// Pay revenue schema
 const PayRevenueSchema = z.object({
   receiverIpId: IpIdSchema,
   payerIpId: IpIdSchema.optional().default(zeroAddress as string),
@@ -37,7 +36,7 @@ const PayRevenueSchema = z.object({
     .optional(),
 })
 
-// Schema for claiming revenue
+// Claim revenue schema
 const ClaimRevenueSchema = z.object({
   ancestorIpId: IpIdSchema,
   claimer: IpIdSchema.optional(),
@@ -47,7 +46,7 @@ const ClaimRevenueSchema = z.object({
 })
 
 /**
- * Pay revenue endpoint
+ * Pay revenue API endpoint
  * Pays royalty to an IP asset
  */
 royaltyRouter.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
@@ -61,14 +60,14 @@ royaltyRouter.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
     if (createDerivative) {
       const { parentIpId, licenseTermsId, metadata } = createDerivative
 
-      // Create derivative - using the pattern from scripts
+      // Create derivative
       const childIp = await client.ipAsset.mintAndRegisterIpAndMakeDerivative({
         spgNftContract: SPGNFTContractAddress,
         derivData: {
           parentIpIds: [parentIpId as Address],
           licenseTermsIds: [licenseTermsId],
         },
-        // Use the same pattern as the scripts - simple metadata for derivatives
+        // Simple metadata for derivatives
         ipMetadata: {
           ipMetadataURI:
             metadata?.ipMetadataURI || "derivative-pay-revenue-uri",
@@ -81,6 +80,16 @@ royaltyRouter.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
         },
         txOptions: { waitForTransaction: true },
       })
+
+      console.log("Derivative IP Asset created for royalty payment:", {
+        "Transaction Hash": childIp.txHash,
+        "IPA ID": childIp.ipId,
+        "Parent IPA ID": parentIpId,
+        "License Terms ID": licenseTermsId,
+      })
+      console.log(
+        `View on the explorer: ${networkInfo.protocolExplorer}/ipa/${childIp.ipId}`,
+      )
 
       derivativeIpId = childIp.ipId as string
     }
@@ -115,7 +124,7 @@ royaltyRouter.post("/pay", zValidator("json", PayRevenueSchema), async (c) => {
 })
 
 /**
- * Claim revenue endpoint
+ * Claim revenue API endpoint
  * Claims revenue for an IP asset
  */
 royaltyRouter.post(

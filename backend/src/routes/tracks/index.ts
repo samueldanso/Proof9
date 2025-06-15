@@ -3,32 +3,63 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { supabase } from "../../lib/supabase"
 
-// Create router
 const tracksRouter = new Hono()
 
-// Schema for track creation
+// Track Creation Schema
 const CreateTrackSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
+  creators: z.array(
+    z.object({
+      name: z.string(),
+      address: z.string(),
+      contributionPercent: z.number(),
+      description: z.string().optional(),
+      socialMedia: z
+        .array(
+          z.object({
+            platform: z.string(),
+            url: z.string(),
+          }),
+        )
+        .optional(),
+    }),
+  ),
+
+  image: z.string().url().optional(),
+  imageHash: z.string().optional(),
+
+  mediaUrl: z.string().url().optional(),
+  mediaHash: z.string().optional(),
+  mediaType: z.string().optional(),
+
   genre: z.string().optional(),
   tags: z.array(z.string()).optional(),
   duration: z.string().optional(),
-  artist_address: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
-  ipfs_hash: z.string().optional(),
-  ipfs_url: z.string().url().optional(),
-  file_hash: z.string().optional(),
-  ip_id: z.string().optional(),
+
+  ipId: z.string().optional(),
+  tokenId: z.string().optional(),
+  transactionHash: z.string().optional(),
+  licenseTermsIds: z.array(z.string()).optional(),
+
+  // Verification
   verified: z.boolean().default(false),
-  yakoa_token_id: z.string().optional(),
+  yakoaTokenId: z.string().optional(),
+
+  // IPFS metadata
+  metadataIpfsHash: z.string().optional(),
+  metadataIpfsUrl: z.string().optional(),
+  nftMetadataIpfsHash: z.string().optional(),
+  nftMetadataIpfsUrl: z.string().optional(),
+  ipMetadataHash: z.string().optional(),
+  nftMetadataHash: z.string().optional(),
 })
 
 // Query schema for tracks
 const TracksQuerySchema = z.object({
   tab: z.enum(["latest", "following", "trending"]).optional().default("latest"),
-  user_address: z.string().optional(), // For following tab functionality
-  genre: z.string().optional(), // For genre filtering
+  user_address: z.string().optional(),
+  genre: z.string().optional(),
   limit: z.coerce.number().min(1).max(50).optional().default(20),
   offset: z.coerce.number().min(0).optional().default(0),
 })
@@ -40,11 +71,12 @@ tracksRouter.post("/", zValidator("json", CreateTrackSchema), async (c) => {
   try {
     const trackData = c.req.valid("json")
 
-    // Get artist profile to populate artist_name
-    const { data: artistProfile } = await supabase
+    // Get primary creator's profile for fallback display name
+    const primaryCreator = trackData.creators[0]
+    const { data: creatorProfile } = await supabase
       .from("profiles")
       .select("display_name")
-      .eq("address", trackData.artist_address)
+      .eq("address", primaryCreator.address)
       .single()
 
     // Insert track into Supabase
@@ -53,17 +85,45 @@ tracksRouter.post("/", zValidator("json", CreateTrackSchema), async (c) => {
       .insert({
         title: trackData.title,
         description: trackData.description,
+        creators: trackData.creators,
+
+        image: trackData.image,
+        imageHash: trackData.imageHash,
+
+        mediaUrl: trackData.mediaUrl,
+        mediaHash: trackData.mediaHash,
+        mediaType: trackData.mediaType,
+
+        // Additional metadata
         genre: trackData.genre,
         tags: trackData.tags,
         duration: trackData.duration,
-        artist_address: trackData.artist_address,
-        artist_name: artistProfile?.display_name || null, // Populate from profile
-        ipfs_hash: trackData.ipfs_hash,
-        ipfs_url: trackData.ipfs_url,
-        file_hash: trackData.file_hash,
-        ip_id: trackData.ip_id,
+
+        // Story Protocol data
+        ip_id: trackData.ipId,
+        token_id: trackData.tokenId,
+        transaction_hash: trackData.transactionHash,
+        license_terms_ids: trackData.licenseTermsIds,
+
+        // Verification
         verified: trackData.verified,
-        yakoa_token_id: trackData.yakoa_token_id,
+        yakoa_token_id: trackData.yakoaTokenId,
+
+        // IPFS metadata
+        metadata_ipfs_hash: trackData.metadataIpfsHash,
+        metadata_ipfs_url: trackData.metadataIpfsUrl,
+        nft_metadata_ipfs_hash: trackData.nftMetadataIpfsHash,
+        nft_metadata_ipfs_url: trackData.nftMetadataIpfsUrl,
+        ip_metadata_hash: trackData.ipMetadataHash,
+        nft_metadata_hash: trackData.nftMetadataHash,
+
+        // Legacy fields for DB compatibility (will be removed in migration)
+        artist_address: primaryCreator.address,
+        artist_name: primaryCreator.name || creatorProfile?.display_name,
+        ipfs_url: trackData.mediaUrl, // Temporary mapping
+        image_url: trackData.image, // Temporary mapping
+
+        // Initialize social stats
         plays: 0,
         likes_count: 0,
         comments_count: 0,
@@ -105,7 +165,7 @@ tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
   try {
     const { tab, user_address, genre, limit, offset } = c.req.valid("query")
 
-    // Build base query - we'll join profiles manually
+    // Build base query
     let baseQuery = supabase.from("tracks").select("*")
 
     // Apply genre filter if specified
@@ -119,12 +179,10 @@ tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
 
     // Apply filtering based on tab
     if (tab === "following") {
-      // For following tab, get tracks from creators the user follows
       if (!user_address) {
-        // If no user address provided, return empty result
         tracksData = []
       } else {
-        // First, get the list of creators this user follows
+        // Get tracks from followed creators
         const { data: followedCreators, error: followsError } = await supabase
           .from("follows")
           .select("following_address")
@@ -145,16 +203,13 @@ tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
           followedCreators?.map((f) => f.following_address) || []
 
         if (followedAddresses.length === 0) {
-          // User doesn't follow anyone, return empty result
           tracksData = []
         } else {
-          // Get tracks from followed creators
           let followingQuery = supabase
             .from("tracks")
             .select("*")
-            .in("artist_address", followedAddresses)
+            .in("artist_address", followedAddresses) // Using legacy field temporarily
 
-          // Apply genre filter if specified
           if (genre) {
             followingQuery = followingQuery.eq("genre", genre)
           }
@@ -179,16 +234,12 @@ tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
         }
       }
     } else if (tab === "trending") {
-      // For trending tab, order by plays descending (most played first)
       let trendingQuery = supabase.from("tracks").select("*")
 
-      // Apply genre filter if specified
       if (genre) {
         trendingQuery = trendingQuery.eq("genre", genre)
       }
 
-      // Order by a combined trending score: plays + (likes * 2) for better engagement weighting
-      // This gives likes more weight since they're more intentional than plays
       trendingQuery = trendingQuery
         .range(offset, offset + limit - 1)
         .order("plays", { ascending: false })
@@ -207,7 +258,6 @@ tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
       }
       tracksData = trendingData
     }
-    // For 'latest' tab, use the default query (already sorted by created_at DESC)
 
     if (error) {
       console.error("Get tracks error:", error)
@@ -220,44 +270,76 @@ tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
       )
     }
 
-    // Get unique artist addresses to fetch profile data
-    const artistAddresses = [
+    // Get unique creator addresses to fetch profile data
+    const creatorAddresses = [
       ...new Set((tracksData || []).map((track) => track.artist_address)),
     ]
 
-    // Fetch profile data for all artists
+    // Fetch profile data for all creators
     const { data: profiles } = await supabase
       .from("profiles")
       .select("address, display_name, avatar_url, username")
-      .in("address", artistAddresses)
+      .in("address", creatorAddresses)
 
     // Create a map for quick profile lookup
     const profileMap = new Map(profiles?.map((p) => [p.address, p]) || [])
 
-    // Transform to match frontend expected format - simple approach
+    // Transform to EXACT STORY PROTOCOL FORMAT ONLY
     const tracks = (tracksData || []).map((track) => {
-      const profile = profileMap.get(track.artist_address)
+      const primaryCreatorAddress = track.artist_address // Legacy field temporarily
+      const profile = profileMap.get(primaryCreatorAddress)
+
       return {
+        // Story Protocol IPA Standard
         id: track.id,
-        ipId: track.id,
         title: track.title,
-        artist:
-          track.artist_name ||
-          profile?.display_name ||
-          `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
-        artistAddress: track.artist_address,
-        artistUsername: profile?.username, // Add username for navigation
-        artistAvatarUrl: profile?.avatar_url,
+        description: track.description,
+        creators: track.creators || [
+          {
+            name:
+              track.artist_name ||
+              profile?.display_name ||
+              `${primaryCreatorAddress.substring(0, 6)}...${primaryCreatorAddress.substring(primaryCreatorAddress.length - 4)}`,
+            address: primaryCreatorAddress,
+            contributionPercent: 100,
+          },
+        ],
+
+        // Story Protocol image.* fields
+        image: track.image || track.image_url, // Fallback during migration
+        imageHash: track.imageHash || track.image_hash,
+
+        // Story Protocol media.* fields
+        mediaUrl: track.mediaUrl || track.ipfs_url, // Fallback during migration
+        mediaHash: track.mediaHash || track.media_hash,
+        mediaType: track.mediaType || "audio/mpeg",
+
+        // Additional metadata
+        genre: track.genre,
+        tags: track.tags || [],
         duration: track.duration || "0:00",
+
+        // Social stats
         plays: track.plays || 0,
-        verified: track.verified || false,
         likes: track.likes_count || 0,
         comments: track.comments_count || 0,
-        isLiked: false, // TODO: Check if current user liked this track
-        imageUrl: track.ipfs_url || "",
-        description: track.description,
-        genre: track.genre,
-        createdAt: track.created_at?.split("T")[0] || "",
+
+        // Story Protocol data
+        ipId: track.ip_id,
+        tokenId: track.token_id,
+        transactionHash: track.transaction_hash,
+        licenseTermsIds: track.license_terms_ids || [],
+
+        // Verification
+        verified: track.verified || false,
+        yakoaTokenId: track.yakoa_token_id,
+
+        // Timestamps
+        createdAt: track.created_at,
+
+        // Profile data for UI (social features)
+        creatorUsername: profile?.username,
+        creatorAvatarUrl: profile?.avatar_url,
       }
     })
 
@@ -287,7 +369,7 @@ tracksRouter.get("/", zValidator("query", TracksQuerySchema), async (c) => {
 })
 
 /**
- * Get single track by ID
+ * Get single track by ID - STORY PROTOCOL FORMAT ONLY
  */
 tracksRouter.get("/:id", async (c) => {
   try {
@@ -309,35 +391,66 @@ tracksRouter.get("/:id", async (c) => {
       )
     }
 
-    // Get profile data for the artist
+    // Get profile data for the primary creator
+    const primaryCreatorAddress = track.artist_address // Legacy field temporarily
     const { data: profile } = await supabase
       .from("profiles")
       .select("address, display_name, avatar_url, username")
-      .eq("address", track.artist_address)
+      .eq("address", primaryCreatorAddress)
       .single()
 
-    // Transform to match frontend expected format - simple approach
+    // Transform to EXACT STORY PROTOCOL FORMAT ONLY
     const transformedTrack = {
+      // Story Protocol IPA Standard
       id: track.id,
-      ipId: track.ip_id || track.id,
       title: track.title,
-      artist:
-        track.artist_name ||
-        profile?.display_name ||
-        `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
-      artistAddress: track.artist_address,
-      artistUsername: profile?.username, // Add username for navigation
-      artistAvatarUrl: profile?.avatar_url,
+      description: track.description,
+      creators: track.creators || [
+        {
+          name:
+            track.artist_name ||
+            profile?.display_name ||
+            `${primaryCreatorAddress.substring(0, 6)}...${primaryCreatorAddress.substring(primaryCreatorAddress.length - 4)}`,
+          address: primaryCreatorAddress,
+          contributionPercent: 100,
+        },
+      ],
+
+      // Story Protocol image.* fields
+      image: track.image || track.image_url, // Fallback during migration
+      imageHash: track.imageHash || track.image_hash,
+
+      // Story Protocol media.* fields
+      mediaUrl: track.mediaUrl || track.ipfs_url, // Fallback during migration
+      mediaHash: track.mediaHash || track.media_hash,
+      mediaType: track.mediaType || "audio/mpeg",
+
+      // Additional metadata
+      genre: track.genre,
+      tags: track.tags || [],
       duration: track.duration || "0:00",
+
+      // Social stats
       plays: track.plays || 0,
-      verified: track.verified || false,
       likes: track.likes_count || 0,
       comments: track.comments_count || 0,
-      isLiked: false, // TODO: Check if current user liked this track
-      imageUrl: track.ipfs_url || "",
-      description: track.description,
-      genre: track.genre,
-      createdAt: track.created_at?.split("T")[0] || "",
+
+      // Story Protocol data
+      ipId: track.ip_id,
+      tokenId: track.token_id,
+      transactionHash: track.transaction_hash,
+      licenseTermsIds: track.license_terms_ids || [],
+
+      // Verification
+      verified: track.verified || false,
+      yakoaTokenId: track.yakoa_token_id,
+
+      // Timestamps
+      createdAt: track.created_at,
+
+      // Profile data for UI (social features)
+      creatorUsername: profile?.username,
+      creatorAvatarUrl: profile?.avatar_url,
     }
 
     return c.json({
@@ -378,41 +491,75 @@ tracksRouter.get("/trending/sidebar", async (c) => {
       )
     }
 
-    // Get unique artist addresses to fetch profile data
-    const artistAddresses = [
+    // Get unique creator addresses to fetch profile data
+    const creatorAddresses = [
       ...new Set((tracksData || []).map((track) => track.artist_address)),
     ]
 
-    // Fetch profile data for all artists
+    // Fetch profile data for all creators
     const { data: profiles } = await supabase
       .from("profiles")
       .select("address, display_name, avatar_url, username")
-      .in("address", artistAddresses)
+      .in("address", creatorAddresses)
 
     // Create a map for quick profile lookup
     const profileMap = new Map(profiles?.map((p) => [p.address, p]) || [])
 
-    // Transform to match frontend expected format - simple approach
+    // Transform to EXACT STORY PROTOCOL FORMAT ONLY
     const tracks = (tracksData || []).map((track) => {
-      const profile = profileMap.get(track.artist_address)
-      return {
-        id: track.id,
-        ipId: track.id,
-        title: track.title,
-        artist:
+      const primaryCreatorAddress = track.artist_address // Legacy field temporarily
+      const profile = profileMap.get(primaryCreatorAddress)
+      const primaryCreator = track.creators?.[0] || {
+        name:
           track.artist_name ||
           profile?.display_name ||
-          `${track.artist_address.substring(0, 6)}...${track.artist_address.substring(track.artist_address.length - 4)}`,
-        artistAddress: track.artist_address,
-        artistUsername: profile?.username, // Add username for navigation
-        artistAvatarUrl: profile?.avatar_url,
+          `${primaryCreatorAddress.substring(0, 6)}...${primaryCreatorAddress.substring(primaryCreatorAddress.length - 4)}`,
+        address: primaryCreatorAddress,
+        contributionPercent: 100,
+      }
+
+      return {
+        // Story Protocol IPA Standard
+        id: track.id,
+        title: track.title,
+        description: track.description,
+        creators: [primaryCreator],
+
+        // Story Protocol image.* fields
+        image: track.image || track.image_url, // Fallback during migration
+        imageHash: track.imageHash || track.image_hash,
+
+        // Story Protocol media.* fields
+        mediaUrl: track.mediaUrl || track.ipfs_url, // Fallback during migration
+        mediaHash: track.mediaHash || track.media_hash,
+        mediaType: track.mediaType || "audio/mpeg",
+
+        // Additional metadata
+        genre: track.genre,
+        tags: track.tags || [],
         duration: track.duration || "0:00",
+
+        // Social stats
         plays: track.plays || 0,
-        verified: track.verified || false,
         likes: track.likes_count || 0,
         comments: track.comments_count || 0,
-        isLiked: false,
-        imageUrl: track.ipfs_url || "",
+
+        // Story Protocol data
+        ipId: track.ip_id,
+        tokenId: track.token_id,
+        transactionHash: track.transaction_hash,
+        licenseTermsIds: track.license_terms_ids || [],
+
+        // Verification
+        verified: track.verified || false,
+        yakoaTokenId: track.yakoa_token_id,
+
+        // Timestamps
+        createdAt: track.created_at,
+
+        // Profile data for UI (social features)
+        creatorUsername: profile?.username,
+        creatorAvatarUrl: profile?.avatar_url,
       }
     })
 

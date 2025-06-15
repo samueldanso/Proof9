@@ -4,7 +4,7 @@ import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
 import { useUserLicensedTracks } from "@/hooks/api";
 import { useAddComment, useLikeTrack, useUserLikes } from "@/hooks/use-social-actions";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
+import type { Track } from "@/types/track";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
@@ -15,50 +15,97 @@ export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState<string>("liked");
 
   // Music player state
-  const [currentTrack, setCurrentTrack] = useState<any>(null);
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   // Load user's liked tracks
   const { data: userLikes = [], isLoading: likesLoading } = useUserLikes();
 
   // Load user's licensed tracks
-  const { data: licensedTracks = [], isLoading: licensedLoading } = useUserLicensedTracks(
+  const { data: licensedTracksResponse, isLoading: licensedLoading } = useUserLicensedTracks(
     address || "",
   );
 
-  // Transform liked tracks for display
+  // Transform liked tracks for display - using Story Protocol Track format
   const likedTracks = useMemo(() => {
     return userLikes
-      .map((like) => {
+      .map((like: any) => {
         if (like.tracks) {
-          return {
-            ...transformDbTrackToLegacy(like.tracks as any),
-            isLiked: true,
+          // Convert database track to Story Protocol Track format
+          const track: Track = {
+            id: like.tracks.id,
+            title: like.tracks.title,
+            description: like.tracks.description,
+            creators: like.tracks.creators || [
+              {
+                name: like.tracks.artist_name || "Unknown Artist",
+                address: like.tracks.artist_address || "",
+                contributionPercent: 100,
+              },
+            ],
+            image: like.tracks.image_url,
+            imageHash: like.tracks.image_hash,
+            mediaUrl: like.tracks.ipfs_url,
+            mediaHash: like.tracks.media_hash,
+            mediaType: like.tracks.media_type,
+            genre: like.tracks.genre,
+            tags: like.tracks.tags || [],
+            duration: like.tracks.duration,
+            plays: like.tracks.plays || 0,
+            likes: like.tracks.likes_count || 0,
+            comments: like.tracks.comments_count || 0,
+            verified: like.tracks.verified || false,
+            createdAt: like.tracks.created_at,
+            ipId: like.tracks.ip_id,
+            tokenId: like.tracks.token_id,
+            transactionHash: like.tracks.transaction_hash,
           };
+          return track;
         }
         return null;
       })
-      .filter((track) => track !== null);
+      .filter((track): track is Track => track !== null);
   }, [userLikes]);
 
-  // Transform licensed tracks for display
+  // Transform licensed tracks for display - using Story Protocol Track format
   const licensedTracksFormatted = useMemo(() => {
-    // Ensure licensedTracks is an array and has data property if it's an API response
-    const tracksArray = Array.isArray(licensedTracks) ? licensedTracks : licensedTracks?.data || [];
+    const tracksArray = licensedTracksResponse?.data || [];
 
     return tracksArray
-      .filter((license: any) => license.tracks) // Filter first to avoid nulls
-      .map((license: any) => ({
-        ...transformDbTrackToLegacy(license.tracks as any),
-        isLiked: false, // We'll check this separately
-        licenseInfo: {
-          purchaseDate: license.created_at,
-          licenseType: license.license_type,
-          pricePaid: license.price_paid,
-          status: license.status,
-        },
-      }));
-  }, [licensedTracks]);
+      .filter((license: any) => license.tracks)
+      .map((license: any) => {
+        // Convert database track to Story Protocol Track format
+        const track: Track = {
+          id: license.tracks.id,
+          title: license.tracks.title,
+          description: license.tracks.description,
+          creators: license.tracks.creators || [
+            {
+              name: license.tracks.artist_name || "Unknown Artist",
+              address: license.tracks.artist_address || "",
+              contributionPercent: 100,
+            },
+          ],
+          image: license.tracks.image_url,
+          imageHash: license.tracks.image_hash,
+          mediaUrl: license.tracks.ipfs_url,
+          mediaHash: license.tracks.media_hash,
+          mediaType: license.tracks.media_type,
+          genre: license.tracks.genre,
+          tags: license.tracks.tags || [],
+          duration: license.tracks.duration,
+          plays: license.tracks.plays || 0,
+          likes: license.tracks.likes_count || 0,
+          comments: license.tracks.comments_count || 0,
+          verified: license.tracks.verified || false,
+          createdAt: license.tracks.created_at,
+          ipId: license.tracks.ip_id,
+          tokenId: license.tracks.token_id,
+          transactionHash: license.tracks.transaction_hash,
+        };
+        return track;
+      });
+  }, [licensedTracksResponse]);
 
   // Social actions hooks
   const likeTrackMutation = useLikeTrack();
@@ -68,7 +115,7 @@ export default function LibraryPage() {
     setActiveTab(tab);
   };
 
-  const handlePlay = (track: any) => {
+  const handlePlay = (track: Track) => {
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
@@ -78,7 +125,7 @@ export default function LibraryPage() {
   };
 
   const handleLike = (trackId: string) => {
-    const track = currentTracks.find((t: any) => t.id === trackId);
+    const track = currentTracks.find((t: Track) => t.id === trackId);
     likeTrackMutation.mutate({ trackId, trackTitle: track?.title });
   };
 
@@ -175,7 +222,7 @@ export default function LibraryPage() {
         ) : (
           // Track grid - 4 columns on large screens, responsive
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {currentTracks.map((track: any) => (
+            {currentTracks.map((track: Track) => (
               <TrackCard
                 key={track.id}
                 track={track}

@@ -1,4 +1,4 @@
-import { Howl } from "howler";
+import { fixIpfsUrl } from "@/lib/utils/ipfs";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseAudioPlayerProps {
@@ -15,132 +15,124 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
   const [currentTime, setCurrentTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const soundRef = useRef<Howl | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize audio when src changes
   useEffect(() => {
-    console.log("useAudioPlayer - src changed:", src);
+    if (!src) return;
 
-    if (!src) {
-      console.log("useAudioPlayer - No src provided");
-      return;
+    // Fix IPFS URLs
+    const fixedSrc = fixIpfsUrl(src);
+
+    // Clean up previous audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
 
-    // Clean up previous sound
-    if (soundRef.current) {
-      soundRef.current.unload();
-      soundRef.current = null;
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
 
     setIsLoading(true);
     setError(null);
     setCurrentTime(0);
+    setIsPlaying(false);
 
-    // Create new Howl instance
-    const sound = new Howl({
-      src: [src],
-      html5: true, // Use HTML5 Audio for better streaming
-      preload: "metadata", // Only preload metadata for faster loading
-      volume: volume,
-      onload: () => {
-        setDuration(sound.duration());
-        setIsLoading(false);
-      },
-      onplay: () => {
-        setIsPlaying(true);
-        // Start progress interval
-        intervalRef.current = setInterval(() => {
-          if (sound.playing()) {
-            setCurrentTime(sound.seek() as number);
-          }
-        }, 100);
-      },
-      onpause: () => {
-        setIsPlaying(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      },
-      onstop: () => {
-        setIsPlaying(false);
-        setCurrentTime(0);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      },
-      onend: () => {
-        setIsPlaying(false);
-        setCurrentTime(0);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        onEnd?.();
-      },
-      onloaderror: (id, error) => {
-        console.error("Audio load error:", error);
-        console.error("Audio URL that failed:", src);
-        setError("Failed to load audio file");
-        setIsLoading(false);
-        onError?.(error);
-      },
-      onplayerror: (id, error) => {
-        console.error("Audio play error:", error);
-        console.error("Audio URL that failed:", src);
-        setError("Failed to play audio file");
-        setIsPlaying(false);
-        onError?.(error);
-      },
-    });
+    // Create new HTML5 Audio element
+    const audio = new Audio();
+    audio.src = fixedSrc;
+    audio.volume = volume;
+    audio.preload = "metadata";
 
-    soundRef.current = sound;
+    audio.onloadedmetadata = () => {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    };
+
+    audio.onplay = () => {
+      setIsPlaying(true);
+      // Start progress interval
+      intervalRef.current = setInterval(() => {
+        setCurrentTime(audio.currentTime);
+      }, 100);
+    };
+
+    audio.onpause = () => {
+      setIsPlaying(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+
+    audio.onended = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      onEnd?.();
+    };
+
+    audio.onerror = (e) => {
+      const errorMessage = `Failed to load audio file: ${fixedSrc}`;
+      setError(errorMessage);
+      setIsLoading(false);
+      onError?.(e);
+    };
+
+    audioRef.current = audio;
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      sound.unload();
+      if (audio) {
+        audio.pause();
+        audio.src = "";
+      }
     };
-  }, [src, volume, onEnd, onError]);
+  }, [src, onEnd, onError]);
 
   // Update volume when it changes
   useEffect(() => {
-    if (soundRef.current) {
-      soundRef.current.volume(volume);
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
     }
   }, [volume]);
 
   const play = useCallback(() => {
-    if (soundRef.current && !isLoading) {
+    if (audioRef.current && !isLoading) {
       try {
-        soundRef.current.play();
+        audioRef.current.play();
       } catch (error) {
-        console.error("Play error:", error);
         setError("Failed to play audio");
       }
     }
   }, [isLoading]);
 
   const pause = useCallback(() => {
-    if (soundRef.current) {
-      soundRef.current.pause();
+    if (audioRef.current) {
+      audioRef.current.pause();
     }
   }, []);
 
   const stop = useCallback(() => {
-    if (soundRef.current) {
-      soundRef.current.stop();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
   }, []);
 
   const seek = useCallback(
     (time: number) => {
-      if (soundRef.current && duration > 0) {
+      if (audioRef.current && duration > 0) {
         const seekTime = Math.max(0, Math.min(time, duration));
-        soundRef.current.seek(seekTime);
+        audioRef.current.currentTime = seekTime;
         setCurrentTime(seekTime);
       }
     },
@@ -149,8 +141,8 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
   const setVolume = useCallback((vol: number) => {
     const clampedVolume = Math.max(0, Math.min(1, vol));
-    if (soundRef.current) {
-      soundRef.current.volume(clampedVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = clampedVolume;
     }
   }, []);
 
@@ -167,18 +159,6 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = Math.floor(timeInSeconds % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      if (soundRef.current) {
-        soundRef.current.unload();
-      }
-    };
   }, []);
 
   return {

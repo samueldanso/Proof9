@@ -145,7 +145,9 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
               <div key={license.id} className="relative">
                 <div
                   className={`flex items-start space-x-3 rounded-lg border p-4 transition-all ${
-                    formData.type === license.id ? "border-primary bg-primary/5" : "border-border"
+                    formData.type === license.id
+                      ? "border-[#ced925] bg-[#ced925]/5"
+                      : "border-border"
                   }`}
                 >
                   <RadioGroupItem value={license.id} className="mt-1" />
@@ -207,7 +209,7 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
               <div
                 key={usage.id}
                 className={`flex items-center space-x-3 rounded-lg border p-3 ${
-                  formData.usage === usage.id ? "border-primary bg-primary/5" : "border-border"
+                  formData.usage === usage.id ? "border-[#ced925] bg-[#ced925]/5" : "border-border"
                 }`}
               >
                 <RadioGroupItem value={usage.id} />
@@ -232,7 +234,7 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
                 key={territory.id}
                 className={`flex items-center space-x-3 rounded-lg border p-3 ${
                   formData.territory === territory.id
-                    ? "border-primary bg-primary/5"
+                    ? "border-[#ced925] bg-[#ced925]/5"
                     : "border-border"
                 }`}
               >
@@ -324,8 +326,8 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
             )}
 
             {includeRoyalties && (
-              <div className="rounded-lg bg-primary/10 p-3">
-                <p className="text-primary text-sm">
+              <div className="rounded-lg bg-[#ced925]/10 p-3">
+                <p className="text-[#ced925] text-sm">
                   <Info className="mr-1 inline h-3 w-3" />
                   Ongoing royalties: 5% of licensee revenue will be automatically distributed to you
                 </p>
@@ -340,7 +342,10 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
             ← Back
           </Button>
 
-          <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+          <Button
+            type="submit"
+            className="flex-1 bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50"
+          >
             Continue →
           </Button>
         </div>

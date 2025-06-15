@@ -11,7 +11,7 @@ import {
   useLikeTrack,
   useTrackComments,
 } from "@/hooks/use-social-actions";
-import { transformDbTrackToLegacy } from "@/lib/api/types";
+import type { Track } from "@/types/track";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,9 +26,9 @@ export default function TrackPage() {
   const trackId = params.id as string;
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Load track data from API
+  // Load track data from API - Story Protocol format
   const { data: trackResponse, isLoading, error } = useTrack(trackId);
-  const dbTrack = trackResponse?.data;
+  const track: Track | null = trackResponse?.data || null;
 
   // Social actions hooks
   const likeTrackMutation = useLikeTrack();
@@ -36,14 +36,6 @@ export default function TrackPage() {
   const { data: commentsData } = useTrackComments(trackId);
   const { data: isLikedData } = useIsTrackLiked(trackId);
   const { address } = useAccount();
-
-  // Transform database track to legacy format for components
-  const track = dbTrack
-    ? {
-        ...transformDbTrackToLegacy(dbTrack),
-        isLiked: isLikedData?.isLiked || false,
-      }
-    : null;
 
   const handlePlay = () => {
     setIsPlaying(!isPlaying);
@@ -74,6 +66,10 @@ export default function TrackPage() {
       toast.success("Track link copied to clipboard!");
     }
   };
+
+  // Helper functions for Story Protocol data
+  const getArtistName = () => track?.creators?.[0]?.name || "Unknown Artist";
+  const getArtistAddress = () => track?.creators?.[0]?.address || "";
 
   if (isLoading) {
     return (
@@ -111,16 +107,76 @@ export default function TrackPage() {
     );
   }
 
+  // Create adapter objects for components that expect legacy interface
+  const trackHeaderData = {
+    id: track.id,
+    title: track.title,
+    artist: getArtistName(),
+    artistAddress: getArtistAddress(),
+    artistUsername: track.creatorUsername,
+    duration: track.duration || "0:00",
+    plays: track.plays || 0,
+    verified: track.verified || false,
+    likes: track.likes || 0,
+    comments: track.comments || 0,
+    isLiked: isLikedData?.isLiked || false,
+    imageUrl: track.image,
+    description: track.description,
+    genre: track.genre,
+    createdAt: track.createdAt,
+  };
+
+  const trackMediaData = {
+    id: track.id,
+    title: track.title,
+    artist: getArtistName(),
+    artistAddress: getArtistAddress(),
+    duration: track.duration || "0:00",
+    plays: track.plays || 0,
+    verified: track.verified || false,
+    likes: track.likes || 0,
+    comments: track.comments || 0,
+    isLiked: isLikedData?.isLiked || false,
+    imageUrl: track.image, // Story Protocol image field
+    description: track.description,
+    genre: track.genre,
+    createdAt: track.createdAt,
+  };
+
+  const licenseInfoData = {
+    id: track.id,
+    title: track.title,
+    artist: getArtistName(),
+    artistAddress: getArtistAddress(),
+    duration: track.duration || "0:00",
+    plays: track.plays || 0,
+    verified: track.verified || false,
+    likes: track.likes || 0,
+    comments: track.comments || 0,
+    isLiked: isLikedData?.isLiked || false,
+    imageUrl: track.image,
+    description: track.description,
+    genre: track.genre,
+    createdAt: track.createdAt,
+    license: {
+      type: "Commercial",
+      price: "10",
+      available: true,
+      terms: "Standard commercial license",
+      downloads: 0,
+    },
+  };
+
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Left Side - Track Details */}
         <div className="space-y-6">
-          {/* Track Header */}
-          <TrackHeader track={track} />
+          {/* Track Header - Story Protocol Format */}
+          <TrackHeader track={trackHeaderData} />
 
-          {/* Track Media */}
-          <TrackMedia track={track} isPlaying={isPlaying} onPlay={handlePlay} />
+          {/* Track Media - Story Protocol Format */}
+          <TrackMedia track={trackMediaData} isPlaying={isPlaying} onPlay={handlePlay} />
 
           {/* Track Info */}
           <Card className="p-6">
@@ -145,22 +201,45 @@ export default function TrackPage() {
                 </div>
                 <div>
                   <span className="font-medium">Plays:</span>
-                  <p className="text-muted-foreground">{track.plays?.toLocaleString() || 0}</p>
+                  <p className="text-muted-foreground">{(track.plays || 0).toLocaleString()}</p>
                 </div>
                 <div>
                   <span className="font-medium">Created:</span>
-                  <p className="text-muted-foreground">{track?.createdAt || "Unknown"}</p>
+                  <p className="text-muted-foreground">{track.createdAt || "Unknown"}</p>
                 </div>
               </div>
+
+              {/* Story Protocol Creators */}
+              {track.creators && track.creators.length > 0 && (
+                <>
+                  <Separator />
+                  <div>
+                    <span className="font-medium">Creators:</span>
+                    <div className="mt-2 space-y-2">
+                      {track.creators.map((creator, index) => (
+                        <div
+                          key={creator.address || `creator-${index}`}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="text-muted-foreground">{creator.name}</span>
+                          <span className="text-muted-foreground">
+                            {creator.contributionPercent}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
 
               <Separator />
 
               {/* Track Actions */}
               <TrackActions
                 trackId={track.id}
-                likes={track?.likes || 0}
-                comments={track?.comments || 0}
-                isLiked={track?.isLiked || false}
+                likes={track.likes || 0}
+                comments={track.comments || 0}
+                isLiked={isLikedData?.isLiked || false}
                 onLike={handleLike}
                 onComment={handleComment}
                 onShare={handleShare}
@@ -171,11 +250,11 @@ export default function TrackPage() {
 
         {/* Right Side - Licensing Info */}
         <div className="space-y-6">
-          <LicenseInfo track={track} ipAssetId={dbTrack?.ip_id || undefined} />
+          <LicenseInfo track={licenseInfoData} ipAssetId={track.ipId} />
 
           {/* Additional licensing details */}
           <Card className="p-6">
-            <h3 className="mb-4 font-semibold text-lg">License Details</h3>
+            <h3 className="mb-4 font-semibold text-lg">Story Protocol Details</h3>
             <div className="space-y-4">
               <div>
                 <span className="font-medium">Verification Status:</span>
@@ -184,11 +263,36 @@ export default function TrackPage() {
                 </p>
               </div>
 
-              {dbTrack?.ip_id && (
+              {track.ipId && (
                 <div>
                   <span className="font-medium">IP Asset ID:</span>
+                  <p className="break-all font-mono text-muted-foreground text-xs">{track.ipId}</p>
+                </div>
+              )}
+
+              {track.tokenId && (
+                <div>
+                  <span className="font-medium">Token ID:</span>
                   <p className="break-all font-mono text-muted-foreground text-xs">
-                    {dbTrack.ip_id}
+                    {track.tokenId}
+                  </p>
+                </div>
+              )}
+
+              {track.mediaHash && (
+                <div>
+                  <span className="font-medium">Media Hash:</span>
+                  <p className="break-all font-mono text-muted-foreground text-xs">
+                    {track.mediaHash}
+                  </p>
+                </div>
+              )}
+
+              {track.yakoaTokenId && (
+                <div>
+                  <span className="font-medium">Yakoa Token ID:</span>
+                  <p className="break-all font-mono text-muted-foreground text-xs">
+                    {track.yakoaTokenId}
                   </p>
                 </div>
               )}
@@ -198,25 +302,21 @@ export default function TrackPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-xl">License Available</span>
-                  <span className="text-muted-foreground text-sm">Story Protocol</span>
+                  <Button>Purchase License</Button>
                 </div>
-
-                <Button className="w-full" size="lg" disabled={!track.verified}>
-                  {track.verified ? "Purchase License" : "Verification Required"}
-                </Button>
-
-                <Button variant="outline" className="w-full" size="lg">
-                  Preview Track
-                </Button>
+                <p className="text-muted-foreground text-sm">
+                  This track is protected by Story Protocol. Purchase a license to use it
+                  commercially.
+                </p>
               </div>
             </div>
           </Card>
         </div>
       </div>
 
-      {/* Comments Section - Full Width Below */}
+      {/* Comments Section */}
       <div className="mt-8">
-        <CommentsSection trackId={trackId} />
+        <CommentsSection trackId={track.id} />
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import { client } from "../../../utils/config"
 
 const licensesRouter = new Hono()
 
-// Schema for minting license tokens
+// Mint license tokens schema
 const MintLicenseSchema = z.object({
   licensorIpId: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
     message: "IP ID must be a valid Ethereum address",
@@ -19,7 +19,7 @@ const MintLicenseSchema = z.object({
 })
 
 /**
- * Mint license tokens endpoint
+ * Mint license tokens API endpoint
  * Mints license tokens for an IP with specific license terms
  */
 licensesRouter.post(
