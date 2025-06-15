@@ -97,10 +97,7 @@ export async function testIpfsUrl(url: string, timeout = 5000): Promise<boolean>
  * @param timeout - Timeout per gateway test
  * @returns Promise resolving to working URL or null
  */
-export async function findWorkingIpfsUrl(
-  ipfsUrl: string,
-  timeout = 3000
-): Promise<string | null> {
+export async function findWorkingIpfsUrl(ipfsUrl: string, timeout = 3000): Promise<string | null> {
   const gatewayUrls = getAllIpfsGatewayUrls(ipfsUrl);
 
   console.log(`🔗 Testing ${gatewayUrls.length} IPFS gateways for: ${ipfsUrl}`);

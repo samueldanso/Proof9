@@ -60,18 +60,6 @@ export function TrackCard({
   const router = useRouter();
   const { address } = useAccount();
 
-  // Debug logging to see track data structure
-  console.log("🎵 TrackCard - Track data:", {
-    id: track.id,
-    title: track.title,
-    mediaUrl: track.mediaUrl,
-    image: track.image,
-    mediaType: track.mediaType,
-    duration: track.duration,
-    hasCreators: !!track.creators?.length,
-    creators: track.creators,
-  });
-
   // Check if current user has liked this track
   const { data: isLikedData } = useIsTrackLiked(track.id);
   const isLiked = isLikedData?.isLiked || false;

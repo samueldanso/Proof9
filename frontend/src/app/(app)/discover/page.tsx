@@ -1,13 +1,11 @@
 "use client";
 
-import { AudioTest } from "@/components/shared/audio-test";
 import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
 import { useTracks } from "@/hooks/api";
 import { useAddComment, useLikeTrack } from "@/hooks/use-social-actions";
-import { analyzeTracksData } from "@/lib/utils/track-validation";
 import type { Track } from "@/types/track";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
 import FeedSkeleton from "./_components/feed-skeleton";
@@ -45,26 +43,12 @@ function DiscoverContent() {
 
   const tracks = tracksResponse?.data?.tracks || [];
 
-  // Analyze track data when tracks are loaded
-  useEffect(() => {
-    if (tracks.length > 0) {
-      console.log("🔍 Analyzing track data from API...");
-      analyzeTracksData(tracks);
-    }
-  }, [tracks]);
-
   // Social actions hooks for TrackCard functionality
   const likeTrackMutation = useLikeTrack();
   const addCommentMutation = useAddComment();
 
   // TrackCard event handlers
   const handlePlay = (track: Track) => {
-    console.log("🎵 Discover - Play button clicked for track:", {
-      id: track.id,
-      title: track.title,
-      mediaUrl: track.mediaUrl,
-    });
-
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
@@ -104,13 +88,11 @@ function DiscoverContent() {
   }
 
   if (error) {
-    console.error("🚨 Discover - Error loading tracks:", error);
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h2 className="font-bold text-2xl">Error loading tracks</h2>
           <p className="text-muted-foreground">Please try again later</p>
-          <pre className="mt-4 text-left text-red-500 text-sm">{JSON.stringify(error, null, 2)}</pre>
         </div>
       </div>
     );
@@ -127,20 +109,6 @@ function DiscoverContent() {
 
         {/* Genre Filter - Beautiful chip design */}
         <GenreFilter activeGenre={selectedGenre} onGenreChange={setSelectedGenre} />
-
-        {/* Audio Debug Section - Temporary */}
-        {tracks.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">🔧 Audio Debug Test</h3>
-            {tracks.slice(0, 1).map((track) => (
-              <AudioTest
-                key={`test-${track.id}`}
-                audioUrl={track.mediaUrl || ""}
-                title={track.title}
-              />
-            ))}
-          </div>
-        )}
 
         {/* Tab Content */}
         <div className="space-y-6">
