@@ -154,12 +154,12 @@ export function AppHeader() {
       <div className="w-16" />
 
       {/* Center: Search Bar - Properly sized like social apps */}
-      <div className="mx-6 flex-1 max-w-sm">
+      <div className="mx-6 max-w-sm flex-1">
         <SearchBar />
       </div>
 
       {/* Right: Upload, Notifications & Profile Avatar - Pushed to extreme right */}
-      <div className="flex items-center justify-end gap-3 flex-1">
+      <div className="flex flex-1 items-center justify-end gap-3">
         <UploadButton />
         <NotificationsButton />
         <UserProfileAvatar />
