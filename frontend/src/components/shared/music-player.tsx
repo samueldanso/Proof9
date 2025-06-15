@@ -44,9 +44,6 @@ export function MusicPlayer({
   const { data: isLikedData } = useIsTrackLiked(track.id);
   const isLiked = isLikedData?.isLiked || false;
 
-  // Use real audio player
-  console.log("MusicPlayer - Track mediaUrl:", track.mediaUrl);
-
   const {
     isPlaying: audioIsPlaying,
     isLoading,
@@ -65,15 +62,7 @@ export function MusicPlayer({
     onEnd: () => {
       onPause();
     },
-    onError: (error) => {
-      console.error("Audio playback error:", error);
-      console.error("Failed mediaUrl:", track.mediaUrl);
-    },
   });
-
-  console.log("MusicPlayer - Error:", error);
-  console.log("MusicPlayer - IsLoading:", isLoading);
-  console.log("MusicPlayer - Duration:", duration);
 
   // Sync external play/pause state with audio
   const handlePlayPause = () => {

@@ -2,10 +2,11 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { StepProvider, useStep } from "./step-context";
+import { RoleSelection } from "./steps/role-selection";
 import { ProfileSetup } from "./steps/profile-setup";
 
-// Single step for simplicity - just profile setup
-const steps = [ProfileSetup];
+// Two steps: role selection first, then profile setup
+const steps = [RoleSelection, ProfileSetup];
 
 const variants = {
   enter: (direction: string) => ({
@@ -54,7 +55,7 @@ function StepsRenderer() {
 
 export function Onboarding() {
   return (
-    <StepProvider totalSteps={1}>
+    <StepProvider totalSteps={2}>
       <StepsRenderer />
     </StepProvider>
   );
