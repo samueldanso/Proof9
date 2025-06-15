@@ -1,5 +1,6 @@
 "use client";
 
+import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackCard } from "@/components/shared/track-card";
 import { useTracks } from "@/hooks/api";
 import { useAddComment, useLikeTrack } from "@/hooks/use-social-actions";
@@ -138,6 +139,23 @@ function DiscoverContent() {
             </div>
           )}
         </div>
+
+        {/* Music Player */}
+        {currentTrack && (
+          <MusicPlayer
+            track={currentTrack}
+            isPlaying={isPlaying}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onClose={() => {
+              setCurrentTrack(null);
+              setIsPlaying(false);
+            }}
+            onLike={handleLike}
+            onComment={handleComment}
+            onShare={handleShare}
+          />
+        )}
       </div>
     </div>
   );

@@ -8,11 +8,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
+import { useIsTrackLiked } from "@/hooks/use-social-actions";
 import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
 import type { Track } from "@/types/track";
 import { Loader2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { useState } from "react";
+import { useAccount } from "wagmi";
 
 interface MusicPlayerProps {
   track: Track;
@@ -36,6 +38,11 @@ export function MusicPlayer({
   onShare,
 }: MusicPlayerProps) {
   const [volume, setVolume] = useState(75);
+  const { address } = useAccount();
+
+  // Check if current user has liked this track
+  const { data: isLikedData } = useIsTrackLiked(track.id);
+  const isLiked = isLikedData?.isLiked || false;
 
   // Use real audio player
   console.log("MusicPlayer - Track mediaUrl:", track.mediaUrl);
@@ -194,28 +201,32 @@ export function MusicPlayer({
             <Button
               variant="ghost"
               size="sm"
-              className="size-8 p-0"
+              className="size-8 p-0 hover:bg-[#ced925]/10"
               onClick={() => onLike?.(track.id)}
             >
-              <IconHeart className="size-4" />
+              {isLiked ? (
+                <IconHeartFill className="size-4 text-[#ced925]" />
+              ) : (
+                <IconHeart className="size-4 text-muted-foreground hover:text-[#ced925]" />
+              )}
             </Button>
 
             <Button
               variant="ghost"
               size="sm"
-              className="size-8 p-0"
+              className="size-8 p-0 hover:bg-[#ced925]/10"
               onClick={() => onComment?.(track.id)}
             >
-              <IconBubble className="size-4" />
+              <IconBubble className="size-4 text-muted-foreground hover:text-[#ced925]" />
             </Button>
 
             <Button
               variant="ghost"
               size="sm"
-              className="size-8 p-0"
+              className="size-8 p-0 hover:bg-[#ced925]/10"
               onClick={() => onShare?.(track.id)}
             >
-              <IconShare className="size-4" />
+              <IconShare className="size-4 text-muted-foreground hover:text-[#ced925]" />
             </Button>
           </div>
 

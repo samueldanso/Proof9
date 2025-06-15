@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useIsTrackLiked } from "@/hooks/use-social-actions";
 import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
 import type { Track } from "@/types/track";
@@ -10,6 +11,7 @@ import { Pause, Play } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAccount } from "wagmi";
 import { TrackActions } from "./track-actions";
 
 // Helper function to format date for display
@@ -56,6 +58,11 @@ export function TrackCard({
   index,
 }: TrackCardProps) {
   const router = useRouter();
+  const { address } = useAccount();
+
+  // Check if current user has liked this track
+  const { data: isLikedData } = useIsTrackLiked(track.id);
+  const isLiked = isLikedData?.isLiked || false;
 
   // Helper functions to get artist info from Story Protocol creators array
   const getArtistName = () => track.creators?.[0]?.name || "";
@@ -152,7 +159,7 @@ export function TrackCard({
                 trackId={track.id}
                 likes={track.likes || 0}
                 comments={track.comments || 0}
-                isLiked={false} // This would come from social actions hook
+                isLiked={isLiked}
                 onLike={onLike}
                 onComment={onComment}
                 onShare={onShare}
@@ -267,7 +274,7 @@ export function TrackCard({
                 trackId={track.id}
                 likes={track.likes || 0}
                 comments={track.comments || 0}
-                isLiked={false} // This would come from social actions hook
+                isLiked={isLiked}
                 onLike={onLike}
                 onComment={onComment}
                 onShare={onShare}
