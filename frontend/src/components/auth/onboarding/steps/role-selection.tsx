@@ -26,15 +26,15 @@ export function RoleSelection() {
         <Button
           onClick={() => handleRoleSelect("creator")}
           variant="outline"
-          className="group h-auto flex-col gap-4 border-2 border-muted-foreground/20 p-6 text-left transition-all hover:border-[#ced925]/50 hover:bg-[#ced925]/5"
+          className="group h-auto border-2 border-muted-foreground/20 p-6 text-left transition-all hover:border-[#ced925]/50 hover:bg-[#ced925]/5"
         >
-          <div className="flex w-full items-center gap-4">
-            <div className="flex size-12 items-center justify-center rounded-full bg-[#ced925]/10 text-[#ced925] transition-colors group-hover:bg-[#ced925]/20">
+          <div className="flex w-full items-start gap-4">
+            <div className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-[#ced925]/10 text-[#ced925] transition-colors group-hover:bg-[#ced925]/20">
               <Music className="size-6" />
             </div>
-            <div className="flex-1 text-left">
+            <div className="flex-1 min-w-0 text-left">
               <h3 className="font-semibold text-lg text-foreground">Become a Creator</h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 Upload your music, protect your IP, license your sound, and earn royalties.
               </p>
             </div>
@@ -45,15 +45,15 @@ export function RoleSelection() {
         <Button
           onClick={() => handleRoleSelect("fan")}
           variant="outline"
-          className="group h-auto flex-col gap-4 border-2 border-muted-foreground/20 p-6 text-left transition-all hover:border-[#ced925]/50 hover:bg-[#ced925]/5"
+          className="group h-auto border-2 border-muted-foreground/20 p-6 text-left transition-all hover:border-[#ced925]/50 hover:bg-[#ced925]/5"
         >
-          <div className="flex w-full items-center gap-4">
-            <div className="flex size-12 items-center justify-center rounded-full bg-[#ced925]/10 text-[#ced925] transition-colors group-hover:bg-[#ced925]/20">
+          <div className="flex w-full items-start gap-4">
+            <div className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-[#ced925]/10 text-[#ced925] transition-colors group-hover:bg-[#ced925]/20">
               <Heart className="size-6" />
             </div>
-            <div className="flex-1 text-left">
+            <div className="flex-1 min-w-0 text-left">
               <h3 className="font-semibold text-lg text-foreground">Continue as Licensee/Fan</h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 Discover new sounds, license music for your projects, and support artists.
               </p>
             </div>
