@@ -1,35 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTracks } from "@/hooks/api";
 import type { Track } from "@/types/track";
 import { Heart, Play, User, Verified } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAccount } from "wagmi";
-
-const GENRES = [
-  "All",
-  "Electronic",
-  "Hip Hop",
-  "Pop",
-  "Rock",
-  "Jazz",
-  "Classical",
-  "R&B",
-  "Country",
-  "Folk",
-  "Blues",
-  "Reggae",
-  "Punk",
-  "Metal",
-  "Alternative",
-  "Indie",
-  "World",
-  "Other",
-];
+import FeedTabs from "./_components/feed-tabs";
+import GenreFilter from "./_components/genre-filter";
+import TrendingBanner from "./_components/trending-banner";
 
 export default function DiscoverPage() {
   const { address } = useAccount();
@@ -74,6 +54,10 @@ export default function DiscoverPage() {
     return track.creators?.[0]?.address || "";
   };
 
+  const handleExploreClick = () => {
+    setActiveTab("trending");
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -109,40 +93,17 @@ export default function DiscoverPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="font-bold text-3xl">Discover Music</h1>
-          <p className="text-muted-foreground">
-            Explore verified tracks protected by Story Protocol
-          </p>
-        </div>
+        {/* Trending Banner - Beautiful glassy header */}
+        <TrendingBanner onExploreClick={handleExploreClick} />
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="latest">Latest</TabsTrigger>
-            <TabsTrigger value="following">Following</TabsTrigger>
-            <TabsTrigger value="trending">Trending</TabsTrigger>
-          </TabsList>
+        {/* Feed Tabs - Beautiful pill-shaped design */}
+        <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {/* Genre Filter */}
-          <div className="mt-6">
-            <div className="flex flex-wrap gap-2">
-              {GENRES.map((genre) => (
-                <Button
-                  key={genre}
-                  variant={selectedGenre === genre ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedGenre(genre)}
-                  className="text-xs"
-                >
-                  {genre}
-                </Button>
-              ))}
-            </div>
-          </div>
+        {/* Genre Filter - Beautiful chip design */}
+        <GenreFilter activeGenre={selectedGenre} onGenreChange={setSelectedGenre} />
 
-          <TabsContent value={activeTab} className="space-y-6">
+        {/* Tab Content */}
+        <div className="space-y-6">
             {tracks.length === 0 ? (
               <div className="py-12 text-center">
                 <h3 className="font-semibold text-lg">No tracks found</h3>
@@ -232,8 +193,7 @@ export default function DiscoverPage() {
                 ))}
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </div>
   );
