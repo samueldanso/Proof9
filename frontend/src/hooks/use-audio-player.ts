@@ -1,5 +1,6 @@
 import { Howl } from "howler";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { fixIpfsUrl } from "@/lib/utils/ipfs";
 
 interface UseAudioPlayerProps {
   src?: string;
@@ -20,15 +21,32 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
   // Initialize audio when src changes
   useEffect(() => {
-    console.log("useAudioPlayer - src changed:", src);
+    console.log("🎵 useAudioPlayer - src changed:", src);
+    console.log("🎵 useAudioPlayer - src type:", typeof src);
+    console.log("🎵 useAudioPlayer - src length:", src?.length);
 
     if (!src) {
-      console.log("useAudioPlayer - No src provided");
+      console.log("❌ useAudioPlayer - No src provided");
+      return;
+    }
+
+    // Fix IPFS URLs
+    const fixedSrc = fixIpfsUrl(src);
+    console.log("🔧 useAudioPlayer - Fixed URL:", { original: src, fixed: fixedSrc });
+
+    // Validate src URL
+    try {
+      new URL(fixedSrc);
+      console.log("✅ useAudioPlayer - Valid URL format");
+    } catch (error) {
+      console.error("❌ useAudioPlayer - Invalid URL format:", error);
+      setError("Invalid audio URL format");
       return;
     }
 
     // Clean up previous sound
     if (soundRef.current) {
+      console.log("🧹 useAudioPlayer - Cleaning up previous sound");
       soundRef.current.unload();
       soundRef.current = null;
     }
@@ -37,17 +55,22 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     setError(null);
     setCurrentTime(0);
 
+    console.log("🎵 useAudioPlayer - Creating new Howl instance with src:", fixedSrc);
+
     // Create new Howl instance
     const sound = new Howl({
-      src: [src],
+      src: [fixedSrc],
       html5: true, // Use HTML5 Audio for better streaming
       preload: "metadata", // Only preload metadata for faster loading
       volume: volume,
       onload: () => {
+        console.log("✅ useAudioPlayer - Audio loaded successfully");
+        console.log("🎵 useAudioPlayer - Duration:", sound.duration());
         setDuration(sound.duration());
         setIsLoading(false);
       },
       onplay: () => {
+        console.log("▶️ useAudioPlayer - Playback started");
         setIsPlaying(true);
         // Start progress interval
         intervalRef.current = setInterval(() => {
@@ -57,6 +80,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
         }, 100);
       },
       onpause: () => {
+        console.log("⏸️ useAudioPlayer - Playback paused");
         setIsPlaying(false);
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
@@ -64,6 +88,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
         }
       },
       onstop: () => {
+        console.log("⏹️ useAudioPlayer - Playback stopped");
         setIsPlaying(false);
         setCurrentTime(0);
         if (intervalRef.current) {
@@ -72,6 +97,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
         }
       },
       onend: () => {
+        console.log("🏁 useAudioPlayer - Playback ended");
         setIsPlaying(false);
         setCurrentTime(0);
         if (intervalRef.current) {
@@ -80,17 +106,28 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
         }
         onEnd?.();
       },
-      onloaderror: (id, error) => {
-        console.error("Audio load error:", error);
-        console.error("Audio URL that failed:", src);
-        setError("Failed to load audio file");
+            onloaderror: (id, error) => {
+        console.error("❌ useAudioPlayer - Audio load error:", error);
+        console.error("❌ useAudioPlayer - Failed URL:", { original: src, fixed: fixedSrc });
+        console.error("❌ useAudioPlayer - Error ID:", id);
+
+        // Check if it's a CORS error
+        if (error && typeof error === 'object' && 'code' in error) {
+          console.error("❌ useAudioPlayer - Error code:", (error as any).code);
+        }
+
+        const errorMessage = `Failed to load audio file: ${fixedSrc}`;
+        setError(errorMessage);
         setIsLoading(false);
         onError?.(error);
       },
       onplayerror: (id, error) => {
-        console.error("Audio play error:", error);
-        console.error("Audio URL that failed:", src);
-        setError("Failed to play audio file");
+        console.error("❌ useAudioPlayer - Audio play error:", error);
+        console.error("❌ useAudioPlayer - Failed URL:", { original: src, fixed: fixedSrc });
+        console.error("❌ useAudioPlayer - Error ID:", id);
+
+        const errorMessage = `Failed to play audio file: ${fixedSrc}`;
+        setError(errorMessage);
         setIsPlaying(false);
         onError?.(error);
       },
@@ -99,6 +136,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     soundRef.current = sound;
 
     return () => {
+      console.log("🧹 useAudioPlayer - Cleanup on unmount");
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
@@ -109,28 +147,43 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
   // Update volume when it changes
   useEffect(() => {
     if (soundRef.current) {
+      console.log("🔊 useAudioPlayer - Volume changed to:", volume);
       soundRef.current.volume(volume);
     }
   }, [volume]);
 
   const play = useCallback(() => {
+    console.log("▶️ useAudioPlayer - Play button clicked");
+    console.log("🎵 useAudioPlayer - Current src:", src);
+    console.log("🎵 useAudioPlayer - IsLoading:", isLoading);
+    console.log("🎵 useAudioPlayer - HasError:", !!error);
+
     if (soundRef.current && !isLoading) {
       try {
+        console.log("✅ useAudioPlayer - Attempting to play");
         soundRef.current.play();
       } catch (error) {
-        console.error("Play error:", error);
+        console.error("❌ useAudioPlayer - Play error:", error);
         setError("Failed to play audio");
       }
+    } else {
+      console.log("❌ useAudioPlayer - Cannot play:", {
+        hasSound: !!soundRef.current,
+        isLoading,
+        error
+      });
     }
-  }, [isLoading]);
+  }, [isLoading, error, src]);
 
   const pause = useCallback(() => {
+    console.log("⏸️ useAudioPlayer - Pause button clicked");
     if (soundRef.current) {
       soundRef.current.pause();
     }
   }, []);
 
   const stop = useCallback(() => {
+    console.log("⏹️ useAudioPlayer - Stop button clicked");
     if (soundRef.current) {
       soundRef.current.stop();
     }
@@ -138,6 +191,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
   const seek = useCallback(
     (time: number) => {
+      console.log("⏭️ useAudioPlayer - Seeking to:", time);
       if (soundRef.current && duration > 0) {
         const seekTime = Math.max(0, Math.min(time, duration));
         soundRef.current.seek(seekTime);
@@ -149,12 +203,14 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
   const setVolume = useCallback((vol: number) => {
     const clampedVolume = Math.max(0, Math.min(1, vol));
+    console.log("🔊 useAudioPlayer - Setting volume to:", clampedVolume);
     if (soundRef.current) {
       soundRef.current.volume(clampedVolume);
     }
   }, []);
 
   const togglePlayPause = useCallback(() => {
+    console.log("⏯️ useAudioPlayer - Toggle play/pause, current state:", isPlaying);
     if (isPlaying) {
       pause();
     } else {
@@ -172,6 +228,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      console.log("🧹 useAudioPlayer - Final cleanup");
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
