@@ -158,8 +158,8 @@ export function AppHeader() {
         <SearchBar />
       </div>
 
-      {/* Right: Upload, Notifications & Profile Avatar - Fixed width to prevent overlap */}
-      <div className="flex w-48 items-center justify-end gap-3">
+      {/* Right: Upload, Notifications & Profile Avatar - Pushed to extreme right */}
+      <div className="flex items-center justify-end gap-3 flex-1">
         <UploadButton />
         <NotificationsButton />
         <UserProfileAvatar />
