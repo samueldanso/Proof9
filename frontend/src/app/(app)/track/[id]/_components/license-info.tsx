@@ -6,8 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   convertLicenseFormToStoryTerms,
-  convertUSDToWIP,
   getLicenseSummary,
+  parseWIPAmount,
 } from "@/lib/utils/story-protocol";
 import { CheckCircle, Download, ExternalLink, Loader2, Shield } from "lucide-react";
 import { useState } from "react";
