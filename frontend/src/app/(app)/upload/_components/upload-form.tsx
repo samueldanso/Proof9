@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUploadImage, useUploadMedia } from "@/hooks/api";
 import type { ImageUploadResponse, MediaUploadResponse } from "@/types/upload";
-import { FileAudio, ImageIcon, Music, Upload } from "lucide-react";
+import { CheckCircle, FileAudio, ImageIcon, Music, Upload, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -192,14 +192,16 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
         </p>
       </div>
 
-      {/* File Upload Area - More Compact */}
+      {/* File Upload Area - Improved Progressive Feedback */}
       <Card
         className={`relative cursor-pointer transition-all duration-200 ${
           selectedMedia && selectedImage
             ? "border-2 border-[#ced925] bg-[#ced925]/5"
-            : dragActive
-              ? "border-[#ced925] bg-[#ced925]/5"
-              : "border-2 border-dashed hover:border-[#ced925]/50 hover:bg-accent/50"
+            : (selectedMedia || selectedImage)
+              ? "border-2 border-[#ced925]/60 bg-[#ced925]/3"
+              : dragActive
+                ? "border-[#ced925] bg-[#ced925]/5"
+                : "border-2 border-dashed hover:border-[#ced925]/50 hover:bg-accent/50"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -223,50 +225,134 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
           disabled={isUploading}
         />
 
-        {selectedMedia && selectedImage ? (
-          // Show both files selected
-          <div className="p-6">
-            <div className="flex items-center justify-center space-x-6">
-              {/* Audio File */}
-              <div className="flex flex-col items-center space-y-3">
-                <div className="rounded-full bg-[#ced925]/20 p-3">
-                  <FileAudio className="h-6 w-6 text-[#ced925]" />
+        <div className="p-6">
+          {selectedMedia || selectedImage ? (
+            // Show progressive file selection
+            <div className="space-y-4">
+              <div className="flex items-center justify-center space-x-6">
+                                 {/* Audio File Slot */}
+                 <div className="flex flex-col items-center space-y-3">
+                   {selectedMedia ? (
+                     <>
+                       <div className="relative">
+                         <div className="rounded-full bg-[#ced925]/20 p-3">
+                           <FileAudio className="h-6 w-6 text-[#ced925]" />
+                         </div>
+                         <button
+                           onClick={() => {
+                             setSelectedMedia(null);
+                             toast.info("Audio file removed");
+                           }}
+                           className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white hover:bg-red-600 flex items-center justify-center"
+                         >
+                           <X className="h-3 w-3" />
+                         </button>
+                       </div>
+                       <div className="text-center">
+                         <h4 className="font-medium text-sm">{selectedMedia.name}</h4>
+                         <p className="text-muted-foreground text-xs">
+                           {formatFileSize(selectedMedia.size)} • {selectedMedia.type.split("/")[1]}
+                         </p>
+                       </div>
+                     </>
+                   ) : (
+                    <>
+                      <div className="rounded-full bg-muted/30 p-3 border-2 border-dashed">
+                        <FileAudio className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <div className="text-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => mediaInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          <FileAudio className="mr-2 h-4 w-4" />
+                          Select Audio
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className="text-center">
-                  <h4 className="font-medium text-sm">{selectedMedia.name}</h4>
-                  <p className="text-muted-foreground text-xs">
-                    {formatFileSize(selectedMedia.size)} • {selectedMedia.type.split("/")[1]}
-                  </p>
+
+                                 {/* Cover Image Slot */}
+                 <div className="flex flex-col items-center space-y-3">
+                   {selectedImage ? (
+                     <>
+                       <div className="relative">
+                         <div className="h-16 w-16 overflow-hidden rounded-lg">
+                           {imagePreview ? (
+                             <img
+                               src={imagePreview}
+                               alt="Cover preview"
+                               className="h-full w-full object-cover"
+                             />
+                           ) : (
+                             <div className="flex h-full w-full items-center justify-center bg-[#ced925]/10">
+                               <ImageIcon className="h-6 w-6 text-[#ced925]" />
+                             </div>
+                           )}
+                         </div>
+                         <button
+                           onClick={() => {
+                             setSelectedImage(null);
+                             setImagePreview(null);
+                             toast.info("Cover image removed");
+                           }}
+                           className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white hover:bg-red-600 flex items-center justify-center"
+                         >
+                           <X className="h-3 w-3" />
+                         </button>
+                       </div>
+                       <div className="text-center">
+                         <h4 className="font-medium text-sm">{selectedImage.name}</h4>
+                         <p className="text-muted-foreground text-xs">
+                           {formatFileSize(selectedImage.size)} • {selectedImage.type.split("/")[1]}
+                         </p>
+                       </div>
+                     </>
+                   ) : (
+                    <>
+                      <div className="h-16 w-16 rounded-lg bg-muted/30 border-2 border-dashed flex items-center justify-center">
+                        <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <div className="text-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => imageInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          <ImageIcon className="mr-2 h-4 w-4" />
+                          Select Image
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
-              {/* Cover Image */}
-              <div className="flex flex-col items-center space-y-3">
-                <div className="h-16 w-16 overflow-hidden rounded-lg">
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt="Cover preview"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-[#ced925]/10">
-                      <ImageIcon className="h-6 w-6 text-[#ced925]" />
-                    </div>
-                  )}
-                </div>
-                <div className="text-center">
-                  <h4 className="font-medium text-sm">{selectedImage.name}</h4>
-                  <p className="text-muted-foreground text-xs">
-                    {formatFileSize(selectedImage.size)} • {selectedImage.type.split("/")[1]}
+              {/* Progress Indicator */}
+              <div className="flex items-center justify-center space-x-2">
+                <div className={`h-2 w-2 rounded-full ${selectedMedia ? 'bg-[#ced925]' : 'bg-muted'}`} />
+                <div className={`h-2 w-2 rounded-full ${selectedImage ? 'bg-[#ced925]' : 'bg-muted'}`} />
+              </div>
+
+              {/* Status Text */}
+              <div className="text-center">
+                {selectedMedia && selectedImage ? (
+                  <p className="text-[#ced925] text-sm font-medium">✓ Both files selected - Ready to continue</p>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    {selectedMedia ? 'Audio selected - Now select cover image' : selectedImage ? 'Cover image selected - Now select audio file' : 'Select your files'}
                   </p>
-                </div>
+                )}
               </div>
             </div>
-          </div>
-        ) : (
-          // Show upload prompt
-          <div className="p-6">
+          ) : (
+            // Show initial upload prompt
             <div className="flex flex-col items-center justify-center space-y-4">
               <div className="flex items-center space-x-4">
                 <div className="rounded-full bg-[#ced925]/10 p-3">
@@ -311,15 +397,18 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
                 Audio: MP3, WAV, FLAC • Max 100MB | Image: JPG, PNG, WebP • Max 10MB
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </Card>
 
-      {/* Preview & Controls */}
+      {/* Preview & Controls - Shows when both files are selected */}
       {selectedMedia && selectedImage && (
-        <Card className="p-6">
+        <Card className="border-[#ced925]/50 bg-[#ced925]/5 p-6">
           <div className="space-y-4">
-            <h4 className="font-medium">Media Preview</h4>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-[#ced925]" />
+              <h4 className="font-medium text-[#ced925]">Ready to Upload</h4>
+            </div>
 
             <div className="flex items-start space-x-4">
               {/* Cover Art */}
@@ -350,7 +439,16 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
               className="w-full bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50"
               size="lg"
             >
-              {isUploading ? "Uploading..." : "Continue →"}
+              {isUploading ? (
+                <>
+                  <Upload className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading to IPFS...
+                </>
+              ) : (
+                <>
+                  Continue →
+                </>
+              )}
             </Button>
           </div>
         </Card>
