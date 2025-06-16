@@ -5,11 +5,13 @@
 
 // List of IPFS gateways to try (in order of preference)
 const IPFS_GATEWAYS = [
-  "https://ipfs.io/ipfs/",
   "https://gateway.pinata.cloud/ipfs/",
+  "https://ipfs.io/ipfs/",
   "https://cloudflare-ipfs.com/ipfs/",
   "https://dweb.link/ipfs/",
-  "https://ipfs.infura.io/ipfs/",
+  "https://4everland.io/ipfs/",
+  "https://nftstorage.link/ipfs/",
+  "https://w3s.link/ipfs/",
 ];
 
 /**

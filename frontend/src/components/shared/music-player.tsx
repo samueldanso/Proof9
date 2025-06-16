@@ -188,6 +188,18 @@ export function MusicPlayer({
               Debug: {track.mediaUrl ? "Has URL" : "No URL"} |
               {isLoading ? " Loading" : " Ready"} |
               {error ? " Error" : " OK"}
+              <br />
+              <button
+                onClick={() => {
+                  console.log("🎵 Track mediaUrl:", track.mediaUrl);
+                  if (track.mediaUrl) {
+                    window.open(track.mediaUrl, '_blank');
+                  }
+                }}
+                className="text-blue-500 underline text-xs mt-1"
+              >
+                Test URL in Browser
+              </button>
             </div>
           )}
         </div>

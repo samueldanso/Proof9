@@ -1,4 +1,4 @@
-import { fixIpfsUrl } from "@/lib/utils/ipfs";
+import { getAllIpfsGatewayUrls, fixIpfsUrl } from "@/lib/utils/ipfs";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseAudioPlayerProps {
@@ -17,6 +17,8 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const gatewayIndexRef = useRef(0);
+  const gatewayUrlsRef = useRef<string[]>([]);
 
   // Initialize audio when src changes
   useEffect(() => {
@@ -25,9 +27,16 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
       return;
     }
 
-    // Fix IPFS URLs
-    const fixedSrc = fixIpfsUrl(src);
-    console.log("🎵 Audio source:", { original: src, fixed: fixedSrc });
+    // Get all possible IPFS gateway URLs
+    gatewayUrlsRef.current = getAllIpfsGatewayUrls(src);
+    gatewayIndexRef.current = 0;
+
+    if (gatewayUrlsRef.current.length === 0) {
+      // Fallback to original URL if no IPFS URLs found
+      gatewayUrlsRef.current = [src];
+    }
+
+    console.log("🎵 Audio source gateways:", gatewayUrlsRef.current);
 
     // Clean up previous audio
     if (audioRef.current) {
@@ -45,12 +54,17 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     setCurrentTime(0);
     setIsPlaying(false);
 
-    // Create new HTML5 Audio element
-    const audio = new Audio();
-    audio.src = fixedSrc;
-    audio.volume = volume;
-    audio.preload = "metadata";
-    audio.crossOrigin = "anonymous"; // Try to handle CORS
+    // Try loading audio with current gateway
+    const tryLoadAudio = () => {
+      const currentUrl = gatewayUrlsRef.current[gatewayIndexRef.current];
+      console.log(`🎵 Trying gateway ${gatewayIndexRef.current + 1}/${gatewayUrlsRef.current.length}: ${currentUrl}`);
+
+      // Create new HTML5 Audio element
+      const audio = new Audio();
+      audio.src = currentUrl;
+      audio.volume = volume;
+      audio.preload = "metadata";
+      audio.crossOrigin = "anonymous"; // Try to handle CORS
 
     audio.onloadstart = () => {
       console.log("🎵 Audio loading started");
@@ -95,42 +109,56 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
       onEnd?.();
     };
 
-    audio.onerror = (e) => {
-      console.error("🎵 Audio error:", e);
-      console.error("🎵 Audio error details:", {
-        error: audio.error,
-        networkState: audio.networkState,
-        readyState: audio.readyState,
-        src: fixedSrc
-      });
+          audio.onerror = (e) => {
+        console.error(`🎵 Audio error on gateway ${gatewayIndexRef.current + 1}:`, e);
+        console.error("🎵 Audio error details:", {
+          error: audio.error,
+          networkState: audio.networkState,
+          readyState: audio.readyState,
+          src: currentUrl
+        });
 
-      let errorMessage = "Failed to load audio file";
-
-      if (audio.error) {
-        switch (audio.error.code) {
-          case MediaError.MEDIA_ERR_ABORTED:
-            errorMessage = "Audio loading was aborted";
-            break;
-          case MediaError.MEDIA_ERR_NETWORK:
-            errorMessage = "Network error while loading audio";
-            break;
-          case MediaError.MEDIA_ERR_DECODE:
-            errorMessage = "Audio format not supported";
-            break;
-          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            errorMessage = "Audio source not supported";
-            break;
-          default:
-            errorMessage = "Unknown audio error";
+        // Try next gateway
+        gatewayIndexRef.current++;
+        if (gatewayIndexRef.current < gatewayUrlsRef.current.length) {
+          console.log(`🎵 Trying next gateway...`);
+          tryLoadAudio();
+          return;
         }
-      }
 
-      setError(errorMessage);
-      setIsLoading(false);
-      onError?.(e);
+        // All gateways failed
+        let errorMessage = "Failed to load audio from all gateways";
+
+        if (audio.error) {
+          switch (audio.error.code) {
+            case MediaError.MEDIA_ERR_ABORTED:
+              errorMessage = "Audio loading was aborted";
+              break;
+            case MediaError.MEDIA_ERR_NETWORK:
+              errorMessage = "Network error - all IPFS gateways failed";
+              break;
+            case MediaError.MEDIA_ERR_DECODE:
+              errorMessage = "Audio format not supported";
+              break;
+            case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+              errorMessage = "Audio source not supported";
+              break;
+            default:
+              errorMessage = "All IPFS gateways failed";
+          }
+        }
+
+        console.error("🎵 All gateways failed:", errorMessage);
+        setError(errorMessage);
+        setIsLoading(false);
+        onError?.(e);
+      };
+
+      audioRef.current = audio;
     };
 
-    audioRef.current = audio;
+    // Start trying to load audio
+    tryLoadAudio();
 
     return () => {
       if (intervalRef.current) {
