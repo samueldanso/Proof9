@@ -107,6 +107,59 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+// Helper function to extract and clean track title from filename
+const extractTitleFromFilename = (filename: string): string => {
+  // Remove file extension
+  const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+
+  // Clean up common patterns
+  let cleanTitle = nameWithoutExt
+    // Replace underscores and hyphens with spaces
+    .replace(/[_-]/g, " ")
+    // Handle common separators for features (ft, feat, featuring)
+    .replace(/\s+(ft\.?|feat\.?|featuring)\s+/gi, " ft. ")
+    // Handle "vs" and "x" collaborations
+    .replace(/\s+(vs\.?|versus|x)\s+/gi, " vs. ")
+    // Remove extra spaces
+    .replace(/\s+/g, " ")
+    // Trim spaces
+    .trim();
+
+  // Capitalize each word (Title Case)
+  cleanTitle = cleanTitle
+    .split(" ")
+    .map((word) => {
+      // Keep common lowercase words like "ft.", "vs.", "the", "and", "or", "of", "in", "on"
+      const lowercaseWords = [
+        "ft.",
+        "vs.",
+        "the",
+        "and",
+        "or",
+        "of",
+        "in",
+        "on",
+        "at",
+        "to",
+        "for",
+        "with",
+      ];
+      if (lowercaseWords.includes(word.toLowerCase())) {
+        return word.toLowerCase();
+      }
+      // Capitalize first letter of other words
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+
+  // Ensure first word is always capitalized
+  if (cleanTitle.length > 0) {
+    cleanTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+  }
+
+  return cleanTitle;
+};
+
 export default function MetadataForm({
   initialData,
   mediaFile,
@@ -126,7 +179,8 @@ export default function MetadataForm({
   const userData = userResponse?.data;
 
   const [formData, setFormData] = useState<MetadataFormData>({
-    title: initialData?.title || "",
+    // Auto-populate title from audio filename if not provided
+    title: initialData?.title || (mediaFile ? extractTitleFromFilename(mediaFile.name) : ""),
     description: initialData?.description || "",
     genre: initialData?.genre || "",
     tags: initialData?.tags || [],
@@ -165,6 +219,17 @@ export default function MetadataForm({
       }));
     }
   }, [userData?.displayName, address, initialData?.creators]);
+
+  // Auto-populate title from filename when media file becomes available
+  useEffect(() => {
+    if (mediaFile && !initialData?.title && !formData.title) {
+      const autoTitle = extractTitleFromFilename(mediaFile.name);
+      setFormData((prev) => ({
+        ...prev,
+        title: autoTitle,
+      }));
+    }
+  }, [mediaFile?.name, initialData?.title, formData.title]);
 
   // Tag management
   const [currentTag, setCurrentTag] = useState("");
@@ -362,6 +427,7 @@ export default function MetadataForm({
                 placeholder="Enter your track title"
                 className={errors.title ? "border-red-500" : ""}
               />
+
               {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
             </div>
 
@@ -644,7 +710,7 @@ export default function MetadataForm({
             disabled={!isFormValid()}
             className="bg-[#ced925] text-black hover:bg-[#b8c220] disabled:opacity-50"
           >
-            Continue to License →
+            Verify Sound →
           </Button>
         </div>
       </form>
