@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { convertLicenseFormToStoryTerms, getLicenseSummary } from "@/lib/utils/story-protocol";
-import { DollarSign, Globe, Info, Scale } from "lucide-react";
+import { Globe, Info, Scale } from "lucide-react";
 import { useState } from "react";
 
 interface LicenseFormData {
@@ -116,13 +116,13 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
   const getSuggestedPrice = () => {
     switch (formData.type) {
       case "standard":
-        return "50";
+        return "1"; // 1 WIP token (following Story Protocol docs)
       case "commercial":
-        return "200";
+        return "10"; // 10 WIP tokens
       case "exclusive":
-        return "1000";
+        return "100"; // 100 WIP tokens
       default:
-        return "50";
+        return "1";
     }
   };
 
@@ -177,15 +177,17 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
 
         {/* Pricing */}
         <div className="space-y-4">
-          <Label className="font-semibold text-base">Pricing (USD)</Label>
+          <Label className="font-semibold text-base">Pricing (WIP Tokens)</Label>
           <div className="space-y-3">
             <div className="relative">
-              <DollarSign className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+              <span className="-translate-y-1/2 absolute top-1/2 left-3 font-medium text-muted-foreground text-sm">
+                WIP
+              </span>
               <Input
                 value={formData.price}
                 onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
-                placeholder="Enter price"
-                className={`pl-10 ${errors.price ? "border-red-500" : ""}`}
+                placeholder="Enter WIP amount"
+                className={`pl-12 ${errors.price ? "border-red-500" : ""}`}
                 type="number"
                 min="0"
                 step="0.01"
@@ -193,7 +195,7 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
             </div>
             {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
             <p className="text-muted-foreground text-sm">
-              Suggested price for {getSelectedLicense()?.name}: ${getSuggestedPrice()}
+              Suggested price for {getSelectedLicense()?.name}: {getSuggestedPrice()} WIP tokens
             </p>
           </div>
         </div>
@@ -259,7 +261,7 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
                 onCheckedChange={(checked) => setIncludeRoyalties(!!checked)}
               />
               <Label htmlFor="royalties" className="text-sm">
-                Include ongoing royalties (5% of licensee revenue)
+                Include ongoing royalties (5% of licensee revenue - Story Protocol standard)
               </Label>
             </div>
           </div>
@@ -281,7 +283,7 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
               </div>
               <div>
                 <span className="text-muted-foreground text-sm">Price:</span>
-                <p className="font-medium">${formData.price || "0"}</p>
+                <p className="font-medium">{formData.price || "0"} WIP</p>
               </div>
               <div>
                 <span className="text-muted-foreground text-sm">Usage:</span>
@@ -329,7 +331,8 @@ export default function LicenseForm({ initialData, onSubmit, onNext, onBack }: L
               <div className="rounded-lg bg-[#ced925]/10 p-3">
                 <p className="text-[#ced925] text-sm">
                   <Info className="mr-1 inline h-3 w-3" />
-                  Ongoing royalties: 5% of licensee revenue will be automatically distributed to you
+                  Ongoing royalties: 5% of licensee revenue (Story Protocol standard) will be
+                  automatically distributed to you
                 </p>
               </div>
             )}

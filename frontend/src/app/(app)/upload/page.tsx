@@ -3,11 +3,16 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { RegistrationSuccessModal } from "@/components/ui/registration-success-modal";
+import { useCreateTrack, useRegisterTrack } from "@/hooks/api";
+import { convertLicenseFormToStoryTerms } from "@/lib/utils/story-protocol";
+import type { RegistrationRequest, RegistrationResponse } from "@/types/registration";
 import type { ImageUploadResponse, MediaUploadResponse } from "@/types/upload";
 import { CheckCircle, FileAudio, ImageIcon, Music, Shield, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAccount } from "wagmi";
 import LicenseForm from "./_components/license-form";
 import MetadataForm from "./_components/metadata-form";
 import UploadForm from "./_components/upload-form";
@@ -71,6 +76,7 @@ type UploadStep = "upload" | "metadata" | "verification" | "license" | "complete
 
 export default function UploadPage() {
   const router = useRouter();
+  const { address } = useAccount();
   const [currentStep, setCurrentStep] = useState<UploadStep>("upload");
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -85,12 +91,21 @@ export default function UploadPage() {
   const [licenseTerms, setLicenseTerms] = useState<LicenseTerms | null>(null);
   const [yakoaResult, setYakoaResult] = useState<YakoaResult | null>(null);
 
+  // Registration state
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [registrationResult, setRegistrationResult] = useState<RegistrationResponse | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // API hooks
+  const registerTrack = useRegisterTrack();
+  const createTrack = useCreateTrack();
+
   const steps = [
     { id: "upload", title: "Upload Files", icon: Upload },
     { id: "metadata", title: "Track Details", icon: FileAudio },
     { id: "verification", title: "AI Verification", icon: CheckCircle },
     { id: "license", title: "License Terms", icon: ImageIcon },
-    { id: "complete", title: "Complete", icon: CheckCircle },
+    { id: "complete", title: "Register", icon: Shield },
   ];
 
   const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
@@ -126,7 +141,76 @@ export default function UploadPage() {
   const handleLicenseSubmit = (license: LicenseTerms) => {
     setLicenseTerms(license);
     setCurrentStep("complete");
-    toast.success("Upload process complete!");
+  };
+
+  const handleRegister = async () => {
+    if (!metadata || !licenseTerms || !mediaUploadResult || !imageUploadResult || !address) {
+      toast.error("Missing required data for registration");
+      return;
+    }
+
+    setIsRegistering(true);
+
+    try {
+      // Prepare registration request
+      const registrationRequest: RegistrationRequest = {
+        title: metadata.title,
+        description: metadata.description,
+        creators: metadata.creators,
+        image: imageUploadResult.data.image,
+        imageHash: imageUploadResult.data.imageHash,
+        mediaUrl: mediaUploadResult.data.mediaUrl,
+        mediaHash: mediaUploadResult.data.mediaHash,
+        mediaType: mediaUploadResult.data.mediaType,
+        nftName: metadata.nftName,
+        nftDescription: metadata.nftDescription,
+        attributes: metadata.attributes,
+        commercialRemixTerms: {
+          defaultMintingFee: Number(licenseTerms.price),
+          commercialRevShare: 5, // Story Protocol standard
+        },
+      };
+
+      // Register with Story Protocol
+      const result = await registerTrack.mutateAsync(registrationRequest);
+
+      if (result.success && result.data) {
+        // Create track record in database
+        const trackData = {
+          title: metadata.title,
+          description: metadata.description,
+          creators: metadata.creators,
+          image: imageUploadResult.data.image,
+          imageHash: imageUploadResult.data.imageHash,
+          mediaUrl: mediaUploadResult.data.mediaUrl,
+          mediaHash: mediaUploadResult.data.mediaHash,
+          mediaType: mediaUploadResult.data.mediaType,
+          genre: metadata.genre,
+          tags: metadata.tags,
+          duration: metadata.duration,
+          ipId: result.data.ipId,
+          tokenId: result.data.tokenId,
+          transactionHash: result.data.transactionHash,
+          licenseTermsIds: result.data.licenseTermsIds,
+          verified: yakoaResult?.verified || false,
+          yakoaTokenId: yakoaResult?.tokenId,
+        };
+
+        // Save to database
+        await createTrack.mutateAsync(trackData);
+
+        setRegistrationResult(result.data);
+        setShowSuccessModal(true);
+        toast.success("Track registered successfully on Story Protocol!");
+      } else {
+        throw new Error(result.error || "Registration failed");
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast.error(error.message || "Registration failed. Please try again.");
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   const handleStepClick = (stepId: string) => {
@@ -277,46 +361,80 @@ export default function UploadPage() {
           )}
 
           {currentStep === "complete" && (
-            <div className="space-y-6 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-
-              <div className="space-y-2">
-                <h2 className="font-bold text-2xl">Upload Complete!</h2>
+            <div className="space-y-6">
+              <div className="space-y-2 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#ced925]/20">
+                  <Shield className="h-8 w-8 text-[#ced925]" />
+                </div>
+                <h2 className="font-bold text-2xl">Register on Story Protocol</h2>
                 <p className="text-muted-foreground">
-                  Your track has been successfully uploaded and protected with Story Protocol
+                  Complete your IP registration and mint your license NFT on-chain
                 </p>
               </div>
 
-              {/* Story Protocol Summary */}
-              <Card className="p-6 text-left">
-                <h3 className="mb-4 font-semibold text-lg">Story Protocol Registration Summary</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Track Title:</span>
-                    <span className="font-medium">{metadata?.title}</span>
+              {/* Registration Summary */}
+              <Card className="p-6">
+                <h3 className="mb-4 font-semibold text-lg">📋 Registration Summary</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-muted-foreground text-sm">Track Title</span>
+                      <p className="font-medium">{metadata?.title}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-sm">Creator</span>
+                      <p className="font-medium">{metadata?.creators[0]?.name}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-sm">License Type</span>
+                      <p className="font-medium capitalize">{licenseTerms?.type}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Creator:</span>
-                    <span className="font-medium">{metadata?.creators[0]?.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Media URL:</span>
-                    <span className="break-all font-mono text-xs">{metadata?.mediaUrl}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Image URL:</span>
-                    <span className="break-all font-mono text-xs">{metadata?.image}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Verification Status:</span>
-                    <span className={yakoaResult?.verified ? "text-green-600" : "text-yellow-600"}>
-                      {yakoaResult?.verified ? "✓ Verified" : "⚠ Review Required"}
-                    </span>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-muted-foreground text-sm">Minting Fee</span>
+                      <p className="font-medium">{licenseTerms?.price} WIP</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-sm">Revenue Share</span>
+                      <p className="font-medium">5% (Story Protocol Standard)</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-sm">Verification Status</span>
+                      <p
+                        className={`font-medium ${yakoaResult?.verified ? "text-green-600" : "text-yellow-600"}`}
+                      >
+                        {yakoaResult?.verified ? "✓ Verified" : "⚠ Review Required"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Card>
+
+              {/* Registration Action */}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={handleBack} className="flex-1">
+                  ← Back to License
+                </Button>
+                <Button
+                  onClick={handleRegister}
+                  disabled={isRegistering}
+                  className="flex-1 bg-[#ced925] text-black hover:bg-[#b8c220]"
+                  size="lg"
+                >
+                  {isRegistering ? (
+                    <>
+                      <Shield className="mr-2 h-4 w-4 animate-spin" />
+                      Registering on Story Protocol...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="mr-2 h-4 w-4" />
+                      Register & Mint License
+                    </>
+                  )}
+                </Button>
+              </div>
 
               <div className="flex justify-center gap-4">
                 <Button onClick={() => router.push("/discover")}>Explore Tracks</Button>
@@ -328,6 +446,38 @@ export default function UploadPage() {
           )}
         </Card>
       </div>
+
+      {/* Registration Success Modal */}
+      {registrationResult && (
+        <RegistrationSuccessModal
+          open={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          data={{
+            title: metadata?.title || "Unknown Track",
+            type: "track",
+            transactionHash: registrationResult.transactionHash,
+            ipId: registrationResult.ipId,
+            tokenId: registrationResult.tokenId,
+            licenseTermsIds: registrationResult.licenseTermsIds,
+            explorerUrl: registrationResult.explorerUrl,
+            creators: metadata?.creators,
+            yakoaVerified: yakoaResult?.verified,
+            yakoaTokenId: yakoaResult?.tokenId,
+          }}
+          onViewProfile={() => {
+            setShowSuccessModal(false);
+            router.push("/profile");
+          }}
+          onDiscoverMore={() => {
+            setShowSuccessModal(false);
+            router.push("/discover");
+          }}
+          onViewTrack={() => {
+            setShowSuccessModal(false);
+            router.push(`/track/${registrationResult.ipId}`);
+          }}
+        />
+      )}
     </div>
   );
 }

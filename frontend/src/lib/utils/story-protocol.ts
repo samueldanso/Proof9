@@ -9,7 +9,7 @@ import { parseEther, zeroAddress } from "viem";
 
 export interface LicenseFormData {
   type: string; // "standard", "commercial", "exclusive"
-  price: string; // USD amount
+  price: string; // WIP token amount (following Story Protocol docs)
   usage: string; // "single", "multiple", "unlimited"
   territory: string; // "worldwide", "us", "eu", "custom"
 }
@@ -19,30 +19,21 @@ export interface LicenseFormData {
 const ROYALTY_POLICY_LAP = "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E";
 
 /**
- * Convert USD to WIP tokens using parseEther (Story Protocol standard)
- * Following Story Protocol documentation for token conversion
+ * Convert WIP amount to bigint using parseEther (Story Protocol standard)
+ * Following Story Protocol documentation exactly - no USD conversion
  */
-export function convertUSDToWIP(usdAmount: string): bigint {
-  const usd = Number.parseFloat(usdAmount) || 0;
-  // For demo: 1 USD = 1 WIP token (in production, use price oracle)
-  return parseEther(usd.toString());
+export function parseWIPAmount(wipAmount: string): bigint {
+  const wip = Number.parseFloat(wipAmount) || 0;
+  return parseEther(wip.toString());
 }
 
 /**
  * Map license type to revenue share percentage
- * Following Story Protocol commercial licensing patterns
+ * Following Story Protocol documentation exactly (5% from their example)
  */
 export function getLicenseRevShare(licenseType: string): number {
-  switch (licenseType) {
-    case "standard":
-      return 5; // 5% revenue share for standard licenses (Story Protocol example)
-    case "commercial":
-      return 10; // 10% revenue share for commercial licenses
-    case "exclusive":
-      return 25; // 25% revenue share for exclusive licenses
-    default:
-      return 5;
-  }
+  // Story Protocol docs use 5% in their example - let's follow that exactly
+  return 5; // 5% revenue share (from Story Protocol docs example)
 }
 
 /**
@@ -57,7 +48,7 @@ export function convertLicenseFormToStoryTerms(licenseData: LicenseFormData): Li
   const commercialRemixTerms: LicenseTerms = {
     transferable: true,
     royaltyPolicy: ROYALTY_POLICY_LAP, // RoyaltyPolicyLAP address from Story Protocol docs
-    defaultMintingFee: convertUSDToWIP(price), // Using parseEther as per docs
+    defaultMintingFee: parseWIPAmount(price), // Using parseEther as per docs
     expiration: BigInt(0),
     commercialUse: type === "commercial" || type === "exclusive",
     commercialAttribution: true, // must give us attribution
