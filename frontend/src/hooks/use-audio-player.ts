@@ -164,9 +164,9 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      if (audio) {
-        audio.pause();
-        audio.src = "";
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
       }
     };
   }, [src, onEnd, onError]);
