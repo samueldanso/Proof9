@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator"
 import { Hono } from "hono"
-import { Address } from "viem"
+import { Address, parseEther } from "viem"
 import { z } from "zod"
 
 import { client } from "../../../utils/config"
@@ -43,12 +43,12 @@ licensesRouter.post(
         buyer,
       } = c.req.valid("json")
 
-      // Mint license tokens
+      // Mint license tokens - convert WIP amount to wei using parseEther
       const response = await client.license.mintLicenseTokens({
         licenseTermsId,
         licensorIpId: licensorIpId as Address,
         amount,
-        maxMintingFee: BigInt(maxMintingFee),
+        maxMintingFee: parseEther(maxMintingFee.toString()), // Convert WIP tokens to wei
         maxRevenueShare,
         txOptions: { waitForTransaction: true },
       })

@@ -62,7 +62,7 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
   };
 
   const storyTerms = convertLicenseFormToStoryTerms(licenseFormData);
-  const wipAmount = Number(storyTerms.defaultMintingFee) / 10 ** 18;
+  const wipAmount = Number(storyTerms.defaultMintingFee.toString()) / 10 ** 18;
 
   const handlePurchaseLicense = async () => {
     if (!isConnected) {
@@ -83,20 +83,23 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
     setIsPurchasing(true);
 
     try {
+      // Prepare the request payload
+      const requestPayload = {
+        licensorIpId: ipAssetId,
+        licenseTermsId: "1", // Default commercial license terms
+        amount: 1,
+        maxMintingFee: wipAmount, // Use the already calculated WIP amount
+        maxRevenueShare: storyTerms.commercialRevShare,
+        buyer: address, // Add buyer address for library tracking
+      };
+
       // Call Story Protocol license minting endpoint
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/licenses/mint`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          licensorIpId: ipAssetId,
-          licenseTermsId: "1", // Default commercial license terms
-          amount: 1,
-          maxMintingFee: Number(storyTerms.defaultMintingFee.toString()) / 10**18, // Convert bigint to number (WIP tokens)
-          maxRevenueShare: storyTerms.commercialRevShare,
-          buyer: address, // Add buyer address for library tracking
-        }),
+        body: JSON.stringify(requestPayload),
       });
 
       const result = await response.json();
