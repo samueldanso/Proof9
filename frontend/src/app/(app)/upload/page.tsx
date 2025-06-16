@@ -181,7 +181,7 @@ export default function UploadPage() {
           description: metadata.description,
           creators: metadata.creators,
           image: imageUploadResult.data.image,
-          imageHash: imageUploadResult.data.imageHash,
+          image_hash: imageUploadResult.data.imageHash, // Using snake_case for DB column
           mediaUrl: mediaUploadResult.data.mediaUrl,
           mediaHash: mediaUploadResult.data.mediaHash,
           mediaType: mediaUploadResult.data.mediaType,

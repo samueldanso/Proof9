@@ -88,7 +88,7 @@ tracksRouter.post("/", zValidator("json", CreateTrackSchema), async (c) => {
         creators: trackData.creators,
 
         image: trackData.image,
-        imageHash: trackData.imageHash,
+        image_hash: trackData.imageHash, // Using snake_case for DB column
 
         mediaUrl: trackData.mediaUrl,
         mediaHash: trackData.mediaHash,
