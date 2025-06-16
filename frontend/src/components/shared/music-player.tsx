@@ -44,7 +44,7 @@ export function MusicPlayer({
   const audioUrl = fixIpfsUrl(track.mediaUrl || "");
 
   return (
-    <div className="fixed right-0 bottom-0 left-0 z-50 border-border border-t bg-background p-4">
+    <div className="fixed right-0 bottom-0 left-0 z-50 relative border-border border-t bg-gradient-to-r from-background via-background/95 to-background backdrop-blur-sm p-4 shadow-lg before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-[#ced925]/30 before:to-transparent">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
         {/* Left: Track Info */}
         <div className="flex min-w-0 flex-1 items-center gap-3">

@@ -93,7 +93,7 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
           licensorIpId: ipAssetId,
           licenseTermsId: "1", // Default commercial license terms
           amount: 1,
-          maxMintingFee: Number(storyTerms.defaultMintingFee),
+          maxMintingFee: Number(storyTerms.defaultMintingFee.toString()) / 10**18, // Convert bigint to number (WIP tokens)
           maxRevenueShare: storyTerms.commercialRevShare,
           buyer: address, // Add buyer address for library tracking
         }),
