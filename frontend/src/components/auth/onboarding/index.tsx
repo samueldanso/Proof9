@@ -2,8 +2,8 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { StepProvider, useStep } from "./step-context";
-import { RoleSelection } from "./steps/role-selection";
 import { ProfileSetup } from "./steps/profile-setup";
+import { RoleSelection } from "./steps/role-selection";
 
 // Two steps: role selection first, then profile setup
 const steps = [RoleSelection, ProfileSetup];

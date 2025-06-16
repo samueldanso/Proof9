@@ -1,9 +1,12 @@
 "use client";
 
+import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackActions } from "@/components/shared/track-actions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { VerificationBadge } from "@/components/ui/verification-badge";
 import { useTrack } from "@/hooks/api";
 import {
   useAddComment,
@@ -25,6 +28,7 @@ export default function TrackPage() {
   const params = useParams();
   const trackId = params.id as string;
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
 
   // Load track data from API - Story Protocol format
   const { data: trackResponse, isLoading, error } = useTrack(trackId);
@@ -39,6 +43,7 @@ export default function TrackPage() {
 
   const handlePlay = () => {
     setIsPlaying(!isPlaying);
+    setShowMusicPlayer(true);
   };
 
   const handleLike = () => {
@@ -67,15 +72,20 @@ export default function TrackPage() {
     }
   };
 
+  const handlePlayerClose = () => {
+    setShowMusicPlayer(false);
+    setIsPlaying(false);
+  };
+
   // Helper functions for Story Protocol data
   const getArtistName = () => track?.creators?.[0]?.name || "Unknown Artist";
   const getArtistAddress = () => track?.creators?.[0]?.address || "";
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-6xl px-6 py-6">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <div className="space-y-6">
+      <div className="mx-auto w-full max-w-7xl px-6 py-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
             <div className="animate-pulse space-y-4">
               <div className="h-8 w-48 rounded bg-muted" />
               <div className="h-64 w-full rounded bg-muted" />
@@ -83,9 +93,8 @@ export default function TrackPage() {
             </div>
           </div>
           <div className="space-y-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-48 w-full rounded bg-muted" />
-              <div className="h-48 w-full rounded bg-muted" />
+            <div className="animate-pulse">
+              <div className="h-96 w-full rounded bg-muted" />
             </div>
           </div>
         </div>
@@ -95,7 +104,7 @@ export default function TrackPage() {
 
   if (error || !track) {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-center px-6 py-12 text-center">
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-center px-6 py-12 text-center">
         <h2 className="mb-4 font-bold text-2xl">Track Not Found</h2>
         <p className="text-muted-foreground">
           The track you're looking for doesn't exist or has been removed.
@@ -143,42 +152,18 @@ export default function TrackPage() {
     createdAt: track.createdAt,
   };
 
-  const licenseInfoData = {
-    id: track.id,
-    title: track.title,
-    artist: getArtistName(),
-    artistAddress: getArtistAddress(),
-    duration: track.duration || "0:00",
-    plays: track.plays || 0,
-    verified: track.verified || false,
-    likes: track.likes || 0,
-    comments: track.comments || 0,
-    isLiked: isLikedData?.isLiked || false,
-    imageUrl: track.image,
-    description: track.description,
-    genre: track.genre,
-    createdAt: track.createdAt,
-    license: {
-      type: "Commercial",
-      price: "10",
-      available: true,
-      terms: "Standard commercial license",
-      downloads: 0,
-    },
-  };
-
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-6">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* Left Side - Track Details */}
-        <div className="space-y-6">
-          {/* Track Header - Story Protocol Format */}
+    <div className="mx-auto w-full max-w-7xl px-6 py-6">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* Left Side - Track Details (2/3 width) */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Track Header */}
           <TrackHeader track={trackHeaderData} />
 
-          {/* Track Media - Story Protocol Format */}
+          {/* Track Media Player */}
           <TrackMedia track={trackMediaData} isPlaying={isPlaying} onPlay={handlePlay} />
 
-          {/* Track Info */}
+          {/* About This Track */}
           <Card className="p-6">
             <div className="space-y-4">
               <div>
@@ -246,21 +231,22 @@ export default function TrackPage() {
               />
             </div>
           </Card>
-        </div>
 
-        {/* Right Side - Licensing Info */}
-        <div className="space-y-6">
-          <LicenseInfo track={licenseInfoData} ipAssetId={track.ipId} />
-
-          {/* Additional licensing details */}
+          {/* Story Protocol Details */}
           <Card className="p-6">
             <h3 className="mb-4 font-semibold text-lg">Story Protocol Details</h3>
             <div className="space-y-4">
               <div>
                 <span className="font-medium">Verification Status:</span>
-                <p className={`${track.verified ? "text-green-600" : "text-yellow-600"}`}>
-                  {track.verified ? "✓ Verified Original" : "⏳ Pending Verification"}
-                </p>
+                <div className="mt-1">
+                  {track.verified ? (
+                    <VerificationBadge verified={track.verified} showText={true} size="sm" />
+                  ) : (
+                    <Badge variant="secondary" className="text-yellow-600">
+                      ⏳ Pending Verification
+                    </Badge>
+                  )}
+                </div>
               </div>
 
               {track.ipId && (
@@ -296,28 +282,59 @@ export default function TrackPage() {
                   </p>
                 </div>
               )}
-
-              <Separator />
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xl">License Available</span>
-                  <Button>Purchase License</Button>
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  This track is protected by Story Protocol. Purchase a license to use it
-                  commercially.
-                </p>
-              </div>
             </div>
           </Card>
+
+          {/* Comments Section - Aligned with cards above */}
+          <div className="max-w-none">
+            <CommentsSection trackId={track.id} />
+          </div>
+        </div>
+
+        {/* Right Side - License & Rights Only (1/3 width) */}
+        <div className="space-y-6">
+          <LicenseInfo
+            track={{
+              id: track.id,
+              title: track.title,
+              artist: getArtistName(),
+              artistAddress: getArtistAddress(),
+              duration: track.duration || "0:00",
+              plays: track.plays || 0,
+              verified: track.verified || false,
+              likes: track.likes || 0,
+              comments: track.comments || 0,
+              isLiked: isLikedData?.isLiked || false,
+              imageUrl: track.image,
+              description: track.description,
+              genre: track.genre,
+              createdAt: track.createdAt,
+              license: {
+                type: "Commercial",
+                price: "10",
+                available: true,
+                terms: "Standard commercial license",
+                downloads: 0,
+              },
+            }}
+            ipAssetId={track.ipId}
+          />
         </div>
       </div>
 
-      {/* Comments Section */}
-      <div className="mt-8">
-        <CommentsSection trackId={track.id} />
-      </div>
+      {/* Music Player */}
+      {showMusicPlayer && track && (
+        <MusicPlayer
+          track={track}
+          isPlaying={isPlaying}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onClose={handlePlayerClose}
+          onLike={() => handleLike()}
+          onComment={() => handleComment()}
+          onShare={() => handleShare()}
+        />
+      )}
     </div>
   );
 }

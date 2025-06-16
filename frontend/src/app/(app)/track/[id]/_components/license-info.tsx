@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { VerificationBadge } from "@/components/ui/verification-badge";
 import {
   convertLicenseFormToStoryTerms,
-  convertUSDToWIP,
   getLicenseSummary,
+  parseWIPAmount,
 } from "@/lib/utils/story-protocol";
 import { CheckCircle, Download, ExternalLink, Loader2, Shield } from "lucide-react";
 import { useState } from "react";
@@ -61,7 +62,7 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
   };
 
   const storyTerms = convertLicenseFormToStoryTerms(licenseFormData);
-  const wipAmount = Number(storyTerms.defaultMintingFee) / 10 ** 18;
+  const wipAmount = Number(storyTerms.defaultMintingFee.toString()) / 10 ** 18;
 
   const handlePurchaseLicense = async () => {
     if (!isConnected) {
@@ -82,19 +83,23 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
     setIsPurchasing(true);
 
     try {
+      // Prepare the request payload
+      const requestPayload = {
+        licensorIpId: ipAssetId,
+        licenseTermsId: "1", // Default commercial license terms
+        amount: 1,
+        maxMintingFee: wipAmount, // Use the already calculated WIP amount
+        maxRevenueShare: storyTerms.commercialRevShare,
+        buyer: address, // Add buyer address for library tracking
+      };
+
       // Call Story Protocol license minting endpoint
-      const response = await fetch("/api/licenses/mint", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/licenses/mint`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          licensorIpId: ipAssetId,
-          amount: 1,
-          receiver: address,
-          maxMintingFee: storyTerms.defaultMintingFee.toString(),
-          maxRevenueShare: storyTerms.commercialRevShare,
-        }),
+        body: JSON.stringify(requestPayload),
       });
 
       const result = await response.json();
@@ -144,10 +149,7 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
           </div>
 
           {track.verified && (
-            <div className="flex items-center gap-2 text-green-600 text-sm">
-              <CheckCircle className="h-4 w-4" />
-              <span>Verified Original Content</span>
-            </div>
+            <VerificationBadge verified={track.verified} showText={true} size="sm" />
           )}
         </div>
 
@@ -157,7 +159,7 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
         <div className="space-y-4">
           <div className="text-center">
             <div className="font-bold text-3xl">{wipAmount} WIP</div>
-            <div className="text-muted-foreground text-sm">~${track.license.price} USD</div>
+            <div className="text-muted-foreground text-sm">Story Protocol Standard</div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-center text-sm">
@@ -254,10 +256,6 @@ export default function LicenseInfo({ track, ipAssetId }: LicenseInfoProps) {
                         : `Buy License - ${wipAmount} WIP`}
                   </>
                 )}
-              </Button>
-
-              <Button variant="outline" className="w-full">
-                Preview Audio
               </Button>
             </>
           )}

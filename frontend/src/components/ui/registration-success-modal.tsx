@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { VerificationBadge } from "@/components/ui/verification-badge";
 import { cn } from "@/lib/utils";
 import { CheckCircle, Copy, ExternalLink, Eye, Music, User } from "lucide-react";
 import { useState } from "react";
@@ -68,44 +69,56 @@ export function RegistrationSuccessModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+        <DialogHeader className="pb-6 text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 ring-4 ring-green-100 dark:bg-green-900/50 dark:ring-green-900/30">
+            <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
           </div>
-          <DialogTitle className="font-bold text-2xl text-green-600 dark:text-green-400">
-            Registration Successful!
+          <DialogTitle className="mb-2 font-bold text-3xl text-green-600 dark:text-green-400">
+            🎉 Registration Successful!
           </DialogTitle>
-          <p className="text-muted-foreground">
-            Your {data.type} "{data.title}" has been successfully registered on Story Protocol
+          <p className="text-lg text-muted-foreground">
+            Your {data.type} <span className="font-semibold text-foreground">"{data.title}"</span>{" "}
+            has been successfully registered on Story Protocol
           </p>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Status Badges */}
-          <div className="flex flex-wrap justify-center gap-2">
-            <Badge variant="outline" className="border-green-500 text-green-600">
-              <CheckCircle className="mr-1 h-3 w-3" />
+          <div className="flex flex-wrap justify-center gap-3">
+            <Badge
+              variant="outline"
+              className="border-green-500 bg-green-50 px-4 py-2 font-medium text-green-700 text-sm dark:bg-green-950/30 dark:text-green-400"
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
               Story Protocol Registered
             </Badge>
             {data.yakoaVerified && (
-              <Badge variant="outline" className="border-blue-500 text-blue-600">
-                <CheckCircle className="mr-1 h-3 w-3" />
-                Yakoa Verified
-              </Badge>
+              <VerificationBadge
+                verified={data.yakoaVerified}
+                showText={true}
+                size="md"
+                className="px-4 py-2"
+              />
             )}
-            <Badge variant="outline" className="border-purple-500 text-purple-600">
-              <Music className="mr-1 h-3 w-3" />
+            <Badge
+              variant="outline"
+              className="border-purple-500 bg-purple-50 px-4 py-2 font-medium text-purple-700 text-sm dark:bg-purple-950/30 dark:text-purple-400"
+            >
+              <Music className="mr-2 h-4 w-4" />
               {data.type === "remix" ? "Derivative IP" : "Original IP"}
             </Badge>
           </div>
 
           {/* Registration Details */}
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             {/* IP Details */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="mb-3 font-semibold text-sm">IP Asset Details</h3>
+            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardContent className="p-6">
+                <h3 className="mb-4 flex items-center gap-2 font-semibold text-base">
+                  <Music className="h-5 w-5 text-primary" />
+                  IP Asset Details
+                </h3>
                 <div className="space-y-3">
                   <div>
                     <span className="text-muted-foreground text-xs">IP Asset ID</span>
@@ -174,9 +187,12 @@ export function RegistrationSuccessModal({
             </Card>
 
             {/* Transaction Details */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="mb-3 font-semibold text-sm">Transaction Details</h3>
+            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-800 dark:from-blue-950/30 dark:to-blue-900/30">
+              <CardContent className="p-6">
+                <h3 className="mb-4 flex items-center gap-2 font-semibold text-base">
+                  <ExternalLink className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  Transaction Details
+                </h3>
                 <div className="space-y-3">
                   <div>
                     <span className="text-muted-foreground text-xs">Transaction Hash</span>
@@ -222,17 +238,17 @@ export function RegistrationSuccessModal({
 
           {/* Creators Info */}
           {data.creators && data.creators.length > 0 && (
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="mb-3 font-semibold text-sm">
-                  <User className="mr-1 inline h-4 w-4" />
+            <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 dark:border-purple-800 dark:from-purple-950/30 dark:to-purple-900/30">
+              <CardContent className="p-6">
+                <h3 className="mb-4 flex items-center gap-2 font-semibold text-base">
+                  <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   Creator{data.creators.length > 1 ? "s" : ""} ({data.creators.length})
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {data.creators.map((creator) => (
                     <div
                       key={creator.address}
-                      className="flex items-center justify-between rounded bg-muted/50 p-2"
+                      className="flex items-center justify-between rounded-lg border border-purple-200/50 bg-white/60 p-4 dark:border-purple-700/50 dark:bg-black/20"
                     >
                       <div>
                         <p className="font-medium text-sm">{creator.name}</p>
@@ -241,7 +257,9 @@ export function RegistrationSuccessModal({
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium text-sm">{creator.contributionPercent}%</p>
+                        <p className="font-semibold text-purple-600 text-sm dark:text-purple-400">
+                          {creator.contributionPercent}%
+                        </p>
                         <p className="text-muted-foreground text-xs">Contribution</p>
                       </div>
                     </div>
@@ -252,22 +270,25 @@ export function RegistrationSuccessModal({
           )}
 
           {/* Explorer Link */}
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="p-4">
+          <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-green-100 dark:border-green-800 dark:from-green-950/30 dark:to-green-900/30">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-sm">View on Story Explorer</h3>
-                  <p className="text-muted-foreground text-xs">
+                  <h3 className="mb-2 flex items-center gap-2 font-semibold text-base">
+                    <ExternalLink className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    View on Story Explorer
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
                     Explore your IP asset on the Story Protocol explorer
                   </p>
                 </div>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => window.open(data.explorerUrl, "_blank")}
-                  className="shrink-0"
+                  className="shrink-0 border-green-500 text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/30"
                 >
-                  <ExternalLink className="mr-1 h-3 w-3" />
+                  <ExternalLink className="mr-2 h-4 w-4" />
                   View Explorer
                 </Button>
               </div>
@@ -275,19 +296,30 @@ export function RegistrationSuccessModal({
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-4 pt-4 sm:flex-row">
             {onViewTrack && (
-              <Button onClick={onViewTrack} className="flex-1">
-                <Eye className="mr-2 h-4 w-4" />
+              <Button
+                onClick={onViewTrack}
+                className="h-12 flex-1 bg-primary font-medium text-base hover:bg-primary/90"
+              >
+                <Eye className="mr-2 h-5 w-5" />
                 View {data.type === "remix" ? "Remix" : "Track"}
               </Button>
             )}
-            <Button onClick={onViewProfile} variant="outline" className="flex-1">
-              <User className="mr-2 h-4 w-4" />
+            <Button
+              onClick={onViewProfile}
+              variant="outline"
+              className="h-12 flex-1 border-2 font-medium text-base"
+            >
+              <User className="mr-2 h-5 w-5" />
               View Profile
             </Button>
-            <Button onClick={onDiscoverMore} variant="outline" className="flex-1">
-              <Music className="mr-2 h-4 w-4" />
+            <Button
+              onClick={onDiscoverMore}
+              variant="outline"
+              className="h-12 flex-1 border-2 font-medium text-base"
+            >
+              <Music className="mr-2 h-5 w-5" />
               Discover More
             </Button>
           </div>

@@ -3,10 +3,27 @@
 import { TrackCard } from "@/components/shared/track-card";
 import { useTracks, useUser, useUserTracks } from "@/hooks/api";
 import { useAddComment, useLikeTrack } from "@/hooks/use-social-actions";
+import type { Track } from "@/types/track";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
-export function TrackList() {
+interface TrackListProps {
+  onPlay?: (track: Track) => void;
+  onLike?: (trackId: string) => void;
+  onComment?: (trackId: string) => void;
+  onShare?: (trackId: string) => void;
+  currentTrack?: Track | null;
+  isPlaying?: boolean;
+}
+
+export function TrackList({
+  onPlay,
+  onLike,
+  onComment,
+  onShare,
+  currentTrack,
+  isPlaying,
+}: TrackListProps) {
   const params = useParams();
   const profileIdentifier = params.identifier as string;
 
@@ -36,45 +53,53 @@ export function TrackList() {
   const likeTrackMutation = useLikeTrack();
   const addCommentMutation = useAddComment();
 
-  const handlePlay = (track: any) => {
-    console.log("Playing track:", track);
-    // Handle play logic - this would integrate with the music player
-  };
+  // Use parent handlers if provided, otherwise use local handlers
+  const handlePlay =
+    onPlay ||
+    ((track: any) => {
+      console.log("Playing track:", track);
+    });
 
-  const handleLike = (trackId: string) => {
-    const track = userTracks.find((t) => t.id === trackId);
-    likeTrackMutation.mutate(
-      { trackId, trackTitle: track?.title },
-      {
-        onError: (error) => {
-          toast.error("Failed to like track");
-          console.error("Like error:", error);
-        },
-      },
-    );
-  };
-
-  const handleComment = (trackId: string) => {
-    const comment = prompt("Add a comment:");
-    if (comment) {
-      addCommentMutation.mutate(
-        { trackId, content: comment },
+  const handleLike =
+    onLike ||
+    ((trackId: string) => {
+      const track = userTracks.find((t) => t.id === trackId);
+      likeTrackMutation.mutate(
+        { trackId, trackTitle: track?.title },
         {
           onError: (error) => {
-            toast.error("Failed to add comment");
-            console.error("Comment error:", error);
+            toast.error("Failed to like track");
+            console.error("Like error:", error);
           },
         },
       );
-    }
-  };
-
-  const handleShare = (trackId: string) => {
-    const url = `${window.location.origin}/track/${trackId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      toast.success("Track link copied to clipboard!");
     });
-  };
+
+  const handleComment =
+    onComment ||
+    ((trackId: string) => {
+      const comment = prompt("Add a comment:");
+      if (comment) {
+        addCommentMutation.mutate(
+          { trackId, content: comment },
+          {
+            onError: (error) => {
+              toast.error("Failed to add comment");
+              console.error("Comment error:", error);
+            },
+          },
+        );
+      }
+    });
+
+  const handleShare =
+    onShare ||
+    ((trackId: string) => {
+      const url = `${window.location.origin}/track/${trackId}`;
+      navigator.clipboard.writeText(url).then(() => {
+        toast.success("Track link copied to clipboard!");
+      });
+    });
 
   if (isLoading) {
     return (
@@ -117,6 +142,7 @@ export function TrackList() {
               onLike={handleLike}
               onComment={handleComment}
               onShare={handleShare}
+              isPlaying={currentTrack?.id === track.id && isPlaying}
               showArtist={false}
               variant="list"
               index={index}

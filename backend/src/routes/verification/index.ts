@@ -149,7 +149,13 @@ verificationRouter.post(
           description,
           ...(metadata || {}),
         },
-        media: mediaItems,
+        media: mediaItems.map((item) => ({
+          media_id: item.media_id,
+          url: item.url,
+          // Only include hash if provided, explicitly exclude trust_reason for full verification
+          ...(item.hash ? { hash: item.hash } : {}),
+          // Note: trust_reason is intentionally omitted to ensure full Yakoa verification
+        })),
         ...(licenseParents && licenseParents.length > 0
           ? { license_parents: licenseParents }
           : {}),

@@ -145,7 +145,7 @@ export default function UploadProgress({
             {
               media_id: uploadInfo.ipfsHash,
               url: uploadInfo.ipfsUrl,
-              trust_reason: null,
+              // Do not set trust_reason - let Yakoa perform full verification
             },
           ],
           transaction: {
