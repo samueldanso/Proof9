@@ -20,10 +20,14 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
   // Initialize audio when src changes
   useEffect(() => {
-    if (!src) return;
+    if (!src) {
+      console.log("🎵 No audio source provided");
+      return;
+    }
 
     // Fix IPFS URLs
     const fixedSrc = fixIpfsUrl(src);
+    console.log("🎵 Audio source:", { original: src, fixed: fixedSrc });
 
     // Clean up previous audio
     if (audioRef.current) {
@@ -46,13 +50,24 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     audio.src = fixedSrc;
     audio.volume = volume;
     audio.preload = "metadata";
+    audio.crossOrigin = "anonymous"; // Try to handle CORS
+
+    audio.onloadstart = () => {
+      console.log("🎵 Audio loading started");
+    };
 
     audio.onloadedmetadata = () => {
+      console.log("🎵 Audio metadata loaded:", { duration: audio.duration });
       setDuration(audio.duration);
       setIsLoading(false);
     };
 
+    audio.oncanplay = () => {
+      console.log("🎵 Audio can start playing");
+    };
+
     audio.onplay = () => {
+      console.log("🎵 Audio started playing");
       setIsPlaying(true);
       // Start progress interval
       intervalRef.current = setInterval(() => {
@@ -61,6 +76,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     };
 
     audio.onpause = () => {
+      console.log("🎵 Audio paused");
       setIsPlaying(false);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -69,6 +85,7 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     };
 
     audio.onended = () => {
+      console.log("🎵 Audio ended");
       setIsPlaying(false);
       setCurrentTime(0);
       if (intervalRef.current) {
@@ -79,7 +96,35 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
     };
 
     audio.onerror = (e) => {
-      const errorMessage = `Failed to load audio file: ${fixedSrc}`;
+      console.error("🎵 Audio error:", e);
+      console.error("🎵 Audio error details:", {
+        error: audio.error,
+        networkState: audio.networkState,
+        readyState: audio.readyState,
+        src: fixedSrc
+      });
+
+      let errorMessage = "Failed to load audio file";
+
+      if (audio.error) {
+        switch (audio.error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            errorMessage = "Audio loading was aborted";
+            break;
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMessage = "Network error while loading audio";
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            errorMessage = "Audio format not supported";
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = "Audio source not supported";
+            break;
+          default:
+            errorMessage = "Unknown audio error";
+        }
+      }
+
       setError(errorMessage);
       setIsLoading(false);
       onError?.(e);
@@ -107,16 +152,27 @@ export function useAudioPlayer({ src, volume = 0.75, onEnd, onError }: UseAudioP
 
   const play = useCallback(() => {
     if (audioRef.current && !isLoading) {
+      console.log("🎵 Attempting to play audio");
       try {
-        audioRef.current.play();
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.error("🎵 Play failed:", error);
+            setError("Playback failed - " + error.message);
+          });
+        }
       } catch (error) {
+        console.error("🎵 Play error:", error);
         setError("Failed to play audio");
       }
+    } else {
+      console.log("🎵 Cannot play - audio not ready or loading");
     }
   }, [isLoading]);
 
   const pause = useCallback(() => {
     if (audioRef.current) {
+      console.log("🎵 Pausing audio");
       audioRef.current.pause();
     }
   }, []);

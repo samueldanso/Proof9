@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { VerificationBadge } from "@/components/ui/verification-badge";
 import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -76,11 +77,13 @@ export default function TrackHeader({ track }: TrackHeaderProps) {
 
       {/* Track Title */}
       <div>
-        <h1 className="font-bold text-3xl">{track.title}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="font-bold text-3xl">{track.title}</h1>
+          <VerificationBadge verified={track.verified} size="lg" />
+        </div>
         {track.verified && (
-          <div className="mt-2 flex items-center gap-2">
-            <div className="h-4 w-4 rounded-full bg-green-500" />
-            <span className="font-medium text-green-600 text-sm">Verified Original</span>
+          <div className="mt-2">
+            <VerificationBadge verified={track.verified} showText={true} size="sm" />
           </div>
         )}
       </div>

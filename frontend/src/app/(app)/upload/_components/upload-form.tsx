@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUploadImage, useUploadMedia } from "@/hooks/api";
+import { extractAudioDuration } from "@/lib/utils/audio";
 import type { ImageUploadResponse, MediaUploadResponse } from "@/types/upload";
 import { CheckCircle, FileAudio, ImageIcon, Music, Upload, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
@@ -16,6 +17,7 @@ interface UploadFormProps {
       mediaResult: MediaUploadResponse;
       imageResult: ImageUploadResponse;
     },
+    audioDuration?: string,
   ) => void;
   onNext: () => void;
 }
@@ -25,7 +27,9 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
   const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [audioDuration, setAudioDuration] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isExtractingDuration, setIsExtractingDuration] = useState(false);
 
   const mediaInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -75,7 +79,7 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
     }
   }, []);
 
-  const handleMediaFile = (file: File) => {
+  const handleMediaFile = async (file: File) => {
     // Check if it's an audio file
     if (!file.type.startsWith("audio/")) {
       toast.error("Please select an audio file (MP3, WAV, FLAC, etc.)");
@@ -89,7 +93,20 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
     }
 
     setSelectedMedia(file);
-    toast.success("Audio file selected");
+    setIsExtractingDuration(true);
+
+    try {
+      // Extract audio duration
+      const duration = await extractAudioDuration(file);
+      setAudioDuration(duration);
+      toast.success(`Audio file selected (${duration})`);
+    } catch (error) {
+      console.error("Failed to extract audio duration:", error);
+      setAudioDuration("0:00");
+      toast.success("Audio file selected (duration unknown)");
+    } finally {
+      setIsExtractingDuration(false);
+    }
   };
 
   const handleImageFile = (file: File) => {
@@ -160,10 +177,15 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
 
       // Pass files and results with Story Protocol naming
       if (mediaResult.data && imageResult.data) {
-        onFilesSelect(selectedMedia, selectedImage, {
-          mediaResult: mediaResult,
-          imageResult: imageResult,
-        });
+        onFilesSelect(
+          selectedMedia,
+          selectedImage,
+          {
+            mediaResult: mediaResult,
+            imageResult: imageResult,
+          },
+          audioDuration || undefined,
+        );
       }
     } catch (error: any) {
       console.error("Upload error:", error);
@@ -181,7 +203,7 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
     return Number.parseFloat((bytes / k ** i).toFixed(2)) + " " + sizes[i];
   };
 
-  const canUpload = selectedMedia && selectedImage && !isUploading;
+  const canUpload = selectedMedia && selectedImage && !isUploading && !isExtractingDuration;
 
   return (
     <div className="space-y-6">
@@ -253,7 +275,11 @@ export default function UploadForm({ onFilesSelect, onNext }: UploadFormProps) {
                         <h4 className="font-medium text-sm">{selectedMedia.name}</h4>
                         <p className="text-muted-foreground text-xs">
                           {formatFileSize(selectedMedia.size)} • {selectedMedia.type.split("/")[1]}
+                          {audioDuration && ` • ${audioDuration}`}
                         </p>
+                        {isExtractingDuration && (
+                          <p className="text-muted-foreground text-xs">Extracting duration...</p>
+                        )}
                       </div>
                     </>
                   ) : (

@@ -1,9 +1,11 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { RegistrationSuccessModal } from "@/components/ui/registration-success-modal";
+import { VerificationBadge } from "@/components/ui/verification-badge";
 import { useCreateTrack, useRegisterTrack } from "@/hooks/api";
 import { convertLicenseFormToStoryTerms } from "@/lib/utils/story-protocol";
 import type { RegistrationRequest, RegistrationResponse } from "@/types/registration";
@@ -85,6 +87,7 @@ export default function UploadPage() {
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [mediaUploadResult, setMediaUploadResult] = useState<MediaUploadResponse | null>(null);
   const [imageUploadResult, setImageUploadResult] = useState<ImageUploadResponse | null>(null);
+  const [extractedDuration, setExtractedDuration] = useState<string | null>(null);
 
   // Story Protocol metadata
   const [metadata, setMetadata] = useState<StoryProtocolMetadata | null>(null);
@@ -117,11 +120,13 @@ export default function UploadPage() {
       mediaResult: MediaUploadResponse;
       imageResult: ImageUploadResponse;
     },
+    audioDuration?: string,
   ) => {
     setSelectedMediaFile(mediaFile);
     setSelectedImageFile(imageFile);
     setMediaUploadResult(uploadData.mediaResult);
     setImageUploadResult(uploadData.imageResult);
+    setExtractedDuration(audioDuration || null);
     setCurrentStep("metadata");
     toast.success("Files uploaded successfully!");
   };
@@ -321,6 +326,7 @@ export default function UploadPage() {
                     }
                   : undefined
               }
+              extractedDuration={extractedDuration || undefined}
               onSubmit={handleMetadataSubmit}
               onNext={handleNext}
               onBack={handleBack}
@@ -401,11 +407,19 @@ export default function UploadPage() {
                     </div>
                     <div>
                       <span className="text-muted-foreground text-sm">Verification Status</span>
-                      <p
-                        className={`font-medium ${yakoaResult?.verified ? "text-green-600" : "text-yellow-600"}`}
-                      >
-                        {yakoaResult?.verified ? "✓ Verified" : "⚠ Review Required"}
-                      </p>
+                      <div className="mt-1">
+                        {yakoaResult?.verified ? (
+                          <VerificationBadge
+                            verified={yakoaResult.verified}
+                            showText={true}
+                            size="sm"
+                          />
+                        ) : (
+                          <Badge variant="secondary" className="text-yellow-600">
+                            ⚠ Review Required
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -435,13 +449,6 @@ export default function UploadPage() {
                   )}
                 </Button>
               </div>
-
-              <div className="flex justify-center gap-4">
-                <Button onClick={() => router.push("/discover")}>Explore Tracks</Button>
-                <Button variant="outline" onClick={() => router.push("/library")}>
-                  View Library
-                </Button>
-              </div>
             </div>
           )}
         </Card>
@@ -451,7 +458,11 @@ export default function UploadPage() {
       {registrationResult && (
         <RegistrationSuccessModal
           open={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)}
+          onClose={() => {
+            setShowSuccessModal(false);
+            // Auto-redirect to track page when modal is closed
+            router.push(`/track/${registrationResult.ipId}`);
+          }}
           data={{
             title: metadata?.title || "Unknown Track",
             type: "track",

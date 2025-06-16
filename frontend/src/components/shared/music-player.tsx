@@ -181,6 +181,15 @@ export function MusicPlayer({
 
           {/* Error Display */}
           {error && <div className="text-center text-red-500 text-xs">{error}</div>}
+
+          {/* Debug Info (only in development) */}
+          {process.env.NODE_ENV === "development" && (
+            <div className="text-center text-muted-foreground text-xs">
+              Debug: {track.mediaUrl ? "Has URL" : "No URL"} |
+              {isLoading ? " Loading" : " Ready"} |
+              {error ? " Error" : " OK"}
+            </div>
+          )}
         </div>
 
         {/* Right: Social Actions & Volume */}

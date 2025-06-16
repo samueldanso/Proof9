@@ -445,8 +445,9 @@ usersRouter.get(
       const { address } = c.req.valid("param")
 
       // Get user's license purchases with track details
+      // Try user_licenses table first, fallback to license_transactions if it exists
       const { data: licensedTracks, error } = await supabase
-        .from("license_transactions")
+        .from("user_licenses")
         .select(`
                 *,
                 tracks:track_id (
@@ -455,13 +456,27 @@ usersRouter.get(
                     artist_name,
                     artist_address,
                     duration,
-                    ipfs_url,
+                    media_url,
+                    image,
                     genre,
-                    created_at
+                    created_at,
+                    ip_id,
+                    verified
                 )
             `)
-        .eq("buyer_address", address)
+        .eq("user_address", address)
         .order("created_at", { ascending: false })
+
+      // If user_licenses table doesn't exist, return empty array
+      if (error && error.code === "42P01") {
+        console.log(
+          "user_licenses table doesn't exist yet, returning empty array",
+        )
+        return c.json({
+          success: true,
+          data: [],
+        })
+      }
 
       if (error) throw error
 
@@ -496,20 +511,14 @@ usersRouter.get(
       // Get creator's tracks with revenue data
       const { data: tracks, error: tracksError } = await supabase
         .from("tracks")
-        .select("total_revenue_earned, total_licenses_sold")
+        .select(
+          "total_revenue_earned, total_licenses_sold, total_revenue_claimed",
+        )
         .eq("artist_address", address)
 
       if (tracksError) throw tracksError
 
-      // Get creator's revenue claims
-      const { data: claims, error: claimsError } = await supabase
-        .from("revenue_claims")
-        .select("amount_claimed")
-        .eq("creator_address", address)
-
-      if (claimsError) throw claimsError
-
-      // Calculate summary
+      // Calculate summary from tracks data
       const totalRevenue =
         tracks?.reduce(
           (sum, track) => sum + (track.total_revenue_earned || 0),
@@ -521,7 +530,10 @@ usersRouter.get(
           0,
         ) || 0
       const totalClaimed =
-        claims?.reduce((sum, claim) => sum + claim.amount_claimed, 0) || 0
+        tracks?.reduce(
+          (sum, track) => sum + (track.total_revenue_claimed || 0),
+          0,
+        ) || 0
       const pendingRevenue = totalRevenue - totalClaimed
 
       return c.json({

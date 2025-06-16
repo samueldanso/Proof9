@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { VerificationBadge } from "@/components/ui/verification-badge";
 import { useIsTrackLiked } from "@/hooks/use-social-actions";
 import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
 import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
@@ -127,7 +128,12 @@ export function TrackCard({
 
             {/* Track Info */}
             <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-1 font-semibold text-base leading-tight">{track.title}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="line-clamp-1 font-semibold text-base leading-tight">
+                  {track.title}
+                </h3>
+                <VerificationBadge verified={track.verified} size="sm" />
+              </div>
               <div className="flex items-center gap-3 text-muted-foreground text-sm">
                 <span className="font-medium">{(track.plays || 0).toLocaleString()} plays</span>
                 {track.duration && (
@@ -140,14 +146,6 @@ export function TrackCard({
                   <>
                     <span>•</span>
                     <span>{formatTrackDate(track.createdAt)}</span>
-                  </>
-                )}
-                {track.verified && (
-                  <>
-                    <span>•</span>
-                    <div className="flex h-4 w-4 items-center justify-center rounded-full bg-green-500">
-                      <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                    </div>
                   </>
                 )}
               </div>
@@ -215,15 +213,6 @@ export function TrackCard({
               </Button>
             </div>
 
-            {/* Verification Badge */}
-            {track.verified && (
-              <div className="absolute top-3 right-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow-lg">
-                  <div className="h-2 w-2 rounded-full bg-white" />
-                </div>
-              </div>
-            )}
-
             {/* Duration Badge */}
             <div className="absolute right-3 bottom-3">
               <div className="rounded-md bg-black/80 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
@@ -235,7 +224,10 @@ export function TrackCard({
           {/* Track Info - Enhanced for professional look */}
           <div className="space-y-3">
             <div className="space-y-1">
-              <h3 className="line-clamp-2 font-bold text-base leading-tight">{track.title}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="line-clamp-2 font-bold text-base leading-tight">{track.title}</h3>
+                <VerificationBadge verified={track.verified} size="sm" />
+              </div>
 
               {/* Artist info - Using Story Protocol creators array */}
               {showArtist && (

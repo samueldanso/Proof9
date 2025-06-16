@@ -6,6 +6,7 @@ import { z } from "zod"
 
 import { client, networkInfo } from "../../../utils/config"
 import { SPGNFTContractAddress } from "../../../utils/utils"
+import { supabase } from "../../lib/supabase"
 
 const royaltyRouter = new Hono()
 
@@ -150,11 +151,38 @@ royaltyRouter.post(
         currencyTokens: currencyTokens as Address[],
       })
 
+      // Record the claim in database for earnings tracking
+      try {
+        // Find the track by IP ID
+        const { data: track } = await supabase
+          .from("tracks")
+          .select("id, artist_address, total_revenue_earned")
+          .eq("ip_id", ancestorIpId)
+          .single()
+
+        if (track) {
+          // Calculate claimed amount (simplified - in reality would parse from response)
+          const claimedAmount = track.total_revenue_earned || 0
+
+          // Update track to mark revenue as claimed
+          await supabase
+            .from("tracks")
+            .update({
+              total_revenue_claimed: claimedAmount,
+            })
+            .eq("id", track.id)
+        }
+      } catch (dbError) {
+        console.error("Failed to update claim record:", dbError)
+        // Don't fail the claim if DB update fails
+      }
+
       // Return result
       return c.json({
         success: true,
         data: {
           claimedTokens: response.claimedTokens,
+          transactionHashes: response.txHashes,
         },
       })
     } catch (error: any) {

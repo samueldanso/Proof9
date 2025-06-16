@@ -67,6 +67,7 @@ interface MetadataFormProps {
     image: string;
     imageHash: string;
   };
+  extractedDuration?: string;
   onSubmit: (metadata: MetadataFormData) => void;
   onNext: () => void;
   onBack: () => void;
@@ -160,12 +161,36 @@ const extractTitleFromFilename = (filename: string): string => {
   return cleanTitle;
 };
 
+// Helper function to generate description from track title
+const generateDescriptionFromTitle = (title: string): string => {
+  if (!title.trim()) return "";
+
+  // Convert title to lowercase for description
+  const lowerTitle = title.toLowerCase();
+
+  // Generate different description templates
+  const templates = [
+    `a new track titled "${lowerTitle}"`,
+    `an original composition called "${lowerTitle}"`,
+    `a musical piece named "${lowerTitle}"`,
+    `a fresh sound titled "${lowerTitle}"`,
+    `an audio creation called "${lowerTitle}"`,
+  ];
+
+  // Use a simple hash of the title to consistently pick the same template
+  const hash = title.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const templateIndex = hash % templates.length;
+
+  return templates[templateIndex];
+};
+
 export default function MetadataForm({
   initialData,
   mediaFile,
   imageFile,
   mediaResult,
   imageResult,
+  extractedDuration,
   onSubmit,
   onNext,
   onBack,
@@ -198,6 +223,8 @@ export default function MetadataForm({
     mediaUrl: initialData?.mediaUrl || mediaResult?.mediaUrl,
     mediaHash: initialData?.mediaHash || mediaResult?.mediaHash,
     mediaType: initialData?.mediaType || mediaResult?.mediaType || mediaFile?.type || "",
+    // Duration from audio extraction
+    duration: initialData?.duration || extractedDuration || undefined,
     // NFT metadata
     nftName: initialData?.nftName,
     nftDescription: initialData?.nftDescription,
@@ -220,16 +247,21 @@ export default function MetadataForm({
     }
   }, [userData?.displayName, address, initialData?.creators]);
 
-  // Auto-populate title from filename when media file becomes available
+  // Auto-populate title and description from filename when media file becomes available
   useEffect(() => {
     if (mediaFile && !initialData?.title && !formData.title) {
       const autoTitle = extractTitleFromFilename(mediaFile.name);
       setFormData((prev) => ({
         ...prev,
         title: autoTitle,
+        // Also generate description if it's empty
+        description:
+          !initialData?.description && !prev.description
+            ? generateDescriptionFromTitle(autoTitle)
+            : prev.description,
       }));
     }
-  }, [mediaFile?.name, initialData?.title, formData.title]);
+  }, [mediaFile?.name, initialData?.title, formData.title, initialData?.description]);
 
   // Tag management
   const [currentTag, setCurrentTag] = useState("");
@@ -256,6 +288,26 @@ export default function MetadataForm({
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddTag();
+    }
+  };
+
+  // Handle title changes and offer to regenerate description
+  const handleTitleChange = (newTitle: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: newTitle,
+    }));
+  };
+
+  // Helper to regenerate description from current title
+  const regenerateDescription = () => {
+    if (formData.title.trim()) {
+      const newDescription = generateDescriptionFromTitle(formData.title);
+      setFormData((prev) => ({
+        ...prev,
+        description: newDescription,
+      }));
+      toast.success("Description regenerated from title");
     }
   };
 
@@ -404,6 +456,11 @@ export default function MetadataForm({
                 <div className="text-muted-foreground text-xs">
                   ✓ Media URL: {mediaResult?.mediaUrl ? "Ready" : "Missing"}
                   <br />✓ Image URL: {imageResult?.image ? "Ready" : "Missing"}
+                  {formData.duration && (
+                    <>
+                      <br />✓ Duration: {formData.duration}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -423,7 +480,7 @@ export default function MetadataForm({
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Enter your track title"
                 className={errors.title ? "border-red-500" : ""}
               />
@@ -455,16 +512,34 @@ export default function MetadataForm({
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="description">Description *</Label>
+              {formData.title.trim() && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={regenerateDescription}
+                  className="text-muted-foreground text-xs hover:text-foreground"
+                >
+                  ↻ Generate from title
+                </Button>
+              )}
+            </div>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe your track..."
+              placeholder="Describe your track... (auto-generated from title)"
               rows={3}
               className={errors.description ? "border-red-500" : ""}
             />
             {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+            {formData.description && (
+              <p className="text-muted-foreground text-xs">
+                💡 Tip: You can edit this description or regenerate it from your title
+              </p>
+            )}
           </div>
         </div>
 
