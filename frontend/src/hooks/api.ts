@@ -341,7 +341,7 @@ export function useCreateTrack() {
         contributionPercent: number;
       }>;
       image: string;
-      image_hash: string;
+      imageHash: string;
       mediaUrl: string;
       mediaHash: string;
       mediaType: string;
