@@ -3,7 +3,29 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUploadImage, useUploadMedia } from "@/hooks/api";
-import { extractAudioDuration } from "@/lib/utils/audio";
+// Audio duration extraction - simple browser-based implementation
+const extractAudioDuration = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const audio = document.createElement("audio");
+    const url = URL.createObjectURL(file);
+
+    audio.addEventListener("loadedmetadata", () => {
+      const duration = audio.duration;
+      const minutes = Math.floor(duration / 60);
+      const seconds = Math.floor(duration % 60);
+      const formatted = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+      URL.revokeObjectURL(url);
+      resolve(formatted);
+    });
+
+    audio.addEventListener("error", () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load audio"));
+    });
+
+    audio.src = url;
+  });
+};
 import type { ImageUploadResponse, MediaUploadResponse } from "@/types/upload";
 import { CheckCircle, FileAudio, ImageIcon, Music, Upload, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";

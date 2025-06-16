@@ -1,5 +1,6 @@
 "use client";
 
+import { MusicPlayer } from "@/components/shared/music-player";
 import { TrackActions } from "@/components/shared/track-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export default function TrackPage() {
   const params = useParams();
   const trackId = params.id as string;
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
 
   // Load track data from API - Story Protocol format
   const { data: trackResponse, isLoading, error } = useTrack(trackId);
@@ -41,6 +43,7 @@ export default function TrackPage() {
 
   const handlePlay = () => {
     setIsPlaying(!isPlaying);
+    setShowMusicPlayer(true);
   };
 
   const handleLike = () => {
@@ -67,6 +70,11 @@ export default function TrackPage() {
       navigator.clipboard.writeText(shareUrl);
       toast.success("Track link copied to clipboard!");
     }
+  };
+
+  const handlePlayerClose = () => {
+    setShowMusicPlayer(false);
+    setIsPlaying(false);
   };
 
   // Helper functions for Story Protocol data
@@ -313,6 +321,20 @@ export default function TrackPage() {
           />
         </div>
       </div>
+
+      {/* Music Player */}
+      {showMusicPlayer && track && (
+        <MusicPlayer
+          track={track}
+          isPlaying={isPlaying}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onClose={handlePlayerClose}
+          onLike={() => handleLike()}
+          onComment={() => handleComment()}
+          onShare={() => handleShare()}
+        />
+      )}
     </div>
   );
 }

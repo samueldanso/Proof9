@@ -1,6 +1,7 @@
 "use client";
 
 import { useUser } from "@/hooks/api";
+import type { Track } from "@/types/track";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useAccount } from "wagmi";
@@ -8,7 +9,23 @@ import { EarningsTab } from "./earnings-tab";
 import { LicenseesTab } from "./licensees-tab";
 import { TrackList } from "./track-list";
 
-export function ProfileTabs() {
+interface ProfileTabsProps {
+  onPlay?: (track: Track) => void;
+  onLike?: (trackId: string) => void;
+  onComment?: (trackId: string) => void;
+  onShare?: (trackId: string) => void;
+  currentTrack?: Track | null;
+  isPlaying?: boolean;
+}
+
+export function ProfileTabs({
+  onPlay,
+  onLike,
+  onComment,
+  onShare,
+  currentTrack,
+  isPlaying,
+}: ProfileTabsProps) {
   const params = useParams();
   const { address: connectedAddress } = useAccount();
   const profileIdentifier = params.identifier as string;
@@ -36,13 +53,31 @@ export function ProfileTabs() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "releases":
-        return <TrackList />;
+        return (
+          <TrackList
+            onPlay={onPlay}
+            onLike={onLike}
+            onComment={onComment}
+            onShare={onShare}
+            currentTrack={currentTrack}
+            isPlaying={isPlaying}
+          />
+        );
       case "licensees":
         return isOwnProfile ? <LicenseesTab /> : null;
       case "earnings":
         return isOwnProfile ? <EarningsTab /> : null;
       default:
-        return <TrackList />;
+        return (
+          <TrackList
+            onPlay={onPlay}
+            onLike={onLike}
+            onComment={onComment}
+            onShare={onShare}
+            currentTrack={currentTrack}
+            isPlaying={isPlaying}
+          />
+        );
     }
   };
 

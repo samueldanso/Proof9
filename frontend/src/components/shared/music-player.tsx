@@ -6,14 +6,11 @@ import IconHeartFill from "@/components/icons/hearthFill.svg";
 import IconShare from "@/components/icons/share.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { useAudioPlayer } from "@/hooks/use-audio-player";
 import { useIsTrackLiked } from "@/hooks/use-social-actions";
-import { getAvatarUrl, getUserInitials } from "@/lib/utils/avatar";
+import { getUserInitials } from "@/lib/utils/avatar";
 import { getCoverPlaceholder, getCoverUrl } from "@/lib/utils/cover";
+import { fixIpfsUrl } from "@/lib/utils/ipfs";
 import type { Track } from "@/types/track";
-import { Loader2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
-import { useState } from "react";
 import { useAccount } from "wagmi";
 
 interface MusicPlayerProps {
@@ -37,56 +34,14 @@ export function MusicPlayer({
   onComment,
   onShare,
 }: MusicPlayerProps) {
-  const [volume, setVolume] = useState(75);
   const { address } = useAccount();
 
   // Check if current user has liked this track
   const { data: isLikedData } = useIsTrackLiked(track.id);
   const isLiked = isLikedData?.isLiked || false;
 
-  const {
-    isPlaying: audioIsPlaying,
-    isLoading,
-    duration,
-    currentTime,
-    error,
-    play,
-    pause,
-    seek,
-    setVolume: setAudioVolume,
-    formatTime,
-    progress,
-  } = useAudioPlayer({
-    src: track.mediaUrl,
-    volume: volume / 100,
-    onEnd: () => {
-      onPause();
-    },
-  });
-
-  // Sync external play/pause state with audio
-  const handlePlayPause = () => {
-    if (audioIsPlaying) {
-      pause();
-      onPause();
-    } else {
-      play();
-      onPlay();
-    }
-  };
-
-  // Handle seeking
-  const handleSeek = (value: number[]) => {
-    const seekTime = (value[0] / 100) * duration;
-    seek(seekTime);
-  };
-
-  // Handle volume change
-  const handleVolumeChange = (value: number[]) => {
-    const newVolume = value[0];
-    setVolume(newVolume);
-    setAudioVolume(newVolume / 100);
-  };
+  // Get the IPFS URL
+  const audioUrl = fixIpfsUrl(track.mediaUrl || "");
 
   return (
     <div className="fixed right-0 bottom-0 left-0 z-50 border-border border-t bg-background p-4">
@@ -132,79 +87,23 @@ export function MusicPlayer({
           </div>
         </div>
 
-        {/* Center: Playback Controls */}
+        {/* Center: Native Audio Player */}
         <div className="flex max-w-md flex-1 flex-col items-center gap-2">
-          {/* Controls */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="size-8 p-0">
-              <SkipBack className="size-4" />
-            </Button>
-
-            <Button
-              variant="default"
-              size="sm"
-              className="size-10 rounded-full bg-[#ced925] p-0 text-black hover:bg-[#b8c220]"
-              onClick={handlePlayPause}
-              disabled={!!(isLoading || error)}
-            >
-              {isLoading ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : audioIsPlaying ? (
-                <Pause className="size-5" />
-              ) : (
-                <Play className="ml-0.5 size-5" />
-              )}
-            </Button>
-
-            <Button variant="ghost" size="sm" className="size-8 p-0">
-              <SkipForward className="size-4" />
-            </Button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="flex w-full items-center gap-2">
-            <span className="min-w-[35px] text-muted-foreground text-xs">
-              {formatTime(currentTime)}
-            </span>
-            <Slider
-              value={[progress]}
-              onValueChange={handleSeek}
-              max={100}
-              step={0.1}
-              className="flex-1"
-              disabled={!!(isLoading || error || duration === 0)}
-            />
-            <span className="min-w-[35px] text-muted-foreground text-xs">
-              {duration > 0 ? formatTime(duration) : track.duration || "0:00"}
-            </span>
-          </div>
-
-          {/* Error Display */}
-          {error && <div className="text-center text-red-500 text-xs">{error}</div>}
-
-          {/* Debug Info (only in development) */}
-          {process.env.NODE_ENV === "development" && (
-            <div className="text-center text-muted-foreground text-xs">
-              Debug: {track.mediaUrl ? "Has URL" : "No URL"} |
-              {isLoading ? " Loading" : " Ready"} |
-              {error ? " Error" : " OK"}
-              <br />
-              <button
-                onClick={() => {
-                  console.log("🎵 Track mediaUrl:", track.mediaUrl);
-                  if (track.mediaUrl) {
-                    window.open(track.mediaUrl, '_blank');
-                  }
-                }}
-                className="text-blue-500 underline text-xs mt-1"
-              >
-                Test URL in Browser
-              </button>
-            </div>
-          )}
+          <audio
+            controls
+            className="w-full max-w-md"
+            src={audioUrl}
+            onPlay={onPlay}
+            onPause={onPause}
+            onEnded={onPause}
+            preload="metadata"
+          >
+            <track kind="captions" label="Audio track" default />
+            Your browser does not support the audio element.
+          </audio>
         </div>
 
-        {/* Right: Social Actions & Volume */}
+        {/* Right: Social Actions */}
         <div className="flex flex-1 items-center justify-end gap-3">
           {/* Social Actions */}
           <div className="flex items-center gap-2">
@@ -238,18 +137,6 @@ export function MusicPlayer({
             >
               <IconShare className="size-4 text-muted-foreground hover:text-[#ced925]" />
             </Button>
-          </div>
-
-          {/* Volume Control */}
-          <div className="flex min-w-[120px] items-center gap-2">
-            <Volume2 className="size-4 text-muted-foreground" />
-            <Slider
-              value={[volume]}
-              onValueChange={handleVolumeChange}
-              max={100}
-              step={1}
-              className="w-20"
-            />
           </div>
 
           {/* Close Button */}
