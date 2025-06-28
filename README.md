@@ -4,14 +4,6 @@
 
 Proof9 is a sound rights platform where music creators protect, license, and monetize their sound IP through on-chain ownership, AI-powered originality verification, and real social connection with their fans and audience — powered by Story Protocol, Yakoa, and Tomo.
 
-## Problem
-
-Music and sound creators struggle to prove ownership, protect their work, and monetize it effectively. Licensing is complicated, piracy is rampant, and current systems lack transparency, especially for independent artists and creators.
-
-## Solution
-
-Proof9 is a sound rights platform that gives creators the tools to protect their IP, verify originality, license usage, and get paid for their sound — all backed by on-chain provenance and AI verification. Beyond just payments, Proof9 creates real social connections between creators and their audience through social interactions. Powered by Story Protocol, Yakoa, and Tomo, creators can confidently manage their sound IP, build meaningful relationships with fans, and earn in a transparent, decentralized ecosystem.
-
 ## Features
 
 -   **🔐 On-chain ownership** — Upload and register your sound IP with blockchain-backed provenance using Story Protocol.
