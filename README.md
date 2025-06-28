@@ -34,41 +34,6 @@ Proof9 is a sound rights platform where music creators protect, license, and mon
 3. **Use and remix the sound confidently & track ownership** — Utilize licensed content with transparent provenance
 4. **Support and connect with your favorite creators** — Access exclusive drops and build relationships
 
-## User Flow & Technical Architecture
-
-```mermaid
-graph TD
-    A["👤 Creator Upload"] --> B["🎵 Frontend Upload"]
-    B --> C["⚡ Backend APIs"]
-
-    C --> D["📁 IPFS Storage<br/>Metadata Hashes"]
-    C --> E["🧠 Yakoa Verification<br/>Originality Scores"]
-    C --> F["🔐 Story Protocol<br/>IP Registration"]
-    C --> G["💾 Supabase Database<br/>Track Records"]
-
-    D --> H["🎯 Track Goes Live"]
-    E --> H
-    F --> H
-    G --> H
-
-    H --> I["👥 Fan Discovery"]
-    I --> J["💰 License Purchase"]
-    J --> K["🎫 License Token Mint<br/>(Story Protocol)"]
-    K --> L["💸 Revenue Payment"]
-    L --> M["🤖 Smart Contract<br/>Royalty Distribution"]
-    M --> N["💰 Creator Earnings"]
-
-    H --> O["❤️ Social Layer<br/>(Supabase)"]
-    O --> P["👍 Likes & Comments"]
-    O --> Q["👥 Follow System"]
-
-    style A fill:#e1f5fe
-    style C fill:#fff3e0
-    style H fill:#c8e6c9
-    style M fill:#f3e5f5
-    style O fill:#e8f5e8
-```
-
 ## Tech Stack
 
 ### Frontend
